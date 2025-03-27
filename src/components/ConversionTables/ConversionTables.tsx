@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   TablesContainer,
   SectionHeading,
@@ -12,7 +12,11 @@ import {
   TableTitle,
   Table,
   PositiveChange,
-  NegativeChange
+  NegativeChange,
+  TablesRow,
+  TableColumn,
+  TableHeading,
+  CurrentTime
 } from './ConversionTables.styled';
 
 export interface TokenData {
@@ -40,6 +44,10 @@ interface ConversionTablesProps {
   toToken: TokenData | null;
 }
 
+// Define amounts for conversion tables
+const fromAmounts = [0.5, 1, 5, 10, 50, 100, 500, 1000];
+const toAmounts = [0.5, 1, 5, 10, 50, 100, 500, 1000];
+
 const ConversionTables: React.FC<ConversionTablesProps> = ({ fromToken, toToken }) => {
   // Use actual values from props if available, otherwise use Bitcoin/USDT defaults
   const displayFromToken = fromToken || { id: 'bitcoin', name: 'Bitcoin', ticker: 'BTC', symbol: 'BTC', price: 87174.95 };
@@ -47,7 +55,7 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ fromToken, toToken 
   
   // Calculate conversion rates
   const fromToPrice = displayFromToken.price || 87174.95;
-  const toFromRate = displayToToken.price ? displayFromToken.price ? (displayToToken.price / displayFromToken.price) : 0.000011 : 0.000011;
+  const toFromRate = displayToToken.price ? (displayToToken.price / (displayFromToken.price || 87174.95)) : 0.000011;
   
   // Values for sample conversions
   const fiveFromTokenCost = 5 * fromToPrice;
@@ -72,10 +80,51 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ fromToken, toToken 
     return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
   };
 
-  // Format BTC values with appropriate decimal places
-  const formatValue = (value: number) => {
-    return value < 0.001 ? value.toFixed(8) : value.toFixed(6);
+  // Format crypto values with appropriate decimal places based on size
+  const formatCryptoValue = (value: number): string => {
+    if (value === 0) return '0';
+    
+    if (value < 0.0001) {
+      return value.toFixed(8);
+    } else if (value < 0.01) {
+      return value.toFixed(6);
+    } else if (value < 1) {
+      return value.toFixed(2);
+    } else {
+      return value.toFixed(2);
+    }
   };
+
+  // Format to show exact USDT amount as in the image
+  const formatUsdtAmount = (amount: number): string => {
+    return amount.toFixed(2) + ' ' + displayToToken.ticker;
+  };
+  
+  // Format to show exact BTC amount as in the image
+  const formatBtcAmount = (amount: number): string => {
+    let result;
+    if (amount < 0.0001) {
+      result = amount.toFixed(8);
+    } else if (amount < 0.001) {
+      result = amount.toFixed(8);
+    } else if (amount < 0.01) {
+      result = amount.toFixed(6);
+    } else {
+      result = amount.toFixed(4);
+    }
+    return result + ' ' + displayFromToken.ticker;
+  };
+
+  // Generate current time string
+  const currentTime = useMemo(() => {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const formattedHours = hours % 12 || 12; // Convert 0 to 12 for 12-hour format
+    const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+    const period = hours >= 12 ? 'pm' : 'am';
+    return `${formattedHours}:${formattedMinutes} ${period}`;
+  }, []);
 
   return (
     <TablesContainer>
@@ -88,8 +137,8 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ fromToken, toToken 
       <SectionDescription>
         The current value of 1 {displayFromToken.ticker} is {formatDecimal(fromToPrice)} {displayToToken.ticker}. 
         In other words, to buy 5 {displayFromToken.name}, it would cost you {formatDecimal(fiveFromTokenCost)} {displayToToken.ticker}. 
-        Inversely, 1 {displayToToken.ticker} would allow you to trade for {formatValue(oneToTokenToBtc)} {displayFromToken.ticker} 
-        while 50 {displayToToken.ticker} would convert to {formatValue(fiftyToTokenToBtc)} {displayFromToken.ticker}, not 
+        Inversely, 1 {displayToToken.ticker} would allow you to trade for {formatCryptoValue(oneToTokenToBtc)} {displayFromToken.ticker} 
+        while 50 {displayToToken.ticker} would convert to {formatCryptoValue(fiftyToTokenToBtc)} {displayFromToken.ticker}, not 
         including platform or gas fees.
       </SectionDescription>
       
@@ -151,6 +200,50 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ fromToken, toToken 
           </tr>
         </TableBody>
       </PerformanceTable>
+
+      <TablesRow>
+        <TableColumn>
+          <TableHeading>{displayFromToken.ticker} to {displayToToken.ticker}</TableHeading>
+          <CurrentTime>Today at {currentTime}</CurrentTime>
+          <Table>
+            <TableHead>
+              <tr>
+                <th>Amount ({displayFromToken.ticker})</th>
+                <th>Today at {currentTime}</th>
+              </tr>
+            </TableHead>
+            <TableBody>
+              {fromAmounts.map((amount) => (
+                <tr key={`from-${amount}`}>
+                  <td>{amount} {displayFromToken.ticker}</td>
+                  <td>{formatUsdtAmount(amount * fromToPrice)}</td>
+                </tr>
+              ))}
+            </TableBody>
+          </Table>
+        </TableColumn>
+
+        <TableColumn>
+          <TableHeading>{displayToToken.ticker} to {displayFromToken.ticker}</TableHeading>
+          <CurrentTime>Today at {currentTime}</CurrentTime>
+          <Table>
+            <TableHead>
+              <tr>
+                <th>Amount ({displayToToken.ticker})</th>
+                <th>Today at {currentTime}</th>
+              </tr>
+            </TableHead>
+            <TableBody>
+              {toAmounts.map((amount) => (
+                <tr key={`to-${amount}`}>
+                  <td>{amount} {displayToToken.ticker}</td>
+                  <td>{formatBtcAmount(amount * toFromRate)}</td>
+                </tr>
+              ))}
+            </TableBody>
+          </Table>
+        </TableColumn>
+      </TablesRow>
     </TablesContainer>
   );
 };
