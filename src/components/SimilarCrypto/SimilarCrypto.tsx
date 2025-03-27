@@ -228,7 +228,7 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
     };
 
     return (
-        <Container style={{ padding: '1.5rem' }}>
+        <Container>
             <Header>
                 <Title>Discover assets similar to {assetName}</Title>
             </Header>

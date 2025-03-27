@@ -9,7 +9,7 @@ export const FAQContainer = styled.div`
   color: ${({ theme }) => theme.colors.textColor};
   
   @media (max-width: 768px) {
-    padding: 1.5rem 1rem;
+    padding: 1.5rem 0rem;
   }
 `;
 

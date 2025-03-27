@@ -2,13 +2,10 @@ import styled, { keyframes } from 'styled-components';
 import React from 'react';
 
 export const Container = styled.div`
-  padding: 1rem;
   border-radius: 1rem;
+  max-width: 1400px;
   background: ${props => props.theme.colors.backgroundHover};
 
-  @media (max-width: 768px) {
-    padding: 0.75rem;
-  }
 `;
 
 export const Header = styled.div`

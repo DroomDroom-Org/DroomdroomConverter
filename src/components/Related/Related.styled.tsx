@@ -7,7 +7,7 @@ export const RelatedContainer = styled.div`
   color: ${({ theme }) => theme.colors.textColor};
   
   @media (max-width: 768px) {
-    padding: 30px 1rem;
+    padding: 30px 0rem;
   }
 `;
 
