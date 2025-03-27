@@ -7,7 +7,66 @@ export const TablesContainer = styled.div`
   color: ${({ theme }) => theme.colors.textColor};
   
   @media (max-width: 768px) {
-    padding: 30px 1rem;
+    padding: 20px 0;
+    overflow-x: hidden;
+    width: 100%;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 15px 0 15px 0;
+    overflow-x: hidden;
+  }
+  
+  /* Global rule for all table headers */
+  table thead {
+    background-color: ${({ theme }) => 
+      theme.name === 'light' 
+        ? '#f0f1f5' 
+        : theme.colors.colorNeutral1 || 'rgba(40, 43, 62, 0.5)'
+    };
+    border-bottom: 1px solid ${({ theme }) => theme.colors.colorNeutral2 || 'rgba(50, 53, 70, 0.5)'};
+  }
+  
+  /* Global rules for all table rows */
+  table tbody tr:nth-child(odd) {
+    background-color: ${({ theme }) => theme.colors.bgColor || '#1e2134'};
+  }
+  
+  table tbody tr:nth-child(even) {
+    background-color: ${({ theme }) => theme.colors.colorNeutral1 || 'rgba(40, 43, 62, 0.1)'};
+  }
+  
+  table tbody tr:hover {
+    background-color: ${({ theme }) => 
+      theme.name === 'light' 
+        ? 'rgba(0, 0, 0, 0.05)' 
+        : 'rgba(255, 255, 255, 0.05)'
+    };
+  }
+  
+  /* Fix mobile table display */
+  @media (max-width: 768px) {
+    div[role="region"] {
+      overflow-x: auto;
+      width: 100%;
+      -webkit-overflow-scrolling: touch;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Ensure tables fill the width of their container */
+    table {
+      width: 100% !important;
+      margin: 0;
+      border-radius: 8px;
+      min-width: 100%;
+    }
+    
+    /* Fix caption alignment */
+    table caption {
+      text-align: right !important;
+      padding-right: 0.5rem;
+    }
   }
 `;
 
@@ -23,12 +82,35 @@ export const SectionHeading = styled.h2`
   }
 `;
 
+export const ComparisonHeading = styled.h2`
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+  color: ${({ theme }) => theme.colors.textColor};
+  
+  @media (max-width: 768px) {
+    margin-top: 2rem;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1.4rem;
+    margin-bottom: 0.75rem;
+  }
+`;
+
 export const SectionDescription = styled.p`
   font-size: 1rem;
   line-height: 1.6;
   color: ${({ theme }) => theme.colors.textColorSub};
   margin-bottom: 1.5rem;
   max-width: 900px;
+  
+  @media (max-width: 768px) {
+    margin-bottom: 1rem;
+  }
 `;
 
 export const PerformanceHeading = styled.h3`
@@ -50,12 +132,20 @@ export const TablesRow = styled.div`
   
   @media (max-width: 992px) {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 2rem;
   }
 `;
 
 export const TableColumn = styled.div`
   width: 100%;
+  overflow: hidden;
+  
+  @media (max-width: 768px) {
+    margin-bottom: 1rem;
+    padding: 0;
+    overflow: hidden;
+    max-width: 100%;
+  }
 `;
 
 export const TableHeading = styled.h3`
@@ -66,6 +156,7 @@ export const TableHeading = styled.h3`
   
   @media (max-width: 480px) {
     font-size: 1.2rem;
+    margin-bottom: 0.5rem;
   }
 `;
 
@@ -78,16 +169,44 @@ export const Table = styled.table`
   border-radius: 8px;
   overflow: hidden;
   background-color: ${({ theme }) => theme.colors.bgColor || '#1e2134'};
+  table-layout: fixed;
   
   @media (max-width: 768px) {
+    margin-bottom: 1rem;
+    margin-right: 0;
+    padding-right: 0;
+    display: table;
+    overflow-x: visible;
+    table-layout: auto;
     width: 100%;
-    table-layout: fixed;
+    max-width: 100%;
+    min-width: 100%;
+    border-right: none;
+  }
+`;
+
+export const ComparisonTable = styled(Table)`
+  width: 100%;
+  
+  @media (max-width: 768px) {
+    display: table;
+    overflow-x: visible;
+    margin-bottom: 1.5rem;
+    width: 100%;
+    max-width: 100%;
+    margin-right: 0;
+    padding-right: 0;
+    border-right: none;
+  }
+  
+  td, th {
+    &:last-child {
+      text-align: right;
+    }
   }
 `;
 
 export const TableHead = styled.thead`
-  border-bottom: 1px solid ${({ theme }) => theme.colors.colorNeutral2 || 'rgba(50, 53, 70, 0.5)'};
-  
   th {
     text-align: left;
     padding: 1rem;
@@ -95,7 +214,6 @@ export const TableHead = styled.thead`
     font-size: 0.9rem;
     color: ${({ theme }) => theme.colors.textColorSub || 'rgba(255, 255, 255, 0.6)'};
     white-space: nowrap;
-    border-bottom: 1px solid ${({ theme }) => theme.colors.colorNeutral2 || 'rgba(50, 53, 70, 0.5)'};
     
     &:nth-child(2) {
       text-align: right;
@@ -103,7 +221,34 @@ export const TableHead = styled.thead`
     
     @media (max-width: 768px) {
       font-size: 0.8rem;
-      padding: 0.75rem;
+      padding: 0.75rem 0.5rem;
+      min-width: 90px; /* Prevent headers from becoming too narrow */
+    }
+    
+    @media (max-width: 480px) {
+      font-size: 0.75rem;
+      padding: 0.5rem 0.35rem;
+    }
+  }
+`;
+
+export const ComparisonTableHead = styled(TableHead)`
+  th {
+    text-align: left;
+    
+    &:nth-child(2), &:nth-child(3), &:nth-child(4) {
+      text-align: right;
+    }
+    
+    @media (max-width: 768px) {
+      padding: 0.75rem 0.5rem;
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+    
+    @media (max-width: 480px) {
+      padding: 0.5rem 0.35rem;
+      font-size: 0.7rem;
     }
   }
 `;
@@ -111,10 +256,6 @@ export const TableHead = styled.thead`
 export const TableBody = styled.tbody`
   tr {
     border-bottom: 1px solid ${({ theme }) => theme.colors.colorNeutral2 || 'rgba(50, 53, 70, 0.5)'};
-    
-    &:hover {
-      background-color: ${({ theme }) => theme.colors.colorNeutral1 || 'rgba(40, 43, 62, 0.5)'};
-    }
     
     &:last-child {
       border-bottom: none;
@@ -133,9 +274,13 @@ export const TableBody = styled.tbody`
     
     @media (max-width: 768px) {
       font-size: 0.85rem;
-      padding: 0.75rem;
-      white-space: normal;
-      word-break: break-word;
+      padding: 0.75rem 0.5rem;
+      min-width: 90px; /* Ensure cells have enough width */
+    }
+    
+    @media (max-width: 480px) {
+      font-size: 0.8rem;
+      padding: 0.5rem 0.35rem;
     }
   }
   
@@ -144,10 +289,33 @@ export const TableBody = styled.tbody`
   }
 `;
 
+export const ComparisonTableBody = styled(TableBody)`
+  td {
+    &:nth-child(2), &:nth-child(3), &:nth-child(4) {
+      text-align: right;
+    }
+    
+    @media (max-width: 768px) {
+      padding: 0.75rem 0.5rem;
+      font-size: 0.8rem;
+      white-space: nowrap;
+    }
+    
+    @media (max-width: 480px) {
+      padding: 0.5rem 0.35rem;
+      font-size: 0.75rem;
+    }
+  }
+`;
+
 export const PerformanceTable = styled(Table)`
   max-width: 100%;
-  overflow-x: auto;
-  display: block;
+  
+  @media (max-width: 768px) {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
   
   th, td {
     padding: 0.75rem 1rem;
@@ -162,6 +330,14 @@ export const PerformanceTable = styled(Table)`
     th, td {
       padding: 0.5rem;
       font-size: 0.8rem;
+      white-space: nowrap;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    th, td {
+      padding: 0.5rem 0.35rem;
+      font-size: 0.75rem;
     }
   }
 `;
@@ -179,27 +355,32 @@ export const ConversionTables = styled.div`
 
 export const TableContainer = styled.div`
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border-radius: 12px;
   border: 1px solid ${({ theme }) => theme.colors.colorNeutral2 || 'rgba(50, 53, 70, 0.5)'};
   margin-bottom: 2rem;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    max-width: 100%;
+  }
 `;
 
 export const TableTitle = styled.div`
   font-weight: 600;
   padding: 1rem;
   border-bottom: 1px solid ${({ theme }) => theme.colors.colorNeutral2 || 'rgba(50, 53, 70, 0.5)'};
-  background-color: ${({ theme }) => theme.colors.colorNeutral1 || 'rgba(40, 43, 62, 0.5)'};
   color: ${({ theme }) => theme.colors.textColor};
 `;
 
 export const PositiveChange = styled.span`
   color: #4ca777;
-  font-weight: 500;
+  font-weight: 600;
 `;
 
 export const NegativeChange = styled.span`
   color: #e15241;
-  font-weight: 500;
+  font-weight: 600;
 `;
 
 export const CurrentTime = styled.div`
@@ -210,5 +391,6 @@ export const CurrentTime = styled.div`
   
   @media (max-width: 480px) {
     font-size: 0.8rem;
+    margin-bottom: 0.25rem;
   }
 `; 
