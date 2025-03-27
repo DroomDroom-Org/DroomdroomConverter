@@ -10,7 +10,7 @@ import About from 'src/components/About';
 import FAQ from 'src/components/FAQ';
 import Related from 'src/components/Related';
 import ConversionTables from 'src/components/ConversionTables';
-
+import SimilarCrypto from 'src/components/SimilarCrypto/SimilarCrypto';
 
 interface TokenData {
   id: string;
@@ -519,6 +519,8 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
       <Related fromToken={fromToken} toToken={toToken} />
 
       <ConversionTables fromToken={fromToken} toToken={toToken} />
+
+      <SimilarCrypto coin={fromToken}/>
 
     </ConverterContainer>
   );

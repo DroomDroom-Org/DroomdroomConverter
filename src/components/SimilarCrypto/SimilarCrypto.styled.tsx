@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import React from 'react';
 
 export const Container = styled.div`
@@ -100,60 +100,32 @@ export const GridContainer = styled.div`
   @media (min-width: 1200px) {
     grid-template-columns: repeat(3, 1fr);
   }
+  
+  &.simplified-grid {
+    @media (min-width: 640px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    @media (min-width: 1200px) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
 `;
 
 export const CoinCard = styled.div<{ children?: React.ReactNode; className?: string; key?: string }>`
-  /* Base card styles */
   border-radius: 12px;
-  padding: 16px;
-  transition: all 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  position: relative;
-  
-  /* Universal glass effect base */
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  
-  /* Dark theme glass effect - using theme colors */
+  padding: 1rem;
   background: ${({ theme }) => theme.name === 'dark' 
     ? 'rgba(34, 37, 49, 0.7)' 
     : 'rgba(255, 255, 255, 0.7)'};
   border: 1px solid ${({ theme }) => theme.name === 'dark'
     ? 'rgba(50, 53, 70, 0.5)'
     : 'rgba(207, 214, 228, 0.8)'};
-  box-shadow: 0 4px 15px ${({ theme }) => theme.name === 'dark'
-    ? 'rgba(0, 0, 0, 0.2)'
-    : 'rgba(0, 0, 0, 0.05)'};
-  color: ${({ theme }) => theme.colors.textColor};
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   
-  /* Hover effect */
   &:hover {
-    transform: translateY(-4px);
-    
-    background: ${({ theme }) => theme.name === 'dark'
-      ? 'rgba(34, 37, 49, 0.85)'
-      : 'rgba(248, 250, 253, 0.85)'};
-    border: 1px solid ${({ theme }) => theme.name === 'dark'
-      ? 'rgba(50, 53, 70, 0.7)'
-      : 'rgba(207, 214, 228, 1)'};
-    box-shadow: 0 8px 20px ${({ theme }) => theme.name === 'dark'
-      ? 'rgba(0, 0, 0, 0.25)'
-      : 'rgba(0, 0, 0, 0.07)'};
-  }
-  
-  /* Responsive design */
-  @media (max-width: 1200px) {
-    padding: 14px;
-  }
-  
-  @media (max-width: 768px) {
-    padding: 12px;
-  }
-  
-  @media (max-width: 480px) {
-    padding: 10px;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px ${({ theme }) => theme.name === 'dark' ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.08)'};
   }
 `;
 
@@ -221,16 +193,14 @@ export const ChartContainer = styled.div<{ children?: React.ReactNode; className
 
 export const CoinInfo = styled.div`
   display: flex;
-  flex-direction: column;
-  gap: 5px;
-  margin-top: 10px;
+  align-items: center;
+  width: 100%;
 `;
 
 export const CoinName = styled.div`
-  display: flex;
-  align-items: center;
-  font-weight: 500;
+  font-weight: 600;
   color: ${({ theme }) => theme.colors.textColor};
+  margin-left: 8px;
 `;
 
 export const CoinLogo = styled.div`
@@ -258,7 +228,8 @@ export const PriceContainer = styled.div`
 
 export const Price = styled.span`
   font-weight: 600;
-  color: ${({ theme }) => theme.colors.textColor};
+  color: ${({ theme }) => theme.colors.textColorSub};
+  margin-left: auto;
 `;
 
 export const PriceChange = styled.div<{ isPositive: boolean; children?: React.ReactNode }>`
@@ -277,4 +248,93 @@ export const MetaInfo = styled.div<{ isGreen?: boolean }>`
   svg {
     margin-right: 5px;
   }
+`;
+
+export const SubHeading = styled.h3`
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: ${({ theme }) => theme.colors.textColor};
+  
+  @media (max-width: 480px) {
+    font-size: 1.3rem;
+  }
+`;
+
+export const SectionDescription = styled.p`
+  font-size: 1rem;
+  color: ${({ theme }) => theme.colors.textColorSub};
+  margin-bottom: 2rem;
+  max-width: 800px;
+  line-height: 1.5;
+`;
+
+// Shimmer animation keyframes
+const shimmer = keyframes`
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: 200px 0;
+  }
+`;
+
+// Shimmer card component
+export const ShimmerCard = styled.div`
+  display: flex;
+  flex-direction: column;
+  background: ${({ theme }) => theme.name === 'dark' ? 'rgba(30, 33, 45, 0.5)' : 'rgba(255, 255, 255, 0.6)'};
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  backdrop-filter: blur(10px);
+  border: 1px solid ${({ theme }) => theme.name === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
+  padding: 12px;
+  min-height: 75px;
+
+  &.shimmer-effect {
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        to right,
+        ${({ theme }) => theme.name === 'dark' ? 'rgba(50, 53, 70, 0)' : 'rgba(239, 242, 245, 0)'} 0%,
+        ${({ theme }) => theme.name === 'dark' ? 'rgba(50, 53, 70, 0.5)' : 'rgba(239, 242, 245, 0.5)'} 50%,
+        ${({ theme }) => theme.name === 'dark' ? 'rgba(50, 53, 70, 0)' : 'rgba(239, 242, 245, 0)'} 100%
+      );
+      background-size: 200px 100%;
+      animation: ${shimmer} 1.5s infinite;
+      z-index: 1;
+    }
+  }
+`;
+
+export const ShimmerImage = styled.div`
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: ${({ theme }) => theme.name === 'dark' ? 'rgba(60, 63, 80, 0.8)' : 'rgba(220, 225, 230, 0.8)'};
+  margin-right: 12px;
+`;
+
+export const ShimmerText = styled.div<{ width?: string }>`
+  height: 14px;
+  width: ${props => props.width || '100%'};
+  background: ${({ theme }) => theme.name === 'dark' ? 'rgba(60, 63, 80, 0.8)' : 'rgba(220, 225, 230, 0.8)'};
+  border-radius: 4px;
+  margin-bottom: 8px;
+`;
+
+export const ShimmerPrice = styled.div`
+  height: 16px;
+  width: 60px;
+  background: ${({ theme }) => theme.name === 'dark' ? 'rgba(60, 63, 80, 0.8)' : 'rgba(220, 225, 230, 0.8)'};
+  border-radius: 4px;
+  margin-left: auto;
 `;
