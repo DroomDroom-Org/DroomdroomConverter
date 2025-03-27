@@ -1,61 +1,67 @@
 import styled from 'styled-components';
 
-export const FAQWrapper = styled.div`
-  background: ${({ theme }) => theme.colors.cardBackground};
-  padding: 0px 16px;
-  margin: 24px 0;
-
-  @media (max-width: 768px) {
-    margin: 12px 16px;
-  }
-`;
-
-export const FAQTitle = styled.h2`
-  font-size: 24px;
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.textColor};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.borderColor};
-
-  @media (max-width: 768px) {
-    font-size: 20px;
-  }
-`;
-
-export const FAQList = styled.div`
+export const FAQContainer = styled.div`
+  max-width: 1400px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  padding: 20px 0px;
+  margin: 0 auto;
+  color: ${({ theme }) => theme.colors.textColor};
+  
+  @media (max-width: 768px) {
+    padding: 1.5rem 1rem;
+  }
+`;
+
+export const FAQHeading = styled.h2`
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: ${({ theme }) => theme.colors.textColor};
+  
+  @media (max-width: 480px) {
+    font-size: 1.8rem;
+  }
+`;
+
+export const FAQGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 export const FAQItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  margin-bottom: 2rem;
 `;
 
-export const Question = styled.h3`
-  font-size: 16px;
+export const FAQQuestion = styled.h3`
+  font-size: 1.25rem;
   font-weight: 600;
+  margin-bottom: 0.75rem;
   color: ${({ theme }) => theme.colors.textColor};
-  margin: 0;
-
-  @media (max-width: 768px) {
-    font-size: 15px;
+  
+  @media (max-width: 480px) {
+    font-size: 1.1rem;
   }
 `;
 
-export const Answer = styled.p`
-  font-size: 14px;
+export const FAQAnswer = styled.p`
+  font-size: 1rem;
   line-height: 1.6;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin: 0;
+  color: ${({ theme }) => theme.colors.textColorSub};
+  margin-bottom: 0.5rem;
+`;
 
-  .highlight {
-    color: #16c784;
-    font-weight: 600;
+export const FAQLink = styled.a`
+  color: ${({ theme }) => theme.colors.themeColor};
+  text-decoration: none;
+  font-weight: 500;
+  
+  &:hover {
+    text-decoration: underline;
   }
-
-  @media (max-width: 768px) {
-    font-size: 13px;
-  }
-`; 
+`;
