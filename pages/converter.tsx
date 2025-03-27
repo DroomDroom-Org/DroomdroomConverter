@@ -4,9 +4,9 @@ import axios from 'axios';
 import { GetServerSideProps } from 'next';
 import { getApiUrl } from 'utils/config';
 import SEO from 'components/SEO/SEO';
+import Navbar from 'components/Navbar/Navbar';
 
 
-// Types
 interface TokenData {
   id: string;
   ticker: string;
@@ -20,7 +20,6 @@ interface ConverterProps {
   tokens: TokenData[];
 }
 
-// Styled Components
 const ConverterContainer = styled.div`
   max-width: 1200px;
   margin: 0 auto;
@@ -250,6 +249,39 @@ const TokenName = styled.span<{ ticker?: string }>`
   font-weight: 600;
 `;
 
+export const getServerSideProps: GetServerSideProps = async () => {
+  try {
+    const response = await axios.get(getApiUrl(`/coins`), {
+      params: {
+        page: 1,
+        pageSize: 50,
+      },
+    });
+    
+    const tokens = response.data.tokens.map((token: any) => ({
+      id: token.id,
+      ticker: token.ticker,
+      name: token.name,
+      price: token.price,
+      iconUrl: `https://s2.coinmarketcap.com/static/img/coins/64x64/${token.cmcId}.png`,
+      cmcId: token.cmcId
+    }));
+
+    return {
+      props: {
+        tokens,
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching tokens:', error);
+    return {
+      props: {
+        tokens: [],
+      },
+    };
+  }
+};
+
 const Converter: React.FC<ConverterProps> = ({ tokens }) => {
   const [fromToken, setFromToken] = useState<TokenData | null>(
     tokens.find(t => t.ticker === 'BTC') || tokens[0]
@@ -270,7 +302,6 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
     })
   );
 
-  // Effect to calculate conversion when values change
   useEffect(() => {
     if (fromToken && toToken && fromAmount) {
       const amount = parseFloat(fromAmount);
@@ -281,7 +312,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
     }
   }, [fromToken, toToken, fromAmount]);
 
-  // Function to swap tokens
+
   const handleSwapTokens = () => {
     const tempToken = fromToken;
     setFromToken(toToken);
@@ -293,19 +324,18 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
     }
   };
 
-  // Function to handle from token change
+
   const handleFromTokenChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedToken = tokens.find(t => t.ticker === e.target.value) || null;
     setFromToken(selectedToken);
   };
 
-  // Function to handle to token change
   const handleToTokenChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedToken = tokens.find(t => t.ticker === e.target.value) || null;
     setToToken(selectedToken);
   };
 
-  // Function to refresh rates
+
   const handleRefresh = () => {
     setLastUpdated(
       new Date().toLocaleString('en-US', {
@@ -403,41 +433,12 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
           </RefreshButton>
         </LastUpdated>
       </ConverterCard>
+
+      <Navbar />
     </ConverterContainer>
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async () => {
-  try {
-    const response = await axios.get(getApiUrl(`/coins`), {
-      params: {
-        page: 1,
-        pageSize: 50,
-      },
-    });
-    
-    const tokens = response.data.tokens.map((token: any) => ({
-      id: token.id,
-      ticker: token.ticker,
-      name: token.name,
-      price: token.price,
-      iconUrl: `https://s2.coinmarketcap.com/static/img/coins/64x64/${token.cmcId}.png`,
-      cmcId: token.cmcId
-    }));
 
-    return {
-      props: {
-        tokens,
-      },
-    };
-  } catch (error) {
-    console.error('Error fetching tokens:', error);
-    return {
-      props: {
-        tokens: [],
-      },
-    };
-  }
-};
 
 export default Converter;
