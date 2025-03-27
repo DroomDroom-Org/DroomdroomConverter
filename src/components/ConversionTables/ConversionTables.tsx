@@ -78,6 +78,18 @@ const comparisonData1m = [
   { amount: 1000, currentValue: "87,174,948.98", prevValue: "84,405,480.00", change: "+3.18%" }
 ];
 
+// Add 1 year comparison data from the screenshot
+const comparisonData1y = [
+  { amount: 0.5, currentValue: "43,587.47", prevValue: "35,400.13", change: "+18.78%" },
+  { amount: 1, currentValue: "87,174.95", prevValue: "70,800.26", change: "+18.78%" },
+  { amount: 5, currentValue: "435,874.74", prevValue: "354,001.28", change: "+18.78%" },
+  { amount: 10, currentValue: "871,749.49", prevValue: "708,002.56", change: "+18.78%" },
+  { amount: 50, currentValue: "4,358,747.45", prevValue: "3,540,012.80", change: "+18.78%" },
+  { amount: 100, currentValue: "8,717,494.90", prevValue: "7,080,025.60", change: "+18.78%" },
+  { amount: 500, currentValue: "43,587,474.49", prevValue: "35,400,128.00", change: "+18.78%" },
+  { amount: 1000, currentValue: "87,174,948.98", prevValue: "70,800,256.00", change: "+18.78%" }
+];
+
 // Define default price for Bitcoin
 const bitcoinPrice = 87270.05; // Updated price from screenshot
 
@@ -356,6 +368,36 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ fromToken, toToken 
           <ComparisonTableBody>
             {comparisonData1m.map((item) => (
               <tr key={`1m-${item.amount}`}>
+                <td>{item.amount} {displayFromToken.ticker}</td>
+                <td>{item.currentValue} {displayToToken.ticker}</td>
+                <td>{item.prevValue} {displayToToken.ticker}</td>
+                <td>
+                  {item.change.startsWith('+') ? (
+                    <PositiveChange>{item.change}</PositiveChange>
+                  ) : (
+                    <NegativeChange>{item.change}</NegativeChange>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </ComparisonTableBody>
+        </ComparisonTable>
+      </div>
+
+      <ComparisonHeading>Today vs. 1 year ago</ComparisonHeading>
+      <div role="region" aria-label="1 year comparison table" style={{ overflowX: 'auto', width: '100%', margin: 0, padding: 0 }}>
+        <ComparisonTable>
+          <ComparisonTableHead>
+            <tr>
+              <th>Amount</th>
+              <th>Today at {fixedTime}</th>
+              <th>1 year ago</th>
+              <th>1Y Change</th>
+            </tr>
+          </ComparisonTableHead>
+          <ComparisonTableBody>
+            {comparisonData1y.map((item) => (
+              <tr key={`1y-${item.amount}`}>
                 <td>{item.amount} {displayFromToken.ticker}</td>
                 <td>{item.currentValue} {displayToToken.ticker}</td>
                 <td>{item.prevValue} {displayToToken.ticker}</td>
