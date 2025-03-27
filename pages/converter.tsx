@@ -5,6 +5,7 @@ import { GetServerSideProps } from 'next';
 import { getApiUrl } from 'utils/config';
 import SEO from 'components/SEO/SEO';
 import Navbar from 'components/Navbar/Navbar';
+import Market from 'src/components/Market/Market';
 
 
 interface TokenData {
@@ -14,6 +15,16 @@ interface TokenData {
   price: number;
   iconUrl?: string;
   cmcId: number;
+  status: string;
+  rateChange: {
+    hourly: number;
+    daily: number;
+  };
+  marketCap: string;
+  volume: string;
+  supply: string;
+  supplyUnit: string;
+
 }
 
 interface ConverterProps {
@@ -257,14 +268,19 @@ export const getServerSideProps: GetServerSideProps = async () => {
         pageSize: 50,
       },
     });
-    
     const tokens = response.data.tokens.map((token: any) => ({
-      id: token.id,
-      ticker: token.ticker,
-      name: token.name,
-      price: token.price,
-      iconUrl: `https://s2.coinmarketcap.com/static/img/coins/64x64/${token.cmcId}.png`,
-      cmcId: token.cmcId
+      id: token.id || '',
+      ticker: token.ticker || '',
+      name: token.name || '',
+      price: token.price || 0,
+      iconUrl: token.cmcId ? `https://s2.coinmarketcap.com/static/img/coins/64x64/${token.cmcId}.png` : '',
+      cmcId: token.cmcId || 0,
+      status: token.status || 'stable',
+      rateChange: token.rateChange || { hourly: 0, daily: 0 },
+      marketCap: token.marketCap || '0',
+      volume: token.volume || '0',
+      supply: token.supply || '0',
+      supplyUnit: token.supplyUnit || '',
     }));
 
     return {
@@ -280,6 +296,19 @@ export const getServerSideProps: GetServerSideProps = async () => {
       },
     };
   }
+};
+
+const getSymbol = (coin: any): string => {
+  return typeof coin.ticker === 'string' ? coin.ticker : '';
+};
+
+const getToSymbol = (coin: any): string => {
+  if (!coin.toToken) return '';
+  return typeof coin.toToken === 'object' && coin.toToken.ticker 
+    ? coin.toToken.ticker 
+    : typeof coin.toToken === 'string' 
+      ? coin.toToken 
+      : '';
 };
 
 const Converter: React.FC<ConverterProps> = ({ tokens }) => {
@@ -348,6 +377,47 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
       })
     );
   };
+
+  const coins = [
+    {
+      id: 1,
+      name: fromToken?.name,
+      price: fromToken?.price,
+      symbol: fromToken?.ticker,
+      cmcId: fromToken?.cmcId,
+      status: 'climbing',
+      rateChange: {
+        hourly: 0.1,
+        daily: 0.5
+      },
+      marketCap: '1000000',
+      volume: '1000000',
+      supply: '1000000',
+      supplyUnit: 'BTC',
+      fromToken: fromToken,
+      toToken: toToken
+    },
+    {
+      id: 2,
+      name: toToken?.name,
+      price: toToken?.price,
+      symbol: toToken?.ticker,
+      cmcId: toToken?.cmcId,
+      status: 'falling',
+      rateChange: {
+        hourly: 0.1,
+        daily: 0.5
+      },
+      marketCap: '1000000',
+      volume: '1000000',
+      supply: '1000000',
+      supplyUnit: 'BTC',
+      fromToken: fromToken,
+      toToken: toToken
+    }
+  ] 
+   
+  console.log(fromToken, toToken);
 
   return (
     <ConverterContainer>
@@ -435,6 +505,10 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
       </ConverterCard>
 
       <Navbar />
+    
+      <Market fromToken={fromToken} toToken={toToken} />
+
+
     </ConverterContainer>
   );
 };
