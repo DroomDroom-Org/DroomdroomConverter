@@ -6,7 +6,7 @@ import { useRouter } from 'next/router';
 
 const Navbar = () => {
 
-    const [activeTab, setActiveTab] = useState('chart');
+    const [activeTab, setActiveTab] = useState('markets');
     const router = useRouter();
     const { slug } = router.query;
 
@@ -20,13 +20,6 @@ const Navbar = () => {
 
             <TabList>
                 <TabItem
-                    active={activeTab === 'chart'}
-                    onClick={() => handleTabChange('chart')}
-                >
-                    Chart
-                </TabItem>
-
-                <TabItem
                     active={activeTab === 'markets'}
                     onClick={() => handleTabChange('markets')}
                 >
@@ -34,17 +27,38 @@ const Navbar = () => {
                 </TabItem>
 
                 <TabItem
-                    active={activeTab === 'prediction'}
-                    onClick={() => handleTabChange('prediction')}
-                >
-                    Prediction
-                </TabItem>
-
-                <TabItem
                     active={activeTab === 'about'}
                     onClick={() => handleTabChange('about')}
                 >
                     About
+                </TabItem>
+
+                <TabItem
+                    active={activeTab === 'faq'}
+                    onClick={() => handleTabChange('faq')}
+                >
+                    FAQ
+                </TabItem>
+
+                <TabItem
+                    active={activeTab === 'related'}
+                    onClick={() => handleTabChange('related')}
+                >
+                    Related
+                </TabItem>
+
+                <TabItem
+                    active={activeTab === 'conversion-tables'}
+                    onClick={() => handleTabChange('conversion-tables')}
+                >
+                    Conversion Tables
+                </TabItem>
+
+                <TabItem
+                    active={activeTab === 'more'}
+                    onClick={() => handleTabChange('more')}
+                >
+                    More
                 </TabItem>
             </TabList>
 

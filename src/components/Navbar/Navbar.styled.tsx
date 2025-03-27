@@ -2,11 +2,8 @@ import styled from 'styled-components';
 import { Container } from 'styled/elements/Container';
 
 export const NavbarWrapper = styled.div`
-  flex: 1;
   background: ${props => props.theme.colors.background};
-  z-index: 1;
-  position: relative;
-  overflow: visible;
+  border-bottom: 1px solid ${props => props.theme.colors.colorLightNeutral3};
 `;
 
 export const TabList = styled.div`
@@ -15,7 +12,6 @@ export const TabList = styled.div`
   padding: 16px;
   height: 100%;
   background: ${props => props.theme.colors.background};
-
 
   @media (max-width: 768px) {
     gap: 16px;
@@ -28,10 +24,11 @@ export const TabItem = styled.button<{ active: boolean }>`
   border: none;
   color: ${props => props.active ? '#0052FF' : props.theme.colors.textColor};
   padding: 0px 0px 4px 0px;
-  font-size: 14px;
   position: relative;
   cursor: pointer;
   font-weight: ${props => props.active ? 600 : 400};
+  font-size: 16px;
+  color: ${({ theme }) => theme.colors.textColorSub};
   
   &:after {
     content: '';
