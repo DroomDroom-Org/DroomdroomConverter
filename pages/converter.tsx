@@ -9,6 +9,7 @@ import Market from 'src/components/Market/Market';
 import About from 'src/components/About';
 import FAQ from 'src/components/FAQ';
 import Related from 'src/components/Related';
+import ConversionTables from 'src/components/ConversionTables';
 
 
 interface TokenData {
@@ -516,6 +517,8 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
       <FAQ fromToken={fromToken} toToken={toToken} />
 
       <Related fromToken={fromToken} toToken={toToken} />
+
+      <ConversionTables fromToken={fromToken} toToken={toToken} />
 
     </ConverterContainer>
   );
