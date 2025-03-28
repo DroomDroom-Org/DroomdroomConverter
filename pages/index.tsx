@@ -165,7 +165,7 @@ const Home = ({ tokens, pagination, info }: HomeProps) => {
     if (!hasFetchedChartData) {
       fetchandSetActualChartData(tokens);
     }
-  }, [tokensWithChartData]);
+  }, [tokensWithChartData, hasFetchedChartData, tokens, fetchandSetActualChartData]);
 
   useEffect(() => {
     // Update trending tokens with top gainers when available

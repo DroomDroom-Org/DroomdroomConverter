@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import styled, { createGlobalStyle } from 'styled-components';
 import axios from 'axios';
 import { getApiUrl, getPageUrl } from 'utils/config';
+import Image from 'next/image';
 
 // Global styles to ensure the widget takes up the full space and has a transparent background
 const GlobalStyle = createGlobalStyle`
@@ -247,9 +248,11 @@ const CryptoWidget = () => {
             justifyContent: 'center',
             marginBottom: '40px' // Increased from 30px for better spacing with larger logo
           }}>
-            <img 
+            <Image 
               src={mode == "transparent" ? getPageUrl('/DroomDroom_White.svg') : mode === 'white' ? getPageUrl('/DroomDroom_Black.svg') : getPageUrl('/DroomDroom_White.svg')} 
               alt="DroomDroom Logo"
+              width={200}
+              height={100}
               style={{
                 // opacity: Number(logoOpacity) || 0.2, // Respect user's logoOpacity parameter
                 width: 'auto',
@@ -274,9 +277,16 @@ const CryptoWidget = () => {
             ) : coinData && coinInfo ? (
               <PriceContainer bgColor={mode === 'white' ? 'rgba(240, 240, 240, 0.8)' : 'rgba(0, 0, 0, 0.6)'}>
                 <CoinIcon size={iconSize as string}>
-                  <img 
+                  <Image 
                     src={coinInfo.image || `https://s2.coinmarketcap.com/static/img/coins/64x64/${id}.png`} 
-                    alt={coinInfo.name || 'Bitcoin'} 
+                    alt={coinInfo.name || 'Bitcoin'}
+                    width={parseInt(iconSize as string) || 32}
+                    height={parseInt(iconSize as string) || 32}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain'
+                    }}
                   />
                 </CoinIcon>
                 <PriceInfo>

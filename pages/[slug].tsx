@@ -499,7 +499,6 @@ const Coin = ({ coin: initialCoin, topTokens }: CoinProps) => {
   };
   // Update price data when currency changes
   useEffect(() => {
-
     // fetchPrice();
     while (!coin) {
 
@@ -508,7 +507,7 @@ const Coin = ({ coin: initialCoin, topTokens }: CoinProps) => {
 
     const intervalId = setInterval(fetchPrice, 5000);
     return () => clearInterval(intervalId);
-  }, []);
+  }, [coin, fetchPrice]);
 
   // Define all the sections for the page
   const sectionIds = {
@@ -562,7 +561,7 @@ const Coin = ({ coin: initialCoin, topTokens }: CoinProps) => {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [sectionIds.about, sectionIds.chart, sectionIds.converter, sectionIds.faq, sectionIds.fomo, sectionIds.markets, sectionIds.prediction, sectionIds.tokenomics]);
 
   useEffect(() => {
     const handleHashChange = () => {
