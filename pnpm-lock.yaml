@@ -59,6 +59,9 @@ importers:
       bcryptjs:
         specifier: ^3.0.0
         version: 3.0.0
+      caniuse-lite:
+        specifier: ^1.0.30001707
+        version: 1.0.30001707
       canvas:
         specifier: ^3.1.0
         version: 3.1.0
@@ -99,7 +102,7 @@ importers:
         specifier: ^0.2.0
         version: 0.2.0
       prisma:
-        specifier: ^4.5.0
+        specifier: ^4.16.2
         version: 4.16.2
       pure-react-carousel:
         specifier: ^1.29.0
@@ -1001,8 +1004,8 @@ packages:
   camelize@1.0.1:
     resolution: {integrity: sha512-dU+Tx2fsypxTgtLoE36npi3UqcjSSMNYfkqgmoEhtZrraP5VWq0K7FkWVTYa8eMPtnU/G2txVsfdCJTn9uzpuQ==}
 
-  caniuse-lite@1.0.30001690:
-    resolution: {integrity: sha512-5ExiE3qQN6oF8Clf8ifIDcMRCRE/dMGcETG/XGMD8/XiXm6HXQgQTh1yZYLXXpSOsEUlJm1Xr7kGULZTuGtP/w==}
+  caniuse-lite@1.0.30001707:
+    resolution: {integrity: sha512-3qtRjw/HQSMlDWf+X79N206fepf4SOOU6SQLMaq/0KkZLmSjPxAkBOQQ+FxbHKfHmYLZFfdWsO3KA90ceHPSnw==}
 
   canvas@3.1.0:
     resolution: {integrity: sha512-tTj3CqqukVJ9NgSahykNwtGda7V33VLObwrHfzT0vqJXu7J4d4C/7kQQW3fOEGDfZZoILPut5H00gOjyttPGyg==}
@@ -3519,7 +3522,7 @@ snapshots:
 
   browserslist@4.24.3:
     dependencies:
-      caniuse-lite: 1.0.30001690
+      caniuse-lite: 1.0.30001707
       electron-to-chromium: 1.5.78
       node-releases: 2.0.19
       update-browserslist-db: 1.1.1(browserslist@4.24.3)
@@ -3550,7 +3553,7 @@ snapshots:
 
   camelize@1.0.1: {}
 
-  caniuse-lite@1.0.30001690: {}
+  caniuse-lite@1.0.30001707: {}
 
   canvas@3.1.0:
     dependencies:
@@ -3938,7 +3941,7 @@ snapshots:
       eslint: 8.23.0
       eslint-import-resolver-node: 0.3.9
       eslint-import-resolver-typescript: 2.7.1(eslint-plugin-import@2.31.0(eslint@8.23.0))(eslint@8.23.0)
-      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@5.62.0(eslint@8.23.0)(typescript@4.8.2))(eslint-import-resolver-typescript@2.7.1)(eslint@8.23.0)
+      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@5.62.0(eslint@8.23.0)(typescript@4.8.2))(eslint-import-resolver-typescript@2.7.1(eslint-plugin-import@2.31.0(eslint@8.23.0))(eslint@8.23.0))(eslint@8.23.0)
       eslint-plugin-jsx-a11y: 6.10.2(eslint@8.23.0)
       eslint-plugin-react: 7.37.4(eslint@8.23.0)
       eslint-plugin-react-hooks: 4.6.2(eslint@8.23.0)
@@ -3960,7 +3963,7 @@ snapshots:
     dependencies:
       debug: 4.4.0(supports-color@5.5.0)
       eslint: 8.23.0
-      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@5.62.0(eslint@8.23.0)(typescript@4.8.2))(eslint-import-resolver-typescript@2.7.1)(eslint@8.23.0)
+      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@5.62.0(eslint@8.23.0)(typescript@4.8.2))(eslint-import-resolver-typescript@2.7.1(eslint-plugin-import@2.31.0(eslint@8.23.0))(eslint@8.23.0))(eslint@8.23.0)
       glob: 7.2.3
       is-glob: 4.0.3
       resolve: 1.22.10
@@ -3979,7 +3982,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-import@2.31.0(@typescript-eslint/parser@5.62.0(eslint@8.23.0)(typescript@4.8.2))(eslint-import-resolver-typescript@2.7.1)(eslint@8.23.0):
+  eslint-plugin-import@2.31.0(@typescript-eslint/parser@5.62.0(eslint@8.23.0)(typescript@4.8.2))(eslint-import-resolver-typescript@2.7.1(eslint-plugin-import@2.31.0(eslint@8.23.0))(eslint@8.23.0))(eslint@8.23.0):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.8
@@ -4677,7 +4680,7 @@ snapshots:
     dependencies:
       '@next/env': 12.2.5
       '@swc/helpers': 0.4.3
-      caniuse-lite: 1.0.30001690
+      caniuse-lite: 1.0.30001707
       postcss: 8.4.14
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
