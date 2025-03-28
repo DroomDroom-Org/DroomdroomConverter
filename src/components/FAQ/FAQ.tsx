@@ -48,7 +48,7 @@ const FAQ: React.FC<FAQProps> = ({ fromToken, toToken }) => {
           <S.FAQQuestion>How do I calculate or convert {fromTicker} to {toTicker}?</S.FAQQuestion>
           <S.FAQAnswer>
             You can use our {fromTicker} to {toTicker} calculator at the top of this page to convert
-            any amount of {fromTicker} to {toTicker}. We've also created a couple of quick reference
+            any amount of {fromTicker} to {toTicker}. We&apos;ve also created a couple of quick reference
             tables for the most popular conversions. For example, 5 {toTicker} is equivalent
             to {(5 * Number(toFromRate)).toFixed(8)} {fromTicker}. Inversely, 5 {fromTicker} will cost about {(5 * fromToRate).toLocaleString()} {toTicker}.
           </S.FAQAnswer>
@@ -57,7 +57,7 @@ const FAQ: React.FC<FAQProps> = ({ fromToken, toToken }) => {
         <S.FAQItem>
           <S.FAQQuestion>How can I buy 1 {fromName} on Coinbase?</S.FAQQuestion>
           <S.FAQAnswer>
-            {fromName} is currently available to buy on Coinbase's centralized exchange.
+            {fromName} is currently available to buy on Coinbase&apos;s centralized exchange.
             Check out our guide to get more detailed instructions on <S.FAQLink href="#" target="_blank">how to buy {fromName}</S.FAQLink>.
           </S.FAQAnswer>
         </S.FAQItem>
