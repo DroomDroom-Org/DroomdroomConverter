@@ -1,23 +1,22 @@
-import type  AppProps  from 'next/app';
-import Layout from 'components/layout/Layout/Layout';
-import Header from 'components/Header/Header';
+import type { AppProps } from 'next/app';
+import Layout from '../src/components/layout/Layout/Layout';
 // STYLES
-import GlobalStyles from 'styled/GlobalStyles';
-import 'styled/styles.css';
-import 'styled/nprogress.css'; // Custom NProgress styles
-import 'styled/numberFonts.css'; // Custom number font styles
+import GlobalStyles from '../src/styled/GlobalStyles';
+import '../src/styled/styles.css';
+import '../src/styled/nprogress.css'; // Custom NProgress styles
+import '../src/styled/numberFonts.css'; // Custom number font styles
 // FONTAWESOME
 import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 config.autoAddCss = false;
 // REDUX
 import { Provider } from 'react-redux';
-import store from 'app/store';
+import store from '../src/app/store';
 import { SessionProvider } from 'next-auth/react'
-import { authConfig } from 'src/utils/authConfig';
+import { authConfig } from '../src/utils/authConfig';
 import { ComponentType, ReactElement, useEffect } from 'react';
 import { NextPage } from 'next/types';
-import ThemeProvider from 'src/theme/ThemeProvider';
+import ThemeProvider from '../src/theme/ThemeProvider';
 import { CurrencyProvider } from '../src/context/CurrencyContext';
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 import Router from 'next/router';
