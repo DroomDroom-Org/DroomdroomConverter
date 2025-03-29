@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import * as S from './Related.styled';
+import { useCurrency, CURRENCIES } from 'src/context/CurrencyContext';
+import { useRouter } from 'next/router';
 
 interface TokenData {
   id: string;
@@ -23,38 +25,13 @@ interface TokenData {
 }
 
 interface RelatedProps {
+  tokens: TokenData[];
   fromToken: TokenData;
   toToken: TokenData;
   id?: string;
 }
 
-// Mock data for popular fiat conversions
-const popularFiatConversions = [
-  { currency: 'United States Dollar', symbol: 'USD', value: 86987.81 },
-  { currency: 'Canadian Dollar', symbol: 'CA$', value: 124712.90 },
-  { currency: 'British Pound', symbol: '£', value: 67142.13 },
-  { currency: 'Japanese Yen', symbol: '¥', value: 13022000.00 },
-  { currency: 'Indian Rupee', symbol: '₹', value: 7451564.71 },
-  { currency: 'Real', symbol: 'R$', value: 500019.01 },
-  { currency: 'Euro', symbol: '€', value: 80577.96 },
-  { currency: 'Nigerian Naira', symbol: 'NGN', value: 133810100 }
-];
-
-// Mock data for crypto conversions to USDT
-const cryptoConversions = [
-  { name: 'Ethereum', ticker: 'ETH', value: 2000.67, symbol: 'ETH' },
-  { name: 'Tether', ticker: 'USDT', value: 1.00, symbol: 'USDT' },
-  { name: 'Cronos', ticker: 'CRO', value: 0.0984, symbol: 'CRO' },
-  { name: 'SHIBA INU', ticker: 'SHIB', value: 0.000014, symbol: 'SHIB' },
-  { name: 'Dogecoin', ticker: 'DOGE', value: 0.19, symbol: 'DOGE' },
-  { name: 'Bitcoin Cash', ticker: 'BCH', value: 322.01, symbol: 'BCH' },
-  { name: 'iExec RLC', ticker: 'RLC', value: 1.38, symbol: 'RLC' },
-  { name: 'Cardano', ticker: 'ADA', value: 0.73, symbol: 'ADA' }
-];
-
-// Crypto icons mapping
 const getCryptoIcon = (ticker: string) => {
-  // This would ideally be replaced with actual SVG icons or images
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
       <circle cx="12" cy="12" r="10" fill="currentColor" />
@@ -62,9 +39,34 @@ const getCryptoIcon = (ticker: string) => {
   );
 };
 
-const Related: React.FC<RelatedProps> = ({ fromToken, toToken, id }) => {
+const Related: React.FC<RelatedProps> = ({ fromToken, toToken, id , tokens   }) => {
+  const { rates } = useCurrency();
   const cryptoName = fromToken?.name || 'Bitcoin';
   const cryptoTicker = fromToken?.ticker || 'BTC';
+  const cryptoPrice = fromToken?.price || 0;
+
+  const popularFiatConversions = Object.entries(CURRENCIES).slice(0, 8).map(([code, currency]) => {
+    return {
+      currency: currency.name,
+      symbol: currency.symbol,
+      value: cryptoPrice * (rates[code as keyof typeof CURRENCIES] || 1)
+    };
+  });
+
+
+  const router = useRouter();
+  const [allTokens, setAllTokens] = useState<TokenData[]>(tokens ?? []);
+  
+
+
+  const cryptoConversions = allTokens
+    .filter(token => token.ticker !== cryptoTicker)
+    .map(token => ({
+      name: token.name,
+      ticker: token.ticker,
+      value: token.price,
+      symbol: token.ticker
+    }));
 
   return (
     <S.RelatedContainer id={id}>
