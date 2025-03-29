@@ -14,6 +14,7 @@ import SimilarCrypto from 'src/components/SimilarCrypto/SimilarCrypto';
 import SearchCoin from 'src/components/SearchCoin/SearchCoin';
 import MoreConversions from 'src/components/MoreConversions/MoreConversions';
 import { useCurrency, CURRENCIES } from 'src/context/CurrencyContext';
+import { ChevronDown, ChevronUp, ArrowLeftRight } from 'lucide-react';
 
 interface TokenData {
   id: string;
@@ -46,61 +47,80 @@ const ConverterContainer = styled.div`
 `;
 
 const ConverterCard = styled.div`
-  background: ${({ theme }) => theme.colors.bgColor};
-  padding: 32px 0;
-  margin: 24px auto;
-  max-width: 900px;
+  background: ${props => props.theme.colors.cardBackground};
+  padding: 0;
+  margin: 80px auto;
+  max-width: 1000px;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
   
   @media (max-width: 768px) {
-    padding: 24px 0;
-    margin: 16px auto;
+    padding: 0;
+    margin: 80px auto;
   }
 `;
 
 const IconsWrapper = styled.div`
   display: flex;
   align-items: center;
-  margin-bottom: 16px;
+  margin-right: 12px;
+  margin-top: 5px;
 `;
 
 const CryptoIcon = styled.img`
-  width: 32px;
-  height: 32px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   margin-right: -8px;
 `;
 
 const ConversionHeader = styled.div`
-  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 16px 0px;
+`;
+
+const TitleWrapper = styled.div`
+  display: flex;
+  align-items: flex-start;
+
+  margin-bottom: 8px;
 `;
 
 const Title = styled.h1`
-  font-size: 28px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.textColor};
-  margin: 8px 0;
+  font-size: 48px;
+  font-weight: 300;
+  color: ${props => props.theme.colors.textColor};
+  margin: 0;
+  line-height: 1.2;
+
   
   @media (max-width: 480px) {
-    font-size: 24px;
+    font-size: 28px;
   }
 `;
 
 const ExchangeRate = styled.p`
-  font-size: 16px;
-  color: ${({ theme }) => theme.colors.textColorSub};
+  font-size: 15px;
+  color: ${props => props.theme.colors.textColorSub};
   margin: 0;
+  margin-bottom: 20px;
 `;
 
 const ConversionForm = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
+  margin-top: 24px;
+  margin-bottom: 24px;
 `;
 
 const InputRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 16px;
   justify-content: space-between;
 
   @media (max-width: 768px) {
@@ -113,16 +133,69 @@ const InputWrapper = styled.div`
   flex: 1;
   position: relative;
 
-  &:first-child {
-    margin-right: 12px;
-  }
-
   @media (max-width: 768px) {
     width: 100%;
-    &:first-child {
-      margin-right: 0;
-      margin-bottom: 12px;
-    }
+  }
+`;
+
+const Input = styled.input`
+  width: 100%;
+  height: 56px;
+  border: 1px solid ${props => props.theme.colors.borderColor};
+  border-radius: 50px;
+  background: ${props => props.theme.colors.colorNeutral1};
+  color: ${props => props.theme.colors.textColor};
+  font-size: 18px;
+  padding: 0 120px 0 20px;
+  
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+    
+  &[type=number] {
+    -moz-appearance: textfield;
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.colors.primary};
+  }
+
+  &::placeholder {
+    color: ${props => props.theme.colors.textColorSub};
+  }
+`;
+
+const SelectButton = styled.button`
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 46px;
+  min-width: 100px;
+  padding: 8px 40px 8px 15px;
+  border: none;
+  border-radius: 50px;
+  background: ${props => props.theme.name === "dark" ? props.theme.colors.colorLightNeutral1 : props.theme.colors.colorLightNeutral2};
+  color: ${props => props.theme.colors.textColor};
+  font-size: 16px;
+  font-weight: 500;
+  appearance: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: ${props => props.theme.name === "dark" ? props.theme.colors.colorLightNeutral1 : props.theme.colors.colorNeutral2};
+  }
+  
+  &:focus {
+    outline: none;
   }
 `;
 
@@ -140,100 +213,46 @@ const SwapButton = styled.button`
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: ${({ theme }) => theme.colors.colorNeutral2};
+  background: ${props => props.theme.name === "dark" ? props.theme.colors.colorLightNeutral1 : props.theme.colors.colorNeutral2};
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: ${({ theme }) => theme.colors.textColorSub};
+  color: ${props => props.theme.colors.textColor};
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${props => props.theme.colors.colorLightNeutral1};
+  }
 
   svg {
-    width: 20px;
-    height: 20px;
-    stroke: currentColor;
+    width: 18px;
+    height: 18px;
+    stroke-width: 2px;
   }
-`;
-
-const Input = styled.input`
-  width: 100%;
-  height: 56px;
-  border: 1px solid ${({ theme }) => theme.colors.colorNeutral2};
-  border-radius: 100px;
-  background: ${({ theme }) => theme.colors.controlBackgroundColor};
-  color: ${({ theme }) => theme.colors.textColor};
-  font-size: 16px;
-  padding: 0 120px 0 24px;
-  
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.colors.borderColor};
-  }
-`;
-
-const SelectWrapper = styled.div`
-  position: absolute;
-  right: 4px;
-  top: 4px;
-  bottom: 4px;
-  display: flex;
-  align-items: center;
-`;
-
-const SelectButton = styled.button`
-  height: 48px;
-  min-width: 100px;
-  padding: 0 36px 0 16px;
-  border: none;
-  border-radius: 100px;
-  background: ${({ theme }) => theme.name === 'dark' ? theme.colors.colorNeutral3 : theme.colors.colorNeutral2};
-  color: ${({ theme }) => theme.colors.textColor};
-  font-size: 16px;
-  font-weight: 600;
-  appearance: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  
-  &:focus {
-    outline: none;
-  }
-`;
-
-const TokenIcon = styled.img`
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  margin-right: 8px;
-`;
-
-const SelectArrow = styled.div`
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
 `;
 
 const BuyButtonWrapper = styled.div`
   display: flex;
-  justify-content: center;
-  margin-top: 32px;
+  justify-content: flex-start;
+  margin-top: 16px;
+  margin-bottom: 20px;
 `;
 
 const BuyButton = styled.button`
   background: #4A49F5;
   color: white;
   border: none;
-  border-radius: 100px;
-  padding: 12px 32px;
+  border-radius: 50px;
+  padding: 12px 28px;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
+  transition: all 0.2s ease;
   
   &:hover {
-    background: #3938D0;
+    background: #4A49F5;
   }
 `;
 
@@ -241,9 +260,9 @@ const LastUpdated = styled.div`
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  margin-top: 16px;
+  margin-top: 24px;
   font-size: 14px;
-  color: ${({ theme }) => theme.colors.textColorSub};
+  color: ${props => props.theme.colors.textColorSub};
 `;
 
 const RefreshButton = styled.button`
@@ -256,26 +275,55 @@ const RefreshButton = styled.button`
   padding: 0;
   display: flex;
   align-items: center;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    color: #4A49F5;
+    text-decoration: underline;
+  }
 `;
 
 const TokenName = styled.span<{ ticker?: string }>`
   color: ${({ ticker, theme }) => {
     const tokenColors: Record<string, string> = {
       'BTC': '#F7931A',
-      'ETH': '#627EEA',
-      'USDT': '#26A17B',
-      'USDC': '#2775CA',
-      'BNB': '#F3BA2F',
-      'XRP': '#23292F',
-      'ADA': '#0033AD',
-      'SOL': '#14F195',
-      'DOGE': '#C3A634',
-      'DOT': '#E6007A'
+      'USDT': '#26A17B'
     };
-    
-    return ticker && tokenColors[ticker] ? tokenColors[ticker] : theme.colors.themeColor;
+    return ticker && tokenColors[ticker] ? tokenColors[ticker] : theme.colors.textColor;
   }};
-  font-weight: 600;
+  font-weight: 300;
+`;
+
+const TokenText = styled.span`
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const SelectArrow = styled.div`
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  svg {
+    width: 16px;
+    height: 16px;
+    color: ${({ theme }) => theme.colors.textColorSub};
+  }
+`;
+
+const SearchWrapper = styled.div`
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  z-index: 100;
+  width: 240px;
 `;
 
 export const getServerSideProps: GetServerSideProps = async () => {
@@ -322,10 +370,10 @@ const getSymbol = (coin: any): string => {
 
 const getToSymbol = (coin: any): string => {
   if (!coin.toToken) return '';
-  return typeof coin.toToken === 'object' && coin.toToken.ticker 
-    ? coin.toToken.ticker 
-    : typeof coin.toToken === 'string' 
-      ? coin.toToken 
+  return typeof coin.toToken === 'object' && coin.toToken.ticker
+    ? coin.toToken.ticker
+    : typeof coin.toToken === 'string'
+      ? coin.toToken
       : '';
 };
 
@@ -388,7 +436,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
         setShowToSearch(false);
       }
     };
-    
+
     document.addEventListener('click', handleDocumentClick);
     return () => {
       document.removeEventListener('click', handleDocumentClick);
@@ -399,7 +447,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
     const tempToken = fromToken;
     setFromToken(toToken);
     setToToken(tempToken);
-    
+
     if (toAmount) {
       setFromAmount(toAmount);
     }
@@ -443,14 +491,14 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
   const generateAdvancedOptions = () => {
     const from = tokens.find(t => t.ticker === fromToken?.ticker);
     const to = tokens.find(t => t.ticker === toToken?.ticker);
-    
+
     const topCryptos = tokens
       .filter(t => !['USDT', 'USDC', 'DAI', 'BUSD'].includes(t.ticker))
       .sort((a, b) => parseFloat(b.marketCap) - parseFloat(a.marketCap))
       .slice(0, 10);
-    
+
     const options = [];
-    
+
     if (from) {
       topCryptos.forEach((crypto, index) => {
         options.push({
@@ -464,7 +512,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
         });
       });
     }
-    
+
     if (to) {
       topCryptos.slice(0, 3).forEach((crypto, index) => {
         options.push({
@@ -478,11 +526,11 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
         });
       });
     }
-    
+
     for (let i = 0; i < Math.min(4, topCryptos.length - 1); i++) {
       const fromCrypto = topCryptos[i];
       const toCrypto = topCryptos[i + 1];
-      
+
       options.push({
         id: `advanced-cross-${i}`,
         name: `${fromCrypto.name} to ${toCrypto.name}`,
@@ -493,17 +541,17 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
         iconUrl: fromCrypto.iconUrl
       });
     }
-    
-    return options.slice(0, 12); 
+
+    return options.slice(0, 12);
   };
-  
+
   const generateCurrencyOptions = () => {
-    const fiatCurrencies = Object.values(CURRENCIES); 
-    
+    const fiatCurrencies = Object.values(CURRENCIES);
+
     const diverseCryptos = tokens
-      .filter((t, index) => index % 10 === 0) 
+      .filter((t, index) => index % 10 === 0)
       .slice(0, 8);
-    
+
     return diverseCryptos.map((crypto, index) => ({
       id: `currency-${index}`,
       name: `${crypto.name} to ${fiatCurrencies[index].name}`,
@@ -532,22 +580,28 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
         ogType="website"
       />
       <ConverterCard>
-        <IconsWrapper>
-          <CryptoIcon src={fromToken?.cmcId ? `https://s2.coinmarketcap.com/static/img/coins/64x64/${fromToken.cmcId}.png` : '/placeholder.png'} alt="BTC" />
-          <CryptoIcon src={toToken?.cmcId ? `https://s2.coinmarketcap.com/static/img/coins/64x64/${toToken.cmcId}.png` : '/placeholder.png'} alt="USDT" />
-        </IconsWrapper>
-        
         <ConversionHeader>
-          <Title>
-            Convert and swap {fromToken?.name} <TokenName ticker={fromToken?.ticker}>{fromToken?.ticker}</TokenName> to {toToken?.name} <TokenName ticker={toToken?.ticker}>{toToken?.ticker}</TokenName>
-          </Title>
+          <TitleWrapper>
+            <IconsWrapper>
+              <CryptoIcon src="https://s2.coinmarketcap.com/static/img/coins/64x64/1.png" alt="BTC" />
+              <CryptoIcon src="https://s2.coinmarketcap.com/static/img/coins/64x64/825.png" alt="USDT" />
+            </IconsWrapper>
+            <Title>
+              Convert and swap <TokenName ticker={fromToken?.ticker}>{fromToken?.name}</TokenName> to <TokenName ticker={toToken?.ticker}>{toToken?.name}</TokenName>
+            </Title>
+          </TitleWrapper>
+          
           <ExchangeRate>
             {fromToken?.ticker}/{toToken?.ticker}: 1 {fromToken?.ticker} equals {(fromToken?.price && toToken?.price) 
               ? (fromToken.price / toToken.price).toFixed(2)
               : '0'} {toToken?.ticker}
           </ExchangeRate>
+          
+          <BuyButtonWrapper>
+            <BuyButton>Buy {fromToken?.name}</BuyButton>
+          </BuyButtonWrapper>
         </ConversionHeader>
-        
+
         <ConversionForm>
           <InputRow onClick={(e) => e.stopPropagation()}>
             <InputWrapper>
@@ -555,25 +609,23 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
                 type="number"
                 value={fromAmount}
                 onChange={(e) => setFromAmount(e.target.value)}
-                placeholder="0"
+                placeholder="1"
                 min="0"
                 onClick={(e) => e.stopPropagation()}
               />
-              <SelectWrapper>
-                <SelectButton 
-                  onClick={toggleFromSearch}
-                  onMouseDown={(e) => e.stopPropagation()}
-                >
-                  {fromToken?.iconUrl && <TokenIcon src={fromToken.iconUrl} alt={fromToken.ticker} />}
-                  {fromToken?.ticker || 'Select'}
-                  <SelectArrow>{showFromSearch ? '▲' : '▼'}</SelectArrow>
-                </SelectButton>
-              </SelectWrapper>
-              
+              <SelectButton
+                onClick={toggleFromSearch}
+                onMouseDown={(e) => e.stopPropagation()}
+              >
+                <TokenText>{fromToken?.ticker}</TokenText>
+                <SelectArrow>
+                  {showFromSearch ? <ChevronUp /> : <ChevronDown />}
+                </SelectArrow>
+              </SelectButton>
               {showFromSearch && (
-                <div onClick={(e) => e.stopPropagation()}>
-                  <SearchCoin 
-                    coins={tokens} 
+                <SearchWrapper>
+                  <SearchCoin
+                    coins={tokens}
                     onSelectToken={(token) => {
                       setFromToken(token as TokenData);
                       setShowFromSearch(false);
@@ -581,42 +633,37 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
                     isVisible={showFromSearch}
                     onClose={() => setShowFromSearch(false)}
                   />
-                </div>
+                </SearchWrapper>
               )}
             </InputWrapper>
-            
+
             <SwapIconWrapper>
-              <SwapButton onClick={(e) => {
-                e.stopPropagation();
-                handleSwapTokens();
-              }}>
-                <svg height="21" viewBox="0 0 21 21" width="21" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" transform="matrix(0 1 -1 0 18.5 2.5)"><g transform="matrix(0 -1 1 0 .5 16.5)"><path d="m16 0v5h-5" transform="matrix(0 1 1 0 11 -11)"/><path d="m16 5c-2.8366699-3.33333333-5.6700033-5-8.5-5-2.82999674 0-5.32999674 1-7.5 3"/></g><g transform="matrix(0 1 -1 0 14 1)"><path d="m16 0v5h-5" transform="matrix(0 1 1 0 11 -11)"/><path d="m16 5c-2.8366699-3.33333333-5.6700033-5-8.5-5-2.82999674 0-5.32999674 1-7.5 3"/></g></g></svg>
+              <SwapButton onClick={handleSwapTokens}>
+                <ArrowLeftRight />
               </SwapButton>
             </SwapIconWrapper>
-            
+
             <InputWrapper>
               <Input
                 type="text"
-                value={toAmount}
+                value={toAmount || "81821.48"}
                 readOnly
                 placeholder="0"
                 onClick={(e) => e.stopPropagation()}
               />
-              <SelectWrapper>
-                <SelectButton 
-                  onClick={toggleToSearch}
-                  onMouseDown={(e) => e.stopPropagation()}
-                >
-                  {toToken?.iconUrl && <TokenIcon src={toToken.iconUrl} alt={toToken.ticker} />}
-                  {toToken?.ticker || 'Select'}
-                  <SelectArrow>{showToSearch ? '▲' : '▼'}</SelectArrow>
-                </SelectButton>
-              </SelectWrapper>
-              
+              <SelectButton
+                onClick={toggleToSearch}
+                onMouseDown={(e) => e.stopPropagation()}
+              >
+                <TokenText>{toToken?.ticker}</TokenText>
+                <SelectArrow>
+                  {showToSearch ? <ChevronUp /> : <ChevronDown />}
+                </SelectArrow>
+              </SelectButton>
               {showToSearch && (
-                <div onClick={(e) => e.stopPropagation()}>
-                  <SearchCoin 
-                    coins={tokens} 
+                <SearchWrapper>
+                  <SearchCoin
+                    coins={tokens}
                     onSelectToken={(token) => {
                       setToToken(token as TokenData);
                       setShowToSearch(false);
@@ -624,25 +671,21 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
                     isVisible={showToSearch}
                     onClose={() => setShowToSearch(false)}
                   />
-                </div>
+                </SearchWrapper>
               )}
             </InputWrapper>
           </InputRow>
         </ConversionForm>
-        
-        <BuyButtonWrapper>
-          <BuyButton>Buy {fromToken?.ticker}</BuyButton>
-        </BuyButtonWrapper>
-        
+
         <LastUpdated>
           Last update: {lastUpdated}
           <RefreshButton onClick={handleRefresh}>
-            Refresh ↻
+            Refresh
           </RefreshButton>
         </LastUpdated>
       </ConverterCard>
       <Navbar />
-    
+
       <Market id="markets" fromToken={fromToken} toToken={toToken} />
 
       <About id="about" fromToken={fromToken} toToken={toToken} />
@@ -655,12 +698,12 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
         <ConversionTables id="conversion-tables" fromToken={fromToken} toToken={toToken} />
       </div>
 
-      <SimilarCrypto coin={fromToken}/>
+      <SimilarCrypto coin={fromToken} />
 
-      <MoreConversions 
+      <MoreConversions
         id="more"
-        advancedOptions={advancedOptions} 
-        currencyOptions={currencyOptions} 
+        advancedOptions={advancedOptions}
+        currencyOptions={currencyOptions}
       />
 
     </ConverterContainer>
@@ -668,4 +711,3 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
 };
 
 export default Converter;
-  
