@@ -13,6 +13,7 @@ import ConversionTables from 'src/components/ConversionTables';
 import SimilarCrypto from 'src/components/SimilarCrypto/SimilarCrypto';
 import SearchCoin from 'src/components/SearchCoin/SearchCoin';
 import MoreConversions from 'src/components/MoreConversions/MoreConversions';
+import { useCurrency, CURRENCIES } from 'src/context/CurrencyContext';
 
 interface TokenData {
   id: string;
@@ -388,32 +389,83 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
     );
   };
 
-  // Sample data for MoreConversions component
-  const advancedOptions = [
-    { id: '1', name: 'Kusama to Tether', fromToken: 'Kusama', toToken: 'Tether', iconUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/5034.png' },
-    { id: '2', name: 'Horizen to Tether', fromToken: 'Horizen', toToken: 'Tether', iconUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1414.png' },
-    { id: '3', name: 'Bitcoin to Tether', fromToken: 'Bitcoin', toToken: 'Tether', iconUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1.png' },
-    { id: '4', name: 'Bitcoin to USDC', fromToken: 'Bitcoin', toToken: 'USDC', iconUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1.png' },
-    { id: '5', name: 'Solana to Ethereum', fromToken: 'Solana', toToken: 'Ethereum', iconUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/5426.png' },
-    { id: '6', name: 'Api3 to Tether', fromToken: 'Api3', toToken: 'Tether', iconUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/7737.png' },
-    { id: '7', name: 'Ethereum to Tether', fromToken: 'Ethereum', toToken: 'Tether', iconUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png' },
-    { id: '8', name: 'Chainlink to Tether', fromToken: 'Chainlink', toToken: 'Tether', iconUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1975.png' },
-    { id: '9', name: 'Quant to Tether', fromToken: 'Quant', toToken: 'Tether', iconUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/3155.png' },
-    { id: '10', name: 'Ethereum to USDC', fromToken: 'Ethereum', toToken: 'USDC', iconUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png' },
-    { id: '11', name: 'ApeCoin to Tether', fromToken: 'ApeCoin', toToken: 'Tether', iconUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/18876.png' },
-    { id: '12', name: 'Tether to USDC', fromToken: 'Tether', toToken: 'USDC', iconUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/825.png' },
-  ];
+  const generateAdvancedOptions = () => {
+    const from = tokens.find(t => t.ticker === fromToken?.ticker);
+    const to = tokens.find(t => t.ticker === toToken?.ticker);
+    
+    const topCryptos = tokens
+      .filter(t => !['USDT', 'USDC', 'DAI', 'BUSD'].includes(t.ticker))
+      .sort((a, b) => parseFloat(b.marketCap) - parseFloat(a.marketCap))
+      .slice(0, 10);
+    
+    const options = [];
+    
+    if (from) {
+      topCryptos.forEach((crypto, index) => {
+        options.push({
+          id: `advanced-${index}`,
+          name: `${crypto.name} to Tether`,
+          fromToken: crypto.name,
+          toToken: 'Tether',
+          fromTicker: crypto.ticker,
+          toTicker: 'USDT',
+          iconUrl: crypto.iconUrl
+        });
+      });
+    }
+    
+    if (to) {
+      topCryptos.slice(0, 3).forEach((crypto, index) => {
+        options.push({
+          id: `advanced-usdc-${index}`,
+          name: `${crypto.name} to USDC`,
+          fromToken: crypto.name,
+          toToken: 'USDC',
+          fromTicker: crypto.ticker,
+          toTicker: 'USDC',
+          iconUrl: crypto.iconUrl
+        });
+      });
+    }
+    
+    for (let i = 0; i < Math.min(4, topCryptos.length - 1); i++) {
+      const fromCrypto = topCryptos[i];
+      const toCrypto = topCryptos[i + 1];
+      
+      options.push({
+        id: `advanced-cross-${i}`,
+        name: `${fromCrypto.name} to ${toCrypto.name}`,
+        fromToken: fromCrypto.name,
+        toToken: toCrypto.name,
+        fromTicker: fromCrypto.ticker,
+        toTicker: toCrypto.ticker,
+        iconUrl: fromCrypto.iconUrl
+      });
+    }
+    
+    return options.slice(0, 12); 
+  };
   
-  const currencyOptions = [
-    { id: '1', name: 'VeChain to Uzbekistan Som', fromToken: 'VeChain', toToken: 'Uzbekistan Som', iconUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/3077.png' },
-    { id: '2', name: 'Ronin to Iraqi Dinar', fromToken: 'Ronin', toToken: 'Iraqi Dinar', iconUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/14800.png' },
-    { id: '3', name: 'Dogecoin to Vietnamese Dong', fromToken: 'Dogecoin', toToken: 'Vietnamese Dong', iconUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/74.png' },
-    { id: '4', name: 'Core to Thai Baht', fromToken: 'Core', toToken: 'Thai Baht', iconUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/22527.png' },
-    { id: '5', name: 'NEAR Protocol to Sudanese Pound', fromToken: 'NEAR Protocol', toToken: 'Sudanese Pound', iconUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/6535.png' },
-    { id: '6', name: 'Celestia to Lao Kip', fromToken: 'Celestia', toToken: 'Lao Kip', iconUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/28463.png' },
-    { id: '7', name: 'Flare to Tongan Pa\'anga', fromToken: 'Flare', toToken: 'Tongan Pa\'anga', iconUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/4172.png' },
-    { id: '8', name: 'Flow to Bolivian Boliviano', fromToken: 'Flow', toToken: 'Bolivian Boliviano', iconUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/4558.png' },
-  ];
+  const generateCurrencyOptions = () => {
+    const fiatCurrencies = Object.values(CURRENCIES); 
+    
+    const diverseCryptos = tokens
+      .filter((t, index) => index % 10 === 0) 
+      .slice(0, 8);
+    
+    return diverseCryptos.map((crypto, index) => ({
+      id: `currency-${index}`,
+      name: `${crypto.name} to ${fiatCurrencies[index].name}`,
+      fromToken: crypto.name,
+      toToken: fiatCurrencies[index].name,
+      fromTicker: crypto.ticker,
+      toTicker: fiatCurrencies[index].code,
+      iconUrl: crypto.iconUrl
+    }));
+  };
+
+  const advancedOptions = generateAdvancedOptions();
+  const currencyOptions = generateCurrencyOptions();
 
   return (
     <ConverterContainer>
