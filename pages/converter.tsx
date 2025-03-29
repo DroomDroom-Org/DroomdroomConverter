@@ -177,7 +177,7 @@ const SelectWrapper = styled.div`
   align-items: center;
 `;
 
-const Select = styled.select`
+const SelectButton = styled.button`
   height: 48px;
   min-width: 100px;
   padding: 0 36px 0 16px;
@@ -189,6 +189,9 @@ const Select = styled.select`
   font-weight: 600;
   appearance: none;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   
   &:focus {
     outline: none;
@@ -325,6 +328,8 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
   );
   const [fromAmount, setFromAmount] = useState<string>('1');
   const [toAmount, setToAmount] = useState<string>('');
+  const [showFromSearch, setShowFromSearch] = useState<boolean>(false);
+  const [showToSearch, setShowToSearch] = useState<boolean>(false);
   const [lastUpdated, setLastUpdated] = useState<string>(
     new Date().toLocaleString('en-US', {
       hour: 'numeric',
@@ -359,14 +364,14 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
   };
 
 
-  const handleFromTokenChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedToken = tokens.find(t => t.ticker === e.target.value) || null;
-    setFromToken(selectedToken);
+  const handleFromTokenSelect = (token: any) => {
+    setFromToken(token);
+    setShowFromSearch(false);
   };
 
-  const handleToTokenChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedToken = tokens.find(t => t.ticker === e.target.value) || null;
-    setToToken(selectedToken);
+  const handleToTokenSelect = (token: any) => {
+    setToToken(token);
+    setShowToSearch(false);
   };
 
 
@@ -460,14 +465,20 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
                 min="0"
               />
               <SelectWrapper>
-                <Select value={fromToken?.ticker || ''} onChange={handleFromTokenChange}>
-                  {tokens.map(token => (
-                    <option key={token.id} value={token.ticker}>{token.ticker}</option>
-                  ))}
-                </Select>
-                <SelectArrow>▼</SelectArrow>
+                <SelectButton onClick={() => setShowFromSearch(!showFromSearch)}>
+                  {fromToken?.ticker || 'Select'}
+                  <SelectArrow>▼</SelectArrow>
+                </SelectButton>
               </SelectWrapper>
-              <SearchCoin  coins={tokens} />
+              
+              {showFromSearch && (
+                <SearchCoin 
+                  coins={tokens} 
+                  onSelectToken={handleFromTokenSelect}
+                  isVisible={showFromSearch}
+                  onClose={() => setShowFromSearch(false)}
+                />
+              )}
             </InputWrapper>
             
             <SwapIconWrapper>
@@ -487,13 +498,20 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
                 placeholder="0"
               />
               <SelectWrapper>
-                <Select value={toToken?.ticker || ''} onChange={handleToTokenChange}>
-                  {tokens.map(token => (
-                    <option key={token.id} value={token.ticker}>{token.ticker}</option>
-                  ))}
-                </Select>
-                <SelectArrow>▼</SelectArrow>
+                <SelectButton onClick={() => setShowToSearch(!showToSearch)}>
+                  {toToken?.ticker || 'Select'}
+                  <SelectArrow>▼</SelectArrow>
+                </SelectButton>
               </SelectWrapper>
+              
+              {showToSearch && (
+                <SearchCoin 
+                  coins={tokens} 
+                  onSelectToken={handleToTokenSelect}
+                  isVisible={showToSearch}
+                  onClose={() => setShowToSearch(false)}
+                />
+              )}
             </InputWrapper>
           </InputRow>
         </ConversionForm>

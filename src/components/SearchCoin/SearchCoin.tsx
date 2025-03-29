@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import * as S from './SearchCoin.styled';
-import { useRouter } from 'next/router';
 import debounce from 'lodash/debounce';
 
 interface CommonTokenData {
@@ -11,34 +10,53 @@ interface CommonTokenData {
     cmcId: string | number;
 }
 
-interface SearchBarProps {
+interface SearchCoinProps {
     coins: CommonTokenData[];
+    onSelectToken: (token: CommonTokenData) => void;
+    isVisible: boolean;
+    onClose: () => void;
 }
 
-const SearchCoin: React.FC<SearchBarProps> = ({ coins }) => {
+const SearchCoin: React.FC<SearchCoinProps> = ({ coins, onSelectToken, isVisible, onClose }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [results, setResults] = useState<CommonTokenData[]>([]);
-    const router = useRouter();
     const inputRef = useRef<HTMLInputElement>(null);
     const wrapperRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (coins && coins.length > 0) {
-            setResults(coins);
+            setResults(coins.slice(0, 10));
         } else {
             setResults([]);
         }
     }, [coins]);
 
+    useEffect(() => {
+        if (isVisible && inputRef.current) {
+            inputRef.current.focus();
+        }
+    }, [isVisible]);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+                onClose();
+            }
+        }
+
+        if (isVisible) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isVisible, onClose]);
 
     const debouncedSearch = useCallback(
         debounce(async (term: string) => {
             if (!term.trim()) {
-                setResults(coins);
-                return;
-            }
-
-            if (typeof window === 'undefined') {
+                setResults(coins.slice(0, 10));
                 return;
             }
 
@@ -46,13 +64,8 @@ const SearchCoin: React.FC<SearchBarProps> = ({ coins }) => {
                 const searchResults = coins.filter(coin =>
                     coin.name.toLowerCase().includes(term.toLowerCase()) ||
                     (coin.ticker || coin.symbol || '').toLowerCase().includes(term.toLowerCase())
-                ).slice(0, 10)
-                    .map(coin => ({
-                        id: coin.id || '',
-                        name: coin.name,
-                        ticker: coin.ticker || coin.symbol || '',
-                        cmcId: String(coin.cmcId || coin.id || '')
-                    }));
+                ).slice(0, 10);
+                
                 setResults(searchResults);
             } catch (error) {
                 console.error('Search error:', error);
@@ -67,15 +80,17 @@ const SearchCoin: React.FC<SearchBarProps> = ({ coins }) => {
         debouncedSearch(e.target.value);
     };
 
-
-    const handleCoinClick = (cmcId: string) => {
-        console.log(cmcId);
+    const handleCoinClick = (coin: CommonTokenData) => {
+        onSelectToken(coin);
+        setSearchTerm('');
+        onClose();
     };
 
+    if (!isVisible) return null;
 
     return (
-        <S.SearchContainer ref={wrapperRef}>
-            <S.SearchWrapper>
+        <S.SearchPopup ref={wrapperRef}>
+            <S.SearchInputWrapper>
                 <S.SearchInput
                     ref={inputRef}
                     type="text"
@@ -88,31 +103,26 @@ const SearchCoin: React.FC<SearchBarProps> = ({ coins }) => {
                         <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                 </S.SearchIcon>
+            </S.SearchInputWrapper>
 
-                <S.ResultsDropdown >
-                    {results && results.length > 0 ? (
-                        <>
-                            {results.map((coin, index) => (
-                                <S.ResultItem
-                                    key={coin.id}
-                                    onClick={() => handleCoinClick(coin.cmcId.toString())}
-                                    className={index === 1 ? 'selected' : ''}
-                                >
-                                    <S.ResultInfo>
-                                        <S.ResultName>{coin.ticker || coin.symbol}</S.ResultName>
-                                        <S.ResultTicker>{coin.name}</S.ResultTicker>
-                                    </S.ResultInfo>
-                                </S.ResultItem>
-                            ))}
-                        </>
-                    ) : (
-                        <S.NoResults>
-                            No results found
-                        </S.NoResults>
-                    )}
-                </S.ResultsDropdown>
-            </S.SearchWrapper>
-        </S.SearchContainer>
+            <S.ResultsList>
+                {results && results.length > 0 ? (
+                    results.map((coin) => (
+                        <S.ResultItem
+                            key={coin.id}
+                            onClick={() => handleCoinClick(coin)}
+                        >
+                            <S.ResultTicker>{coin.ticker || coin.symbol}</S.ResultTicker>
+                            <S.ResultName>{coin.name}</S.ResultName>
+                        </S.ResultItem>
+                    ))
+                ) : (
+                    <S.NoResults>
+                        No results found
+                    </S.NoResults>
+                )}
+            </S.ResultsList>
+        </S.SearchPopup>
     );
 };
 

@@ -1,174 +1,110 @@
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 import { device } from '../../styles/breakpoints';
 
-export const SearchContainer = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-left: auto;
-    position: relative;
-    width: 300px;
+export const SearchPopup = styled.div`
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 3px;
     z-index: 9999;
-
+    background: ${({ theme }) => theme.colors.bgColor};
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 100%;
+    max-width: 360px;
+    
     @media ${device.mobileL} {
-        margin-left: 0;
-        width: 100%;
+        max-width: 100%;
     }
 `;
 
-export const SearchWrapper = styled.div`
+export const SearchInputWrapper = styled.div`
     position: relative;
-    width: 100%;
+    padding: 12px;
+    border-bottom: 1px solid ${({ theme }) => theme.colors.borderColor};
 `;
 
 export const SearchInput = styled.input`
     width: 100%;
-    padding: 8px 12px;
-    padding-right: 36px;
-    border-radius: 6px;
-    border: 1px solid ${({ theme: { colors } }) => colors.borderColor};
-    background: ${({ theme: { colors } }) => colors.bgColor};
-    color: ${({ theme: { colors } }) => colors.textColor};
+    height: 40px;
+    padding: 0 40px 0 16px;
+    border-radius: 10px;
+    border: 1px solid ${({ theme }) => theme.colors.borderColor};
+    background: ${({ theme }) => theme.colors.controlBackgroundColor};
+    color: ${({ theme }) => theme.colors.textColor};
     font-size: 14px;
-    line-height: 20px;
-    margin: 0;
-    height: 36px;
-    box-sizing: border-box;
     outline: none;
-    transition: all 0.2s ease;
     
-
-    &:focus {
-        border-width: 2px;
-        box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
-    }
-
     &::placeholder {
-        color: ${({ theme: { colors } }) => colors.colorLightNeutral5};
+        color: ${({ theme }) => theme.colors.textColorSub};
     }
 `;
 
 export const SearchIcon = styled.div`
     position: absolute;
-    right: 10px;
+    right: 24px;
     top: 50%;
     transform: translateY(-50%);
-    color: ${({ theme: { colors } }) => colors.colorLightNeutral5};
+    color: ${({ theme }) => theme.colors.textColorSub};
     display: flex;
     align-items: center;
     justify-content: center;
 `;
 
-const spin = keyframes`
-    to { transform: rotate(360deg); }
-`;
-
-export const LoadingSpinner = styled.div`
-    width: 16px;
-    height: 16px;
-    border: 2px solid ${({ theme: { colors } }) => colors.colorLightNeutral3};
-    border-top-color: ${({ theme: { colors } }) => colors.colorLightNeutral5};
-    border-radius: 50%;
-    animation: ${spin} 0.8s linear infinite;
-`;
-
-export const ResultsDropdown = styled.div`
-    position: absolute;
-    top: calc(100% + 4px);
-    left: 0;
-    right: 0;
-    background: ${({ theme: { colors } }) => colors.bgColor};
-    border: 1px solid ${({ theme: { colors } }) => colors.borderColor};
-    border-radius: 6px;
-    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.15);
-    z-index: 9999;
+export const ResultsList = styled.div`
     max-height: 300px;
     overflow-y: auto;
-    padding: 0;
     
-    /* Add custom scrollbar styling */
+    /* Scrollbar styling */
     &::-webkit-scrollbar {
         width: 6px;
     }
     
     &::-webkit-scrollbar-track {
-        background: ${({ theme: { colors } }) => colors.colorNeutral1};
-        border-radius: 0 6px 6px 0;
+        background: transparent;
     }
     
     &::-webkit-scrollbar-thumb {
-        background: ${({ theme: { colors } }) => colors.colorLightNeutral4};
+        background: ${({ theme }) => theme.colors.colorLightNeutral4};
         border-radius: 3px;
     }
 `;
 
-export const LoadingText = styled.div`
-    padding: 8px 12px;
-    color: ${({ theme: { colors } }) => colors.colorLightNeutral5};
-    font-size: 12px;
-    text-align: center;
-`;
-
-export const NoResults = styled(LoadingText)``;
-
-export const ResultItem = styled.a`
-    display: flex;
-    align-items: center;
-    padding: 12px 16px;
-    text-decoration: none;
-    color: ${({ theme: { colors } }) => colors.textColor};
-    transition: background-color 0.2s ease;
-    cursor: pointer;
-    
-    &:not(:last-child) {
-        border-bottom: 1px solid ${({ theme: { colors } }) => colors.borderColor};
-    }
-
-    &:hover {
-        background: ${({ theme: { colors } }) => colors.colorNeutral1};
-    }
-    
-    &.selected {
-        background: ${({ theme: { colors } }) => colors.colorNeutral1};
-    }
-`;
-
-export const ResultIcon = styled.div`
-    width: 24px;
-    height: 24px;
-    flex-shrink: 0;
-    border-radius: 50%;
-    overflow: hidden;
-    background: #f9f9f9;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-    }
-`;
-
-export const ResultInfo = styled.div`
-    flex: 1;
-    min-width: 0;
+export const ResultItem = styled.div`
     display: flex;
     flex-direction: column;
-`;
-
-export const ResultName = styled.div`
-    font-weight: 500;
-    font-size: 14px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: ${({ theme: { colors } }) => colors.textColor};
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    
+    &:hover {
+        background: ${({ theme }) => theme.colors.colorNeutral1};
+    }
 `;
 
 export const ResultTicker = styled.div`
-    color: ${({ theme: { colors } }) => colors.colorLightNeutral5};
+    font-weight: 500;
     font-size: 14px;
-    font-weight: 400;
+    color: ${({ theme }) => theme.colors.textColor};
 `;
+
+export const ResultName = styled.div`
+    font-size: 13px;
+    color: ${({ theme }) => theme.colors.textColorSub};
+`;
+
+export const NoResults = styled.div`
+    padding: 16px;
+    text-align: center;
+    color: ${({ theme }) => theme.colors.textColorSub};
+    font-size: 14px;
+`;
+
+// Keep these for compatibility with other components that might use them
+export const SearchContainer = styled.div``;
+export const SearchWrapper = styled.div``;
+export const ResultsDropdown = styled.div``;
+export const LoadingText = styled.div``;
+export const ResultIcon = styled.div``;
+export const ResultInfo = styled.div``;
+export const LoadingSpinner = styled.div``;
