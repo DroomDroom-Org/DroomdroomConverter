@@ -11,6 +11,7 @@ import FAQ from 'src/components/FAQ';
 import Related from 'src/components/Related';
 import ConversionTables from 'src/components/ConversionTables';
 import SimilarCrypto from 'src/components/SimilarCrypto/SimilarCrypto';
+import SearchCoin from 'src/components/SearchCoin/SearchCoin';
 
 interface TokenData {
   id: string;
@@ -466,6 +467,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
                 </Select>
                 <SelectArrow>▼</SelectArrow>
               </SelectWrapper>
+              <SearchCoin  coins={tokens} />
             </InputWrapper>
             
             <SwapIconWrapper>
@@ -507,7 +509,6 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
           </RefreshButton>
         </LastUpdated>
       </ConverterCard>
-
       <Navbar />
     
       <Market fromToken={fromToken} toToken={toToken} />
