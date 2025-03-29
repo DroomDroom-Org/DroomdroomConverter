@@ -12,7 +12,8 @@ export const SearchPopup = styled.div`
     overflow: hidden;
     width: 100%;
     max-width: 360px;
-    
+    border: 1px solid ${({ theme }) => theme.colors.borderColor};
+
     @media ${device.mobileL} {
         max-width: 100%;
     }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
 import { GetServerSideProps } from 'next';
@@ -185,7 +185,7 @@ const SelectButton = styled.button`
   padding: 0 36px 0 16px;
   border: none;
   border-radius: 100px;
-  background: ${({ theme }) => theme.colors.colorNeutral2};
+  background: ${({ theme }) => theme.name === 'dark' ? theme.colors.colorNeutral3 : theme.colors.colorNeutral2};
   color: ${({ theme }) => theme.colors.textColor};
   font-size: 16px;
   font-weight: 600;
@@ -198,6 +198,13 @@ const SelectButton = styled.button`
   &:focus {
     outline: none;
   }
+`;
+
+const TokenIcon = styled.img`
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin-right: 8px;
 `;
 
 const SelectArrow = styled.div`
@@ -343,6 +350,9 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
     })
   );
 
+  const fromButtonRef = useRef<HTMLButtonElement>(null);
+  const toButtonRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
     if (fromToken && toToken && fromAmount) {
       const amount = parseFloat(fromAmount);
@@ -353,6 +363,36 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
     }
   }, [fromToken, toToken, fromAmount]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        (fromButtonRef.current && !fromButtonRef.current.contains(event.target as Node)) ||
+        (toButtonRef.current && !toButtonRef.current.contains(event.target as Node))
+      ) {
+        setShowFromSearch(false);
+        setShowToSearch(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleDocumentClick = () => {
+      if (showFromSearch || showToSearch) {
+        setShowFromSearch(false);
+        setShowToSearch(false);
+      }
+    };
+    
+    document.addEventListener('click', handleDocumentClick);
+    return () => {
+      document.removeEventListener('click', handleDocumentClick);
+    };
+  }, [showFromSearch, showToSearch]);
 
   const handleSwapTokens = () => {
     const tempToken = fromToken;
@@ -364,17 +404,27 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
     }
   };
 
-
-  const handleFromTokenSelect = (token: any) => {
-    setFromToken(token);
-    setShowFromSearch(false);
+  const toggleFromSearch = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (showToSearch) {
+      setShowToSearch(false);
+    }
+    setTimeout(() => {
+      setShowFromSearch(prev => !prev);
+    }, 10);
   };
 
-  const handleToTokenSelect = (token: any) => {
-    setToToken(token);
-    setShowToSearch(false);
+  const toggleToSearch = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (showFromSearch) {
+      setShowFromSearch(false);
+    }
+    setTimeout(() => {
+      setShowToSearch(prev => !prev);
+    }, 10);
   };
-
 
   const handleRefresh = () => {
     setLastUpdated(
@@ -467,6 +517,11 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
   const advancedOptions = generateAdvancedOptions();
   const currencyOptions = generateCurrencyOptions();
 
+  const closeAllSearchModals = () => {
+    setShowFromSearch(false);
+    setShowToSearch(false);
+  };
+
   return (
     <ConverterContainer>
       <SEO
@@ -493,7 +548,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
         </ConversionHeader>
         
         <ConversionForm>
-          <InputRow>
+          <InputRow onClick={(e) => e.stopPropagation()}>
             <InputWrapper>
               <Input
                 type="number"
@@ -501,26 +556,39 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
                 onChange={(e) => setFromAmount(e.target.value)}
                 placeholder="0"
                 min="0"
+                onClick={(e) => e.stopPropagation()}
               />
               <SelectWrapper>
-                <SelectButton onClick={() => setShowFromSearch(!showFromSearch)}>
+                <SelectButton 
+                  onClick={toggleFromSearch}
+                  onMouseDown={(e) => e.stopPropagation()}
+                >
+                  {fromToken?.iconUrl && <TokenIcon src={fromToken.iconUrl} alt={fromToken.ticker} />}
                   {fromToken?.ticker || 'Select'}
-                  <SelectArrow>▼</SelectArrow>
+                  <SelectArrow>{showFromSearch ? '▲' : '▼'}</SelectArrow>
                 </SelectButton>
               </SelectWrapper>
               
               {showFromSearch && (
-                <SearchCoin 
-                  coins={tokens} 
-                  onSelectToken={handleFromTokenSelect}
-                  isVisible={showFromSearch}
-                  onClose={() => setShowFromSearch(false)}
-                />
+                <div onClick={(e) => e.stopPropagation()}>
+                  <SearchCoin 
+                    coins={tokens} 
+                    onSelectToken={(token) => {
+                      setFromToken(token as TokenData);
+                      setShowFromSearch(false);
+                    }}
+                    isVisible={showFromSearch}
+                    onClose={() => setShowFromSearch(false)}
+                  />
+                </div>
               )}
             </InputWrapper>
             
             <SwapIconWrapper>
-              <SwapButton onClick={handleSwapTokens}>
+              <SwapButton onClick={(e) => {
+                e.stopPropagation();
+                handleSwapTokens();
+              }}>
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M7 11L12 6L17 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   <path d="M17 13L12 18L7 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -534,21 +602,31 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
                 value={toAmount}
                 readOnly
                 placeholder="0"
+                onClick={(e) => e.stopPropagation()}
               />
               <SelectWrapper>
-                <SelectButton onClick={() => setShowToSearch(!showToSearch)}>
+                <SelectButton 
+                  onClick={toggleToSearch}
+                  onMouseDown={(e) => e.stopPropagation()}
+                >
+                  {toToken?.iconUrl && <TokenIcon src={toToken.iconUrl} alt={toToken.ticker} />}
                   {toToken?.ticker || 'Select'}
-                  <SelectArrow>▼</SelectArrow>
+                  <SelectArrow>{showToSearch ? '▲' : '▼'}</SelectArrow>
                 </SelectButton>
               </SelectWrapper>
               
               {showToSearch && (
-                <SearchCoin 
-                  coins={tokens} 
-                  onSelectToken={handleToTokenSelect}
-                  isVisible={showToSearch}
-                  onClose={() => setShowToSearch(false)}
-                />
+                <div onClick={(e) => e.stopPropagation()}>
+                  <SearchCoin 
+                    coins={tokens} 
+                    onSelectToken={(token) => {
+                      setToToken(token as TokenData);
+                      setShowToSearch(false);
+                    }}
+                    isVisible={showToSearch}
+                    onClose={() => setShowToSearch(false)}
+                  />
+                </div>
               )}
             </InputWrapper>
           </InputRow>
