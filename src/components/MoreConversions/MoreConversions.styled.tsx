@@ -3,8 +3,12 @@ import styled from 'styled-components';
 export const Container = styled.div`
   max-width: 1400px;
   margin: 40px auto;
-  padding: 0 16px;
+  padding: 120px 0px 0px 0px;
   width: 100%;
+
+  @media (max-width: 768px) {
+    padding: 120px 0px 0px 0px ;
+  }
 `;
 
 export const SectionTitle = styled.h2`

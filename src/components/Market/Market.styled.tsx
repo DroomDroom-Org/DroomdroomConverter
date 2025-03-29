@@ -4,12 +4,12 @@ export const MarketContainer = styled.div`
   max-width: 1400px;
   display: flex;
   flex-direction: column;
-  padding: 20px 0px;
+  padding: 120px 0px 0px 0px;
   margin: 0 auto;
   color: ${({ theme }) => theme.colors.textColor};
   
   @media (max-width: 768px) {
-    padding: 1.5rem 0rem;
+    padding: 120px 0px;
   }
 `;
 

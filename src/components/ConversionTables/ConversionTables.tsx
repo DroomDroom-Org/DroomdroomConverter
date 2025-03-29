@@ -46,6 +46,7 @@ export interface TokenData {
 interface ConversionTablesProps {
   fromToken: TokenData | null;
   toToken: TokenData | null;
+  id :string ;
 }
 
 // Fixed time string to match screenshot
@@ -97,7 +98,7 @@ const bitcoinPrice = 87270.05; // Updated price from screenshot
 const btcToUsdt = bitcoinPrice;
 const usdtToBtc = 1 / bitcoinPrice;
 
-const ConversionTables: React.FC<ConversionTablesProps> = ({ fromToken, toToken }) => {
+const ConversionTables: React.FC<ConversionTablesProps> = ({ id ,  fromToken, toToken }) => {
   // Use actual values from props if available, otherwise use Bitcoin/USDT defaults
   const displayFromToken = fromToken || { id: 'bitcoin', name: 'Bitcoin', ticker: 'BTC', symbol: 'BTC', price: 87174.95 };
   const displayToToken = toToken || { id: 'tether', name: 'Tether', ticker: 'USDT', symbol: 'USDT', price: 1 };

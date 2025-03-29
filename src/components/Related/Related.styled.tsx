@@ -3,11 +3,11 @@ import styled from 'styled-components';
 export const RelatedContainer = styled.div`
   max-width: 1400px;
   margin: 0 auto;
-  padding: 40px 0;
+  padding: 120px 0px 0px 0px;
   color: ${({ theme }) => theme.colors.textColor};
   
   @media (max-width: 768px) {
-    padding: 30px 0rem;
+    padding:120px 0px 0px 0px;
   }
 `;
 

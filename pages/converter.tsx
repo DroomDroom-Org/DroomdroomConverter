@@ -651,12 +651,11 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
 
       <Related id="related" fromToken={fromToken} toToken={toToken} />
 
-      <ConversionTables id="conversion-tables" fromToken={fromToken} toToken={toToken} />
-
+      <div id="conversion-tables">
+        <ConversionTables id="conversion-tables" fromToken={fromToken} toToken={toToken} />
+      </div>
 
       <SimilarCrypto coin={fromToken}/>
-
-
 
       <MoreConversions 
         id="more"
@@ -667,8 +666,6 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
     </ConverterContainer>
   );
 };
-
-
 
 export default Converter;
   

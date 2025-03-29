@@ -3,17 +3,15 @@ import styled from 'styled-components';
 export const TablesContainer = styled.div`
   max-width: 1400px;
   margin: 0 auto;
-  padding: 40px 0;
+  padding: 120px 0px 0px 0px;
   color: ${({ theme }) => theme.colors.textColor};
   
   @media (max-width: 768px) {
-    padding: 20px 0;
     overflow-x: hidden;
     width: 100%;
   }
   
-  @media (max-width: 480px) {
-    padding: 15px 0 15px 0;
+  @media (max-width: 480px) {;
     overflow-x: hidden;
   }
   
