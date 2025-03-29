@@ -583,8 +583,8 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
         <ConversionHeader>
           <TitleWrapper>
             <IconsWrapper>
-              <CryptoIcon src="https://s2.coinmarketcap.com/static/img/coins/64x64/1.png" alt="BTC" />
-              <CryptoIcon src="https://s2.coinmarketcap.com/static/img/coins/64x64/825.png" alt="USDT" />
+              <CryptoIcon src={`https://s2.coinmarketcap.com/static/img/coins/64x64/${fromToken?.cmcId}.png`} alt="BTC" />
+              <CryptoIcon src={`https://s2.coinmarketcap.com/static/img/coins/64x64/${toToken?.cmcId}.png`} alt="USDT" />
             </IconsWrapper>
             <Title>
               Convert and swap <TokenName ticker={fromToken?.ticker}>{fromToken?.name}</TokenName> to <TokenName ticker={toToken?.ticker}>{toToken?.name}</TokenName>

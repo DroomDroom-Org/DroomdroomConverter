@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import * as S from './SearchCoin.styled';
 import debounce from 'lodash/debounce';
+import { getApiUrl } from 'utils/config';
+import axios from 'axios';
 
 interface CommonTokenData {
     id: string;
@@ -20,6 +22,7 @@ interface SearchCoinProps {
 const SearchCoin: React.FC<SearchCoinProps> = ({ coins, onSelectToken, isVisible, onClose }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [results, setResults] = useState<CommonTokenData[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
     const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -53,27 +56,40 @@ const SearchCoin: React.FC<SearchCoinProps> = ({ coins, onSelectToken, isVisible
         };
     }, [isVisible, onClose]);
 
+
     const debouncedSearch = useCallback(
         debounce(async (term: string) => {
             if (!term.trim()) {
                 setResults(coins.slice(0, 10));
+                setIsLoading(false);
                 return;
             }
 
+            if (typeof window === 'undefined') {
+                setIsLoading(false);
+                return;
+            }
+
+            setIsLoading(true);
             try {
-                const searchResults = coins.filter(coin =>
-                    coin.name.toLowerCase().includes(term.toLowerCase()) ||
-                    (coin.ticker || coin.symbol || '').toLowerCase().includes(term.toLowerCase())
-                ).slice(0, 10);
+                console.log('Searching with URL:', getApiUrl(`/search?q=${encodeURIComponent(term)}`));
+                const response = await axios.get(getApiUrl(`/search?q=${encodeURIComponent(term)}`));
+                console.log('Search response:', response.data);
                 
+                const searchResults = response.data.slice(0, 5);
                 setResults(searchResults);
+                
             } catch (error) {
                 console.error('Search error:', error);
                 setResults([]);
+            } finally {
+                setIsLoading(false);
             }
         }, 300),
         [coins]
     );
+
+
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
@@ -106,7 +122,9 @@ const SearchCoin: React.FC<SearchCoinProps> = ({ coins, onSelectToken, isVisible
             </S.SearchInputWrapper>
 
             <S.ResultsList>
-                {results && results.length > 0 ? (
+                {isLoading ? (
+                    <S.LoadingState>Loading...</S.LoadingState>
+                ) : results && results.length > 0 ? (
                     results.map((coin) => (
                         <S.ResultItem
                             key={coin.id}

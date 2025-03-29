@@ -54,6 +54,8 @@ export const SearchIcon = styled.div`
 
 export const ResultsList = styled.div`
     max-height: 300px;
+    min-width: 100%;
+    
     overflow-y: auto;
     
     /* Scrollbar styling */
@@ -101,6 +103,12 @@ export const NoResults = styled.div`
     font-size: 14px;
 `;
 
+
+export const LoadingState = styled.div`
+  padding: 10px;
+  text-align: center;
+  color: gray;
+`;
 // Keep these for compatibility with other components that might use them
 export const SearchContainer = styled.div``;
 export const SearchWrapper = styled.div``;
