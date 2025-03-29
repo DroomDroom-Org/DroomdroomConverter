@@ -14,7 +14,7 @@ import SimilarCrypto from 'src/components/SimilarCrypto/SimilarCrypto';
 import SearchCoin from 'src/components/SearchCoin/SearchCoin';
 import MoreConversions from 'src/components/MoreConversions/MoreConversions';
 import { useCurrency, CURRENCIES } from 'src/context/CurrencyContext';
-import { ChevronDown, ChevronUp, ArrowLeftRight, Loader } from 'lucide-react';
+import { ChevronDown, ChevronUp, ArrowLeftRight, Loader, Share2 } from 'lucide-react';
 import { config } from 'src/utils/config';
 import { useRouter } from 'next/router';
 
@@ -261,6 +261,30 @@ const BuyButton = styled.button`
   }
 `;
 
+const ShareButton = styled.button`
+  background: none;
+  border: none;
+  color: #4A49F5;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 8px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    color: #4A49F5;
+    text-decoration: underline;
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+`;
+
 const LastUpdated = styled.div`
   display: flex;
   justify-content: flex-end;
@@ -268,6 +292,7 @@ const LastUpdated = styled.div`
   margin-top: 24px;
   font-size: 14px;
   color: ${props => props.theme.colors.textColorSub};
+  gap: 8px;
 `;
 
 const RefreshButton = styled.button`
@@ -417,6 +442,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
   const [showFromSearch, setShowFromSearch] = useState<boolean>(false);
   const [showToSearch, setShowToSearch] = useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [copied, setCopied] = useState(false);
 
   const [lastUpdated, setLastUpdated] = useState<string>(
     new Date().toLocaleString('en-US', {
@@ -690,6 +716,18 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
     }
   }, [fromToken?.ticker, toToken?.ticker]);
 
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy URL:', err);
+    }
+  };
+
   return (
     <ConverterContainer>
       <SEO
@@ -809,6 +847,10 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
               </>
             ) : 'Refresh'}
           </RefreshButton>
+          <ShareButton onClick={handleShare}>
+            <Share2 size={14} />
+            {copied ? 'Copied!' : 'Share'}
+          </ShareButton>
         </LastUpdated>
       </ConverterCard>
       <Navbar />
