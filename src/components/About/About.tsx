@@ -2,18 +2,29 @@ import React from 'react';
 import * as S from './About.styled';
 
 interface TokenData {
-  id?: string;
-  ticker?: string;
-  name?: string;
-  price?: number;
+  id: string;
+  ticker: string;
+  name: string;
+  price: number;
   iconUrl?: string;
-  cmcId?: number;
-  status?: string;
+  cmcId: string;
+  status: string;
+  rank: number;
+  priceChange:{
+    '1h': number;
+    '24h': number;
+    '7d': number;
+  };
+  marketCap: string;
+  volume24h: string;
+  circulatingSupply: string | null;
+  lastUpdated?: string;
+
 }
 
 interface AboutProps {
-  fromToken: TokenData | null;
-  toToken: TokenData | null;
+  fromToken: TokenData;
+  toToken: TokenData;
   id?: string;
 }
 

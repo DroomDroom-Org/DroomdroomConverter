@@ -23,24 +23,25 @@ import {
   ComparisonTableBody
 } from './ConversionTables.styled';
 
-export interface TokenData {
+interface TokenData {
   id: string;
-  name: string;
   ticker: string;
-  symbol?: string;
-  logoUrl?: string;
+  name: string;
+  price: number;
   iconUrl?: string;
-  price?: number;
-  cmcId?: number;
-  status?: string;
-  rateChange?: {
-    hourly: number;
-    daily: number;
+  cmcId: string;
+  status: string;
+  rank: number;
+  priceChange:{
+    '1h': number;
+    '24h': number;
+    '7d': number;
   };
-  marketCap?: string;
-  volume?: string;
-  supply?: string;
-  supplyUnit?: string;
+  marketCap: string;
+  volume24h: string;
+  circulatingSupply: string | null;
+  lastUpdated?: string;
+
 }
 
 interface ConversionTablesProps {

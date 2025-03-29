@@ -17,7 +17,7 @@ import { useCurrency, CURRENCIES } from 'src/context/CurrencyContext';
 import { ChevronDown, ChevronUp, ArrowLeftRight, Loader, Share2 } from 'lucide-react';
 import { config } from 'src/utils/config';
 import { useRouter } from 'next/router';
-
+import { formatDate } from 'date-fns';
 
 interface TokenData {
   id: string;
@@ -25,18 +25,21 @@ interface TokenData {
   name: string;
   price: number;
   iconUrl?: string;
-  cmcId: number;
+  cmcId: string;
   status: string;
-  rateChange: {
-    hourly: number;
-    daily: number;
+  rank: number;
+  priceChange:{
+    '1h': number;
+    '24h': number;
+    '7d': number;
   };
   marketCap: string;
-  volume: string;
-  supply: string;
-  supplyUnit: string;
+  volume24h: string;
+  circulatingSupply: string | null;
+  lastUpdated?: string;
 
 }
+
 
 interface ConverterProps {
   tokens: TokenData[];
@@ -387,14 +390,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       ticker: token.ticker || '',
       name: token.name || '',
       price: token.price || 0,
+      rank: token.rank || 0,
       iconUrl: token.cmcId ? `https://s2.coinmarketcap.com/static/img/coins/64x64/${token.cmcId}.png` : '',
-      cmcId: token.cmcId || 0,
+      cmcId: token.cmcId || '0',
       status: token.status || 'stable',
-      rateChange: token.rateChange || { hourly: 0, daily: 0 },
+      priceChange: token.priceChange || { '1h': 0, '24h': 0, '7d': 0 },
       marketCap: token.marketCap || '0',
-      volume: token.volume || '0',
-      supply: token.supply || '0',
-      supplyUnit: token.supplyUnit || '',
+      volume24h: token.volume24h || '0',
+      circulatingSupply: token.circulatingSupply || '0',
+      lastUpdated: token.lastUpdated || new Date().toISOString(),
     }));
 
     return {
@@ -444,16 +448,6 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [copied, setCopied] = useState(false);
 
-  const [lastUpdated, setLastUpdated] = useState<string>(
-    new Date().toLocaleString('en-US', {
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true,
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    })
-  );
 
   const fromButtonRef = useRef<HTMLButtonElement>(null);
   const toButtonRef = useRef<HTMLButtonElement>(null);
@@ -587,34 +581,15 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
       setFromToken(updatedFromToken as TokenData);
       setToToken(updatedToToken as TokenData);
 
-      // Calculate new conversion if we have valid input
       const amount = parseFloat(fromAmount);
       if (!isNaN(amount)) {
         const convertedAmount = (amount * updatedFromToken.price) / updatedToToken.price;
         setToAmount(convertedAmount.toFixed(updatedToToken.ticker === 'USDT' ? 2 : 8));
       }
 
-      // Update timestamp
-      const timestamp = new Date();
-      setLastUpdated(timestamp.toLocaleString('en-US', {
-        hour: 'numeric',
-        minute: 'numeric',
-        hour12: true,
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-      }));
-
+     
     } catch (error) {
       console.error('Error refreshing data:', error);
-      setLastUpdated(new Date().toLocaleString('en-US', {
-        hour: 'numeric',
-        minute: 'numeric',
-        hour12: true,
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-      }) + ' (failed)');
     } finally {
       setIsRefreshing(false);
     }
@@ -702,6 +677,8 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
     setShowFromSearch(false);
     setShowToSearch(false);
   };
+
+  console.log(fromToken, toToken);
 
   useEffect(() => {
     if (fromToken && toToken) {
@@ -832,7 +809,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
         </ConversionForm>
 
         <LastUpdated>
-          Last update: {lastUpdated}
+          Last update: {formatDate(fromToken?.lastUpdated || new Date(), 'MMM d, yyyy h:mm a')}
           <RefreshButton 
             onClick={handleRefresh} 
             disabled={isRefreshing}
@@ -852,19 +829,21 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
       </ConverterCard>
       <Navbar />
 
-      <Market id="markets" fromToken={fromToken} toToken={toToken} />
+      {fromToken && toToken && (
+        <>
+          <Market id="markets" fromToken={fromToken} toToken={toToken} />
+          <About id="about" fromToken={fromToken} toToken={toToken} />
+          <FAQ id="faq" fromToken={fromToken} toToken={toToken} />
+          <Related id="related" fromToken={fromToken} toToken={toToken} />
+          <div id="conversion-tables">
+            <ConversionTables id="conversion-tables" fromToken={fromToken} toToken={toToken} />
+          </div>
+        </>
+      )}
 
-      <About id="about" fromToken={fromToken} toToken={toToken} />
-
-      <FAQ id="faq" fromToken={fromToken} toToken={toToken} />
-
-      <Related id="related" fromToken={fromToken} toToken={toToken} />
-
-      <div id="conversion-tables">
-        <ConversionTables id="conversion-tables" fromToken={fromToken} toToken={toToken} />
-      </div>
-
-      <SimilarCrypto coin={fromToken} />
+      {fromToken && (
+        <SimilarCrypto coin={fromToken} />
+      )}
 
       <MoreConversions
         id="more"

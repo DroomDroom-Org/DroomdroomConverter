@@ -1,9 +1,31 @@
 import React from 'react';
 import * as S from './Market.styled';
 
+
+interface TokenData {
+  id: string;
+  ticker: string;
+  name: string;
+  price: number;
+  iconUrl?: string;
+  cmcId: string;
+  status: string;
+  rank: number;
+  priceChange:{
+    '1h': number;
+    '24h': number;
+    '7d': number;
+  };
+  marketCap: string;
+  volume24h: string;
+  circulatingSupply: string | null;
+  lastUpdated?: string;
+}
+
+
 interface CryptoMarketProps {
-  fromToken: any;
-  toToken: any;
+  fromToken: TokenData;
+  toToken: TokenData;
   id?: string;
 }
 
@@ -23,7 +45,33 @@ const Market: React.FC<CryptoMarketProps> = ({
       return `CA$${value.toFixed(2)}`;
     }
   };
+  
 
+  const fromToRate = fromToken.price / toToken.price;
+  const toFromRate = toToken.price / fromToken.price;
+  
+  const formatPrice = (price: any, decimals: number = 2): string => {
+    if (price === null || price === undefined) return '0';
+    
+    if (typeof price === 'number') {
+      if (price < 0.00001) {
+        return price.toExponential(4);
+      }
+      
+      return price.toFixed(decimals);
+    }
+    
+    return String(price);
+  };
+  
+  const getDecimalPlaces = (ticker: string) => {
+    if (ticker === 'USDT' || ticker === 'USDC' || ticker === 'DAI' || ticker === 'BUSD') {
+      return 2; 
+    }
+    return 8; 
+  };
+  
+  console.log(fromToken, toToken);
   const formatSupply = (value: number, unit: string) => {
     if (value >= 1000000000) {
       return `${(value / 1000000000).toFixed(1)}B ${unit}`;
@@ -34,11 +82,7 @@ const Market: React.FC<CryptoMarketProps> = ({
     }
   };
 
-  const safeString = (value: any): string => {
-    if (value === null || value === undefined) return '';
-    if (typeof value === 'object') return JSON.stringify(value);
-    return String(value);
-  };
+
 
   const getSymbol = (coin: any): string => {
     return typeof coin.symbol === 'string' ? coin.symbol : '';
@@ -51,11 +95,6 @@ const Market: React.FC<CryptoMarketProps> = ({
       : typeof coin.toToken === 'string'
         ? coin.toToken
         : '';
-  };
-
-  const formatPrice = (price: any): string => {
-    if (price === null || price === undefined) return '0';
-    return typeof price === 'number' ? price.toFixed(2) : String(price);
   };
 
   const isValidCoin = (coin: any): boolean => {
@@ -71,6 +110,12 @@ const Market: React.FC<CryptoMarketProps> = ({
     );
   }
 
+  const getTokenStatus = (token: TokenData) => {
+    return token?.priceChange && token?.priceChange['7d'] > 0 ? 'climbing' : 'falling';
+  };
+
+  console.log(fromToken, toToken);
+
   return (
     <S.MarketContainer id={id}>
       <S.MarketHeading>Market latest</S.MarketHeading>
@@ -78,19 +123,19 @@ const Market: React.FC<CryptoMarketProps> = ({
       <div key={fromToken.id || 0}>
         <S.MarketStatusSection>
           <S.MarketStatusTitle>
-            {safeString(fromToken.name)} is <span style={{ color: fromToken.status === 'climbing' ? '#4ca777' : '#e15241' }}>{safeString(fromToken.status)}</span> this week
+            {fromToken.name} is <span style={{ color: getTokenStatus(fromToken) === 'climbing' ? '#4ca777' : '#e15241' }}>{getTokenStatus(fromToken)}</span> this week
           </S.MarketStatusTitle>
 
           <S.MarketStatusText>
-            The current {getSymbol(fromToken)} to {getToSymbol(fromToken)} conversion rate is <strong>{formatPrice(fromToken.price)}</strong>.
-            Inversely, this means that if you convert 1 {getToSymbol(fromToken)} you will get {formatPrice(fromToken.price)} {getSymbol(fromToken)}.
+            The current {fromToken.ticker} to {toToken.ticker} conversion rate is <strong>{formatPrice(fromToRate, getDecimalPlaces(toToken.ticker))}</strong>.
+            Inversely, this means that if you convert 1 {fromToken.ticker} you will get {formatPrice(fromToRate, getDecimalPlaces(toToken.ticker))} {toToken.ticker}.
             <br />
-            The conversion rate of {getSymbol(fromToken)}/{getToSymbol(fromToken)} has
-            <span style={{ color: (fromToken.rateChange?.hourly || 0) > 0 ? '#4ca777' : '#e15241' }}>
-              {' '}{(fromToken.rateChange?.hourly || 0) > 0 ? 'increased' : 'decreased'} by {Math.abs(fromToken.rateChange?.hourly || 0)}%
+            The conversion rate of {fromToken.ticker}/{toToken.ticker} has
+            <span style={{ color: (fromToken.priceChange?.['1h'] || 0) > 0 ? '#4ca777' : '#e15241' }}>
+              {' '}{(fromToken.priceChange?.['1h'] || 0) > 0 ? 'increased' : 'decreased'} by {Math.abs(fromToken.priceChange?.['1h'] || 0).toFixed(getDecimalPlaces(fromToken.ticker))}%
             </span> in the last hour and
-            <span style={{ color: (fromToken.rateChange?.daily || 0) > 0 ? '#4ca777' : '#e15241' }}>
-              {' '}{(fromToken.rateChange?.daily || 0) > 0 ? 'grown' : 'shrunk'} by {Math.abs(fromToken.rateChange?.daily || 0)}%
+            <span style={{ color: (fromToken.priceChange?.['24h'] || 0) > 0 ? '#4ca777' : '#e15241' }}>
+              {' '}{(fromToken.priceChange?.['24h'] || 0) > 0 ? 'grown' : 'shrunk'} by {Math.abs(fromToken.priceChange?.['24h'] || 0).toFixed(getDecimalPlaces(fromToken.ticker))}%
             </span> in the last 24 hours.
           </S.MarketStatusText>
         </S.MarketStatusSection>
@@ -102,12 +147,12 @@ const Market: React.FC<CryptoMarketProps> = ({
           </S.MarketItemContainer>
 
           <S.MarketItemContainer>
-            <S.MarketItemValue>{formatCurrency(Number(fromToken.volume) || 0)}</S.MarketItemValue>
+            <S.MarketItemValue>{formatCurrency(Number(fromToken.volume24h) || 0)}</S.MarketItemValue>
             <S.MarketItemSubtitle>VOLUME (24H)</S.MarketItemSubtitle>
           </S.MarketItemContainer>
 
           <S.MarketItemContainer>
-            <S.MarketItemValue>{formatSupply(Number(fromToken.supply) || 0, fromToken.supplyUnit || getSymbol(fromToken))}</S.MarketItemValue>
+            <S.MarketItemValue>{formatSupply(Number(fromToken.circulatingSupply) || 0, getSymbol(fromToken))}</S.MarketItemValue>
             <S.MarketItemSubtitle>CIRCULATING SUPPLY</S.MarketItemSubtitle>
           </S.MarketItemContainer>
         </S.MarketStatsGrid>
@@ -122,19 +167,19 @@ const Market: React.FC<CryptoMarketProps> = ({
       <div key={toToken.id || 0}>
         <S.MarketStatusSection>
           <S.MarketStatusTitle>
-            {safeString(toToken.name)} is <span style={{ color: toToken.status === 'climbing' ? '#4ca777' : '#e15241' }}>{safeString(toToken.status)}</span> this week
+            {toToken.name} is <span style={{ color: getTokenStatus(toToken) === 'climbing' ? '#4ca777' : '#e15241' }}>{getTokenStatus(toToken)}</span> this week
           </S.MarketStatusTitle>
 
           <S.MarketStatusText>
-            The current {getSymbol(toToken)} to {getToSymbol(toToken)} conversion rate is <strong>{formatPrice(toToken.price)}</strong>.
-            Inversely, this means that if you convert 1 {getToSymbol(toToken)} you will get {formatPrice(toToken.price)} {getSymbol(toToken)}.
+            The current {toToken.ticker} to {fromToken.ticker} conversion rate is <strong>{formatPrice(toFromRate, getDecimalPlaces(fromToken.ticker))}</strong>.
+            Inversely, this means that if you convert 1 {toToken.ticker} you will get {formatPrice(toFromRate, getDecimalPlaces(fromToken.ticker))} {fromToken.ticker}.
             <br />
-            The conversion rate of {getSymbol(toToken)}/{getToSymbol(toToken)} has
-            <span style={{ color: (toToken.rateChange?.hourly || 0) > 0 ? '#4ca777' : '#e15241' }}>
-              {' '}{(toToken.rateChange?.hourly || 0) > 0 ? 'increased' : 'decreased'} by {Math.abs(toToken.rateChange?.hourly || 0)}%
+            The conversion rate of {toToken.ticker}/{fromToken.ticker} has
+            <span style={{ color: (toToken.priceChange?.['1h'] || 0) > 0 ? '#4ca777' : '#e15241' }}>
+              {' '}{(toToken.priceChange?.['1h'] || 0) > 0 ? 'increased' : 'decreased'} by {Math.abs(toToken.priceChange?.['1h'] || 0).toFixed(getDecimalPlaces(toToken.ticker))}%
             </span> in the last hour and
-            <span style={{ color: (toToken.rateChange?.daily || 0) > 0 ? '#4ca777' : '#e15241' }}>
-              {' '}{(toToken.rateChange?.daily || 0) > 0 ? 'grown' : 'shrunk'} by {Math.abs(toToken.rateChange?.daily || 0)}%
+            <span style={{ color: (toToken.priceChange?.['24h'] || 0) > 0 ? '#4ca777' : '#e15241' }}>
+              {' '}{(toToken.priceChange?.['24h'] || 0) > 0 ? 'grown' : 'shrunk'} by {Math.abs(toToken.priceChange?.['24h'] || 0).toFixed(getDecimalPlaces(toToken.ticker))}%
             </span> in the last 24 hours.
           </S.MarketStatusText>
         </S.MarketStatusSection>
@@ -146,12 +191,12 @@ const Market: React.FC<CryptoMarketProps> = ({
           </S.MarketItemContainer>
 
           <S.MarketItemContainer>
-            <S.MarketItemValue>{formatCurrency(Number(toToken.volume) || 0)}</S.MarketItemValue>
+            <S.MarketItemValue>{formatCurrency(Number(toToken.volume24h) || 0)}</S.MarketItemValue>
             <S.MarketItemSubtitle>VOLUME (24H)</S.MarketItemSubtitle>
           </S.MarketItemContainer>
 
           <S.MarketItemContainer>
-            <S.MarketItemValue>{formatSupply(Number(toToken.supply) || 0, toToken.supplyUnit || getSymbol(toToken))}</S.MarketItemValue>
+            <S.MarketItemValue>{formatSupply(Number(toToken.circulatingSupply) || 0, getSymbol(toToken))}</S.MarketItemValue>
             <S.MarketItemSubtitle>CIRCULATING SUPPLY</S.MarketItemSubtitle>
           </S.MarketItemContainer>
         </S.MarketStatsGrid>

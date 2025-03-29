@@ -13,20 +13,23 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         pageSize: 50,
       },
     });
-    
+
+   
+ 
     const tokens = response.data.tokens.map((token: any) => ({
       id: token.id || '',
       ticker: token.ticker || '',
       name: token.name || '',
       price: token.price || 0,
+      cmcId: token.cmcId || '',
+      rank: token.rank || 0,
       iconUrl: token.cmcId ? `https://s2.coinmarketcap.com/static/img/coins/64x64/${token.cmcId}.png` : '',
-      cmcId: token.cmcId || 0,
       status: token.status || 'stable',
-      rateChange: token.rateChange || { hourly: 0, daily: 0 },
+      priceChange: token.priceChange || { '1h': 0, '24h': 0, '7d': 0 },
       marketCap: token.marketCap || '0',
-      volume: token.volume || '0',
-      supply: token.supply || '0',
-      supplyUnit: token.supplyUnit || '',
+      volume24h: token.volume24h || '0',
+      circulatingSupply: token.circulatingSupply || null,
+      lastUpdated: token.lastUpdated || new Date().toISOString()
     }));
 
     const fromUpper = from.toUpperCase();
