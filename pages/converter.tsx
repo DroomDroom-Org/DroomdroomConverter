@@ -357,7 +357,6 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
     setFromToken(toToken);
     setToToken(tempToken);
     
-    // Also swap the amounts
     if (toAmount) {
       setFromAmount(toAmount);
     }
@@ -388,46 +387,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
     );
   };
 
-  const coins = [
-    {
-      id: 1,
-      name: fromToken?.name,
-      price: fromToken?.price,
-      symbol: fromToken?.ticker,
-      cmcId: fromToken?.cmcId,
-      status: 'climbing',
-      rateChange: {
-        hourly: 0.1,
-        daily: 0.5
-      },
-      marketCap: '1000000',
-      volume: '1000000',
-      supply: '1000000',
-      supplyUnit: 'BTC',
-      fromToken: fromToken,
-      toToken: toToken
-    },
-    {
-      id: 2,
-      name: toToken?.name,
-      price: toToken?.price,
-      symbol: toToken?.ticker,
-      cmcId: toToken?.cmcId,
-      status: 'falling',
-      rateChange: {
-        hourly: 0.1,
-        daily: 0.5
-      },
-      marketCap: '1000000',
-      volume: '1000000',
-      supply: '1000000',
-      supplyUnit: 'BTC',
-      fromToken: fromToken,
-      toToken: toToken
-    }
-  ] 
-   
-  console.log(fromToken, toToken);
+ 
 
   return (
     <ConverterContainer>
