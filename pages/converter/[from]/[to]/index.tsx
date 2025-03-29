@@ -29,11 +29,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       supplyUnit: token.supplyUnit || '',
     }));
 
-    // Convert params to uppercase for comparison
     const fromUpper = from.toUpperCase();
     const toUpper = to.toUpperCase();
 
-    // Validate if the requested tokens exist
     const fromToken = tokens.find((t: any) => t.ticker.toUpperCase() === fromUpper);
     const toToken = tokens.find((t: any) => t.ticker.toUpperCase() === toUpper);
 
