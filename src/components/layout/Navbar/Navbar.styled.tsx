@@ -84,7 +84,8 @@ export const NavbarWrapper = styled.nav`
 	padding: 6px 0;
 	position: relative;
 	overflow: hidden;
-	
+	background-color: ${({ theme }) => theme.colors.bgColor};
+
 	@media screen and (max-width: 768px) {
 		padding: 6px 0;
 	}

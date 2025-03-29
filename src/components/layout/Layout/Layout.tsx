@@ -8,12 +8,19 @@ import { Main, HeaderWrapper } from './Layout.styled';
 import Navbar from '../Navbar/Navbar';
 import Infobar from '../Infobar/Infobar';
 import Header from 'components/Header/Header';
+import { Sticker } from 'lucide-react';
 
 const Layout: FC<PropsWithChildren> = ({ children }) => {
 	return (
 		<>
+			<div style={{
+				position : "sticky",
+				top:0,
+				zIndex:99999999
+			}}>
 			<Header />
 			<Navbar />
+			</div>
 			{/* <Infobar /> */}
 			<Main>
 				<Toaster position="top-center" />
