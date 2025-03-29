@@ -16,6 +16,7 @@ import MoreConversions from 'src/components/MoreConversions/MoreConversions';
 import { useCurrency, CURRENCIES } from 'src/context/CurrencyContext';
 import { ChevronDown, ChevronUp, ArrowLeftRight, Loader } from 'lucide-react';
 import { config } from 'src/utils/config';
+import { useRouter } from 'next/router';
 
 
 interface TokenData {
@@ -39,6 +40,8 @@ interface TokenData {
 
 interface ConverterProps {
   tokens: TokenData[];
+  initialFrom: string;
+  initialTo: string;
 }
 
 const ConverterContainer = styled.div`
@@ -344,14 +347,16 @@ const SearchWrapper = styled.div`
   width: 240px;
 `;
 
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getServerSideProps: GetServerSideProps = async (context) => {
   try {
+    const { from, to } = context.query;
     const response = await axios.get(getApiUrl(`/coins`), {
       params: {
         page: 1,
         pageSize: 50,
       },
     });
+    
     const tokens = response.data.tokens.map((token: any) => ({
       id: token.id || '',
       ticker: token.ticker || '',
@@ -370,6 +375,8 @@ export const getServerSideProps: GetServerSideProps = async () => {
     return {
       props: {
         tokens,
+        initialFrom: from || 'BTC',
+        initialTo: to || 'USDT',
       },
     };
   } catch (error) {
@@ -377,6 +384,8 @@ export const getServerSideProps: GetServerSideProps = async () => {
     return {
       props: {
         tokens: [],
+        initialFrom: 'BTC',
+        initialTo: 'USDT',
       },
     };
   }
@@ -395,12 +404,13 @@ const getToSymbol = (coin: any): string => {
       : '';
 };
 
-const Converter: React.FC<ConverterProps> = ({ tokens }) => {
+const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo }) => {
+  const router = useRouter();
   const [fromToken, setFromToken] = useState<TokenData | null>(
-    tokens.find(t => t.ticker === 'BTC') || tokens[0]
+    tokens.find(t => t.ticker === initialFrom) || tokens.find(t => t.ticker === 'BTC') || tokens[0]
   );
   const [toToken, setToToken] = useState<TokenData | null>(
-    tokens.find(t => t.ticker === 'USDT') || tokens[1]
+    tokens.find(t => t.ticker === initialTo) || tokens.find(t => t.ticker === 'USDT') || tokens[1]
   );
   const [fromAmount, setFromAmount] = useState<string>('1');
   const [toAmount, setToAmount] = useState<string>('');
@@ -667,6 +677,18 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
     setShowToSearch(false);
   };
 
+  useEffect(() => {
+    if (fromToken && toToken) {
+      router.push(
+        {
+          pathname: router.pathname,
+          query: { from: fromToken.ticker.toLowerCase(), to: toToken.ticker.toLowerCase() }
+        },
+        undefined,
+        { shallow: true }
+      );
+    }
+  }, [fromToken?.ticker, toToken?.ticker]);
 
   return (
     <ConverterContainer>
