@@ -14,7 +14,9 @@ import SimilarCrypto from 'src/components/SimilarCrypto/SimilarCrypto';
 import SearchCoin from 'src/components/SearchCoin/SearchCoin';
 import MoreConversions from 'src/components/MoreConversions/MoreConversions';
 import { useCurrency, CURRENCIES } from 'src/context/CurrencyContext';
-import { ChevronDown, ChevronUp, ArrowLeftRight } from 'lucide-react';
+import { ChevronDown, ChevronUp, ArrowLeftRight, Loader } from 'lucide-react';
+import { config } from 'src/utils/config';
+
 
 interface TokenData {
   id: string;
@@ -275,11 +277,27 @@ const RefreshButton = styled.button`
   padding: 0;
   display: flex;
   align-items: center;
+  gap: 4px;
   transition: all 0.2s ease;
   
   &:hover {
     color: #4A49F5;
     text-decoration: underline;
+  }
+  
+  &:disabled {
+    color: ${props => props.theme.colors.textColorSub};
+    cursor: not-allowed;
+    text-decoration: none;
+  }
+  
+  svg {
+    animation: ${props => props.disabled ? 'spin 1s linear infinite' : 'none'};
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
   }
 `;
 
@@ -388,6 +406,8 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
   const [toAmount, setToAmount] = useState<string>('');
   const [showFromSearch, setShowFromSearch] = useState<boolean>(false);
   const [showToSearch, setShowToSearch] = useState<boolean>(false);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+
   const [lastUpdated, setLastUpdated] = useState<string>(
     new Date().toLocaleString('en-US', {
       hour: 'numeric',
@@ -428,6 +448,26 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+ const fetchCoinPrice = async (token: TokenData | null) => {
+    if (!token || !token.cmcId) {
+      return null;
+    }
+    
+    try {
+      const basePath = config.basePath || '';
+      const url = `${basePath}/api/coin/price/${token.cmcId}`;      
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Failed to fetch price');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error(`Error fetching price for ${token.ticker}:`, error);
+      return null;
+    }
+  };
+  
 
   useEffect(() => {
     const handleDocumentClick = () => {
@@ -475,17 +515,73 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
     }, 10);
   };
 
-  const handleRefresh = () => {
-    setLastUpdated(
-      new Date().toLocaleString('en-US', {
+  const handleRefresh = async () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    
+    try {
+      // Fetch both prices concurrently using cmcId
+      const [fromPrice, toPrice] = await Promise.all([
+        fetchCoinPrice(fromToken),
+        fetchCoinPrice(toToken)
+      ]);
+
+      if (!fromPrice || !toPrice) {
+        throw new Error('Failed to fetch price data');
+      }
+
+      const updatedFromToken = { 
+        ...fromToken, 
+        price: fromPrice.price,
+        rateChange: {
+          daily: fromPrice.price_change_24h,
+          hourly: 0
+        }
+      };
+      
+      const updatedToToken = { 
+        ...toToken, 
+        price: toPrice.price,
+        rateChange: {
+          daily: toPrice.price_change_24h,
+          hourly: 0 // If you don't have hourly data
+        }
+      };
+      
+      setFromToken(updatedFromToken as TokenData);
+      setToToken(updatedToToken as TokenData);
+
+      // Calculate new conversion if we have valid input
+      const amount = parseFloat(fromAmount);
+      if (!isNaN(amount)) {
+        const convertedAmount = (amount * updatedFromToken.price) / updatedToToken.price;
+        setToAmount(convertedAmount.toFixed(updatedToToken.ticker === 'USDT' ? 2 : 8));
+      }
+
+      // Update timestamp
+      const timestamp = new Date();
+      setLastUpdated(timestamp.toLocaleString('en-US', {
         hour: 'numeric',
         minute: 'numeric',
         hour12: true,
         month: 'short',
         day: 'numeric',
         year: 'numeric'
-      })
-    );
+      }));
+
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+      setLastUpdated(new Date().toLocaleString('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true,
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      }) + ' (failed)');
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const generateAdvancedOptions = () => {
@@ -570,6 +666,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
     setShowFromSearch(false);
     setShowToSearch(false);
   };
+
 
   return (
     <ConverterContainer>
@@ -679,8 +776,16 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
 
         <LastUpdated>
           Last update: {lastUpdated}
-          <RefreshButton onClick={handleRefresh}>
-            Refresh
+          <RefreshButton 
+            onClick={handleRefresh} 
+            disabled={isRefreshing}
+          >
+            {isRefreshing ? (
+              <>
+                <Loader size={14} />
+                Refreshing...
+              </>
+            ) : 'Refresh'}
           </RefreshButton>
         </LastUpdated>
       </ConverterCard>
