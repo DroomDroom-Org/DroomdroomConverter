@@ -15,11 +15,13 @@ interface ConversionOption {
 interface MoreConversionsProps {
   advancedOptions: ConversionOption[];
   currencyOptions: ConversionOption[];
+  id?: string;
 }
 
 const MoreConversions: React.FC<MoreConversionsProps> = ({ 
   advancedOptions,
-  currencyOptions 
+  currencyOptions,
+  id
 }) => {
   const getConversionPath = (option: ConversionOption) => {
     return `/convert/${option.fromTicker.toLowerCase()}-to-${option.toTicker.toLowerCase()}`;
@@ -27,7 +29,7 @@ const MoreConversions: React.FC<MoreConversionsProps> = ({
 
 
   return (
-    <S.Container>
+    <S.Container id={id}>
       <S.SectionTitle>Advanced asset conversions</S.SectionTitle>
       <S.SectionDescription>
         A selection of relevant cryptocurrencies you might be interested in based on your interest in Bitcoin.

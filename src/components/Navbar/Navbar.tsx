@@ -3,7 +3,7 @@ import { NavbarWrapper, TabItem, TabList, ScrollButton, ScrollableContainer } fr
 import { useRouter } from 'next/router';
 import { ChevronRight, ChevronLeft } from 'lucide-react'; 
 
-const Navbar = () => {
+const Navbar: React.FC = () => {
     const [activeTab, setActiveTab] = useState('markets');
     const [showLeftArrow, setShowLeftArrow] = useState(false);
     const [showRightArrow, setShowRightArrow] = useState(true);
@@ -49,13 +49,70 @@ const Navbar = () => {
 
     const handleTabChange = (tabId: string) => {
         setActiveTab(tabId);
-        router.push(`/${slug}#${tabId}`, undefined, { shallow: true });
+        router.push(`/converter#${tabId}`, undefined, { shallow: true });
         
-        const element = document.getElementById(`tab-${tabId}`);
+        const element = document.getElementById(tabId);
         if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            const navbar = document.querySelector('nav');
+            const navbarHeight = navbar ? navbar.offsetHeight : 80;
+            const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+            window.scrollTo({
+                top: elementPosition - navbarHeight,
+                behavior: 'smooth'
+            });
         }
     };
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const hash = window.location.hash.replace('#', '');
+            if (hash) {
+                const scrollToSection = () => {
+                    const element = document.getElementById(hash);
+                    if (element) {
+                        const navbar = document.querySelector('nav');
+                        const navbarHeight = navbar?.clientHeight || 80;
+                        window.scrollTo({
+                            top: element.offsetTop - navbarHeight,
+                            behavior: 'auto'
+                        });
+                    }
+                };
+
+                if (document.getElementById(hash)) {
+                    scrollToSection();
+                } else {
+                    const retry = setTimeout(scrollToSection, 500);
+                    return () => clearTimeout(retry);
+                }
+            }
+        };
+
+        handleScroll();
+        
+        window.addEventListener('hashchange', handleScroll);
+        return () => window.removeEventListener('hashchange', handleScroll);
+    }, [router.asPath]);
+
+    useEffect(() => {
+        const handleInitialScroll = () => {
+            const hash = window.location.hash.replace('#', '');
+            if (hash) {
+                setTimeout(() => {
+                    const element = document.getElementById(hash);
+                    if (element) {
+                        const navbar = document.querySelector('nav');
+                        const navbarHeight = navbar?.clientHeight || 80;
+                        window.scrollTo({
+                            top: element.offsetTop - navbarHeight,
+                            behavior: 'auto'
+                        });
+                    }
+                }, 500);
+            }
+        };
+        handleInitialScroll();
+    }, []);
 
     const scrollLeft = () => {
         if (scrollContainerRef.current) {

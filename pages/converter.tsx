@@ -643,15 +643,15 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
       </ConverterCard>
       <Navbar />
     
-      <Market fromToken={fromToken} toToken={toToken} />
+      <Market id="markets" fromToken={fromToken} toToken={toToken} />
 
-      <About fromToken={fromToken} toToken={toToken} />
+      <About id="about" fromToken={fromToken} toToken={toToken} />
 
-      <FAQ fromToken={fromToken} toToken={toToken} />
+      <FAQ id="faq" fromToken={fromToken} toToken={toToken} />
 
-      <Related fromToken={fromToken} toToken={toToken} />
+      <Related id="related" fromToken={fromToken} toToken={toToken} />
 
-      <ConversionTables fromToken={fromToken} toToken={toToken} />
+      <ConversionTables id="conversion-tables" fromToken={fromToken} toToken={toToken} />
 
 
       <SimilarCrypto coin={fromToken}/>
@@ -659,6 +659,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens }) => {
 
 
       <MoreConversions 
+        id="more"
         advancedOptions={advancedOptions} 
         currencyOptions={currencyOptions} 
       />

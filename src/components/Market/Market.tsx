@@ -4,11 +4,13 @@ import * as S from './Market.styled';
 interface CryptoMarketProps {
   fromToken: any;
   toToken: any;
+  id?: string;
 }
 
 const Market: React.FC<CryptoMarketProps> = ({
   fromToken,
-  toToken
+  toToken,
+  id
 }) => {
   const formatCurrency = (value: number) => {
     if (value >= 1000000000000) {
@@ -62,7 +64,7 @@ const Market: React.FC<CryptoMarketProps> = ({
 
   if (!fromToken || !toToken) {
     return (
-      <S.MarketContainer>
+      <S.MarketContainer id={id}>
         <S.MarketHeading>Market latest</S.MarketHeading>
         <p>No market data available</p>
       </S.MarketContainer>
@@ -70,7 +72,7 @@ const Market: React.FC<CryptoMarketProps> = ({
   }
 
   return (
-    <S.MarketContainer>
+    <S.MarketContainer id={id}>
       <S.MarketHeading>Market latest</S.MarketHeading>
 
       <div key={fromToken.id || 0}>

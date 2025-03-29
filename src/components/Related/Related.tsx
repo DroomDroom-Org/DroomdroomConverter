@@ -11,6 +11,7 @@ interface TokenData {
 interface RelatedProps {
   fromToken: TokenData | null;
   toToken: TokenData | null;
+  id?: string;
 }
 
 // Mock data for popular fiat conversions
@@ -47,12 +48,12 @@ const getCryptoIcon = (ticker: string) => {
   );
 };
 
-const Related: React.FC<RelatedProps> = ({ fromToken }) => {
+const Related: React.FC<RelatedProps> = ({ fromToken, toToken, id }) => {
   const cryptoName = fromToken?.name || 'Bitcoin';
   const cryptoTicker = fromToken?.ticker || 'BTC';
 
   return (
-    <S.RelatedContainer>
+    <S.RelatedContainer id={id}>
       <S.SectionHeading>Browse related conversions</S.SectionHeading>
       
       <div>

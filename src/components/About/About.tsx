@@ -14,9 +14,10 @@ interface TokenData {
 interface AboutProps {
   fromToken: TokenData | null;
   toToken: TokenData | null;
+  id?: string;
 }
 
-const About: React.FC<AboutProps> = ({ fromToken, toToken }) => {
+const About: React.FC<AboutProps> = ({ fromToken, toToken, id }) => {
   // Bitcoin description
   const getBitcoinDescription = () => {
     return "The world's first cryptocurrency, Bitcoin is stored and exchanged securely on the internet through a digital ledger known as a blockchain. Bitcoins are divisible into smaller units known as satoshis — each satoshi is worth 0.00000001 bitcoin.";
@@ -66,7 +67,7 @@ const About: React.FC<AboutProps> = ({ fromToken, toToken }) => {
   };
 
   return (
-    <S.AboutContainer>
+    <S.AboutContainer id={id}>
       {fromToken && (
         <S.AboutSection>
           <S.AboutHeading>About {fromToken.name || fromToken.ticker}</S.AboutHeading>

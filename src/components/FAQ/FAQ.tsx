@@ -11,9 +11,10 @@ interface TokenData {
 interface FAQProps {
   fromToken: TokenData | null;
   toToken: TokenData | null;
+  id?: string;
 }
 
-const FAQ: React.FC<FAQProps> = ({ fromToken, toToken }) => {
+const FAQ: React.FC<FAQProps> = ({ fromToken, toToken, id }) => {
   const fromTicker = fromToken?.ticker?.toUpperCase() || 'BTC';
   const toTicker = toToken?.ticker?.toUpperCase() || 'USDT';
   const fromName = fromToken?.name || 'Bitcoin';
@@ -26,7 +27,7 @@ const FAQ: React.FC<FAQProps> = ({ fromToken, toToken }) => {
   const toFromRate = fromPrice > 0 && toPrice > 0 ? (1 / fromPrice).toFixed(8) : '0';
 
   return (
-    <S.FAQContainer>
+    <S.FAQContainer id={id}>
       <S.FAQHeading>Frequently asked questions</S.FAQHeading>
       
       <S.FAQGrid>

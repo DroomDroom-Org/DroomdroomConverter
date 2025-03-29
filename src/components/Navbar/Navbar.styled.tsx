@@ -87,7 +87,6 @@ export const ScrollButton = styled.button<{ direction: 'left' | 'right' }>`
   ${props => props.direction === 'left' && `
     position: sticky;
     left: 0;
-    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
   `}
 `;
 
