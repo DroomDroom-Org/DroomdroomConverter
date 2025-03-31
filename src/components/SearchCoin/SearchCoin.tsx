@@ -65,7 +65,7 @@ const SearchCoin: React.FC<SearchCoinProps> = ({ coins, onSelectToken, isVisible
     const debouncedSearch = useCallback(
         debounce(async (term: string) => {
             if (!term.trim()) {
-                setResults(coins.slice(0, 10));
+                setResults([...coins.slice(0, 10), ...fiatCurrencies]);
                 setIsLoading(false);
                 return;
             }
@@ -81,8 +81,13 @@ const SearchCoin: React.FC<SearchCoinProps> = ({ coins, onSelectToken, isVisible
                 const response = await axios.get(getApiUrl(`/search?q=${encodeURIComponent(term)}`));
                 console.log('Search response:', response.data);
                 
+                const matchingFiat = fiatCurrencies.filter(fiat => 
+                    fiat.name.toLowerCase().includes(term.toLowerCase()) ||
+                    (fiat.ticker || fiat.symbol || '').toLowerCase().includes(term.toLowerCase())
+                );
+                
                 const searchResults = response.data.slice(0, 5);
-                setResults(searchResults);
+                setResults([...searchResults, ...matchingFiat]);
                 
             } catch (error) {
                 console.error('Search error:', error);
@@ -91,7 +96,7 @@ const SearchCoin: React.FC<SearchCoinProps> = ({ coins, onSelectToken, isVisible
                 setIsLoading(false);
             }
         }, 300),
-        [coins]
+        [coins, fiatCurrencies]
     );
 
 
