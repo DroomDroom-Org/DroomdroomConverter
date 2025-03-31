@@ -110,7 +110,7 @@ const FAQ: React.FC<FAQProps> = ({ fromToken, toToken, id }) => {
         </S.FAQItem>
 
         <S.FAQItem>
-          <S.FAQQuestion> Is it better to convert {fromToken.name} to {toToken.name} in today's market conditions?</S.FAQQuestion>
+          <S.FAQQuestion> Is it better to convert {fromToken.name} to {toToken.name} in today&apos;s market conditions?</S.FAQQuestion>
           <S.FAQAnswer>
             Many traders convert {fromToken.name} to {toToken.name} during bearish market trends to preserve value, while converting {toToken.name} to {fromToken.name} during bullish trends to capitalize on price increases. Market timing strategies vary based on individual investment goals.
           </S.FAQAnswer>
@@ -125,15 +125,15 @@ const FAQ: React.FC<FAQProps> = ({ fromToken, toToken, id }) => {
 
         <S.FAQItem>
           <S.FAQQuestion>
-            How does {fromToken.name}'s volatility affect {toToken.name} conversions?
+            How does {fromToken.name}&apos;s volatility affect {toToken.name} conversions?
           </S.FAQQuestion>
           <S.FAQAnswer>
-            {fromToken.name}'s price volatility means that conversion values can change rapidly. {toToken.name}, as a stablecoin, maintains a relatively consistent $1 value, making it a popular hedge during periods of high {fromToken.name} volatility.
+            {fromToken.name}&apos;s price volatility means that conversion values can change rapidly. {toToken.name}, as a stablecoin, maintains a relatively consistent $1 value, making it a popular hedge during periods of high {fromToken.name} volatility.
           </S.FAQAnswer>
         </S.FAQItem>
 
         <S.FAQItem>
-          <S.FAQQuestion> What's the difference between converting {fromToken.name} to {toToken.name} versus {fromToken.name} to USD?</S.FAQQuestion>
+          <S.FAQQuestion> What&apos;s the difference between converting {fromToken.name} to {toToken.name} versus {fromToken.name} to USD?</S.FAQQuestion>
           <S.FAQAnswer>
             Converting {fromToken.name} to {toToken.name} keeps your assets in the crypto ecosystem on exchanges, while converting {fromToken.name} to USD involves moving to fiat currency, which may have different tax implications and often requires additional verification steps.
           </S.FAQAnswer>
@@ -142,7 +142,7 @@ const FAQ: React.FC<FAQProps> = ({ fromToken, toToken, id }) => {
         <S.FAQItem>
           <S.FAQQuestion> How quickly can I convert between {fromToken.name} and {toToken.name}?</S.FAQQuestion>
           <S.FAQAnswer>
-            On most cryptocurrency exchanges, {fromToken.name} to {toToken.name} conversions happen almost instantly. However, if you're moving assets between different platforms, the transaction might take 10-60 minutes depending on network congestion.
+            On most cryptocurrency exchanges, {fromToken.name} to {toToken.name} conversions happen almost instantly. However, if you&apos;re moving assets between different platforms, the transaction might take 10-60 minutes depending on network congestion.
           </S.FAQAnswer>
         </S.FAQItem>
 
@@ -182,7 +182,7 @@ const FAQ: React.FC<FAQProps> = ({ fromToken, toToken, id }) => {
         </S.FAQItem>
 
         <S.FAQItem>
-          <S.FAQQuestion>What's the difference between {toToken.ticker} and USD?</S.FAQQuestion>
+          <S.FAQQuestion>What&apos;s the difference between {toToken.ticker} and USD?</S.FAQQuestion>
           <S.FAQAnswer>
             {toToken.ticker} is a stablecoin that mirrors the value of the US Dollar but operates on blockchain networks. Unlike USD, which is issued by governments, {toToken.ticker} is issued by a private company and is used in crypto trading.
           </S.FAQAnswer>
@@ -198,7 +198,7 @@ const FAQ: React.FC<FAQProps> = ({ fromToken, toToken, id }) => {
         <S.FAQItem>
           <S.FAQQuestion>Is the {fromToken.ticker} to {toToken.ticker} rate updated in real time?</S.FAQQuestion>
           <S.FAQAnswer>
-            Yes, the {fromToken.ticker} to {toToken.ticker} rate on our converter updates in real time using the latest market data from major exchanges. You'll always see the most accurate conversion based on current trading activity.
+            Yes, the {fromToken.ticker} to {toToken.ticker} rate on our converter updates in real time using the latest market data from major exchanges. You&apos;ll always see the most accurate conversion based on current trading activity.
           </S.FAQAnswer>
         </S.FAQItem>
 
@@ -212,28 +212,28 @@ const FAQ: React.FC<FAQProps> = ({ fromToken, toToken, id }) => {
         <S.FAQItem>
           <S.FAQQuestion>How accurate is this cryptocurrency converter?</S.FAQQuestion>
           <S.FAQAnswer>
-            Our converter pulls data from multiple trusted crypto exchanges and updates in real time. It's designed for accuracy and speed so you can make informed trading decisions quickly.
+            Our converter pulls data from multiple trusted crypto exchanges and updates in real time. It&apos;s designed for accuracy and speed so you can make informed trading decisions quickly.
           </S.FAQAnswer>
         </S.FAQItem>
 
         <S.FAQItem>
           <S.FAQQuestion>Can I track historical {fromToken.ticker} to {toToken.ticker} conversion rates?</S.FAQQuestion>
           <S.FAQAnswer>
-            Yes, many platforms — including ours — offer historical charts and data showing how {fromToken.ticker} to {toToken.ticker} rates have changed over time. This is helpful for identifying market trends and making strategic moves.
+              Yes, many platforms — including ours — offer historical charts and data showing how {fromToken.ticker} to {toToken.ticker} rates have changed over time. This is helpful for identifying market trends and making strategic moves.
           </S.FAQAnswer>
         </S.FAQItem>
 
         <S.FAQItem>
           <S.FAQQuestion>Why convert {fromToken.name} to {toToken.name} instead of cashing out to USD?</S.FAQQuestion>
           <S.FAQAnswer>
-            {toToken.name} is a stablecoin pegged to the US Dollar, making it ideal for traders who want to exit {fromToken.name}'s volatility without leaving the crypto ecosystem. It's also faster and cheaper than converting to fiat.
+            {toToken.name} is a stablecoin pegged to the US Dollar, making it ideal for traders who want to exit {fromToken.name}&apos;s volatility without leaving the crypto ecosystem. It&apos;s also faster and cheaper than converting to fiat.
           </S.FAQAnswer>
         </S.FAQItem>
 
         <S.FAQItem>
           <S.FAQQuestion>How do I read {fromToken.ticker}/{toToken.ticker} price charts?</S.FAQQuestion>
           <S.FAQAnswer>
-            {fromToken.ticker}/{toToken.ticker} charts display price movement over time. Candlestick patterns, volume indicators, and moving averages can help identify trends. Green candles indicate price increases, while red shows decreases.
+              {fromToken.ticker}/{toToken.ticker} charts display price movement over time. Candlestick patterns, volume indicators, and moving averages can help identify trends. Green candles indicate price increases, while red shows decreases.
           </S.FAQAnswer>
         </S.FAQItem>
 

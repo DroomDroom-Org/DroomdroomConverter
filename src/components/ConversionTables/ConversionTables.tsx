@@ -51,37 +51,39 @@ interface ConversionTablesProps {
 }
 
 const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toToken }) => {
+  const [fromTokenPrice, setFromTokenPrice] = useState(0);
+  const [toTokenPrice, setToTokenPrice] = useState(0);
+
+  const currentTime = useMemo(() => {
+    const now = new Date();
+    return now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
+  }, []);
+
+  useEffect(() => {
+    if (fromToken && toToken) {
+      if (fromToken.isCrypto && toToken.isCrypto) {
+        setFromTokenPrice(fromToken.price);
+        setToTokenPrice(fromToken.price/toToken.price);
+      } else if (fromToken.isCrypto && !toToken.isCrypto) {
+        setFromTokenPrice(fromToken.price*toToken.price);
+        setToTokenPrice(toToken.price*fromToken.price);
+      } else if (!fromToken.isCrypto && toToken.isCrypto){
+        setFromTokenPrice(toToken.price/fromToken.price);
+        setToTokenPrice(fromToken.price*toToken.price);
+      } else {
+        setFromTokenPrice(fromToken.price/toToken.price);
+        setToTokenPrice(toToken.price/fromToken.price);
+      }
+    }
+  }, [fromToken, toToken]);
+
   if (!fromToken || !toToken) {
     return null;
   }
   
-  const [fromTokenPrice, setFromTokenPrice] = useState(fromToken.price);
-  const [toTokenPrice, setToTokenPrice] = useState(toToken.price);
-
-  useEffect(() => {
-    if (fromToken && toToken) {
-        if (fromToken.isCrypto && toToken.isCrypto) {
-          setFromTokenPrice(fromToken.price);
-          setToTokenPrice(fromToken.price/toToken.price);
-        } else if (fromToken.isCrypto && !toToken.isCrypto) {
-          setFromTokenPrice(fromToken.price*toToken.price);
-          setToTokenPrice(toToken.price*fromToken.price);
-        } else if (!fromToken.isCrypto && toToken.isCrypto){
-          setFromTokenPrice(toToken.price/fromToken.price);
-          setToTokenPrice(fromToken.price*toToken.price);
-        } else {
-          setFromTokenPrice(fromToken.price/toToken.price);
-          setToTokenPrice(toToken.price/fromToken.price);
-        }
-    }
-  }, [fromToken, toToken , fromTokenPrice, toTokenPrice]);
-
-
-
- const hourlyChange = fromToken.priceChange?.['1h'] || 0.57;
- const dailyChange = fromToken.priceChange?.['24h'] || 3.06;
- const weeklyChange = fromToken.priceChange?.['7d'] || 3.18;
-
+  const hourlyChange = fromToken.priceChange?.['1h'] || 0.57;
+  const dailyChange = fromToken.priceChange?.['24h'] || 3.06;
+  const weeklyChange = fromToken.priceChange?.['7d'] || 3.18;
 
   const amounts = [0.5, 1, 5, 10, 50, 100, 500, 1000];
 
@@ -134,11 +136,6 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
     const convertedAmount = amount * (fromToken.price / toToken.price);
     return formatAmount(convertedAmount, toToken);
   };
-
-  const currentTime = useMemo(() => {
-    const now = new Date();
-    return now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
-  }, []);
 
   return (
     <TablesContainer>
