@@ -96,8 +96,8 @@ export const CryptoIcon = styled.div`
   justify-content: center;
   
   svg, img {
-    width: 20px;
-    height: 20px;
+    width: 32px;
+    height: 32px;
     color: ${({ theme }) => theme.colors.textColor};
   }
 `;
@@ -114,4 +114,17 @@ export const CardValue = styled.div`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+`;
+
+export const IconsWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  margin-right: 12px;
+  margin-top: 5px;
+`;
+export const CryptoIcon2 = styled.img`
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-right: -8px;
 `;

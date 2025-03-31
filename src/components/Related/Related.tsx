@@ -31,25 +31,21 @@ interface RelatedProps {
   id?: string;
 }
 
-const getCryptoIcon = (ticker: string) => {
+const getCryptoIcon = (cmcId: string) => {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="12" cy="12" r="10" fill="currentColor" />
-    </svg>
+    <img src={`https://s2.coinmarketcap.com/static/img/coins/64x64/${cmcId}.png`} alt={cmcId} />
   );
 };
 
 const Related: React.FC<RelatedProps> = ({ fromToken, toToken, id , tokens   }) => {
   const { rates } = useCurrency();
-  const cryptoName = fromToken?.name || 'Bitcoin';
-  const cryptoTicker = fromToken?.ticker || 'BTC';
-  const cryptoPrice = fromToken?.price || 0;
+ 
 
   const popularFiatConversions = Object.entries(CURRENCIES).slice(0, 8).map(([code, currency]) => {
     return {
       currency: currency.name,
       symbol: currency.symbol,
-      value: cryptoPrice * (rates[code as keyof typeof CURRENCIES] || 1)
+      value: fromToken.price * (rates[code as keyof typeof CURRENCIES] || 1)
     };
   });
 
@@ -60,12 +56,13 @@ const Related: React.FC<RelatedProps> = ({ fromToken, toToken, id , tokens   }) 
 
 
   const cryptoConversions = allTokens
-    .filter(token => token.ticker !== cryptoTicker)
+    .filter(token => token.ticker !== fromToken.ticker && token.ticker !== toToken.ticker)
     .map(token => ({
       name: token.name,
       ticker: token.ticker,
       value: token.price,
-      symbol: token.ticker
+      symbol: token.ticker,
+      cmcId: token.cmcId
     }));
 
   return (
@@ -73,9 +70,9 @@ const Related: React.FC<RelatedProps> = ({ fromToken, toToken, id , tokens   }) 
       <S.SectionHeading>Browse related conversions</S.SectionHeading>
       
       <div>
-        <S.SubHeading>Popular {cryptoName} conversions</S.SubHeading>
+        <S.SubHeading>Popular {fromToken.name} conversions</S.SubHeading>
         <S.SectionDescription>
-          A selection of other popular currency conversions of {cryptoName} to various fiat currencies.
+          A selection of other popular currency conversions of {fromToken.name} to various fiat currencies.
         </S.SectionDescription>
         
         <S.ConversionGrid>
@@ -83,32 +80,39 @@ const Related: React.FC<RelatedProps> = ({ fromToken, toToken, id , tokens   }) 
             <S.ConversionCard href="#" key={index}>
               <S.CardHeader>
                 <S.CryptoIcon>
-                  {getCryptoIcon(cryptoTicker)}
+                  {getCryptoIcon(fromToken.cmcId)}
                 </S.CryptoIcon>
-                <S.CardTitle>{cryptoName} to {conversion.currency}</S.CardTitle>
+                <S.CardTitle>{fromToken.name} to {conversion.currency}</S.CardTitle>
               </S.CardHeader>
-              <S.CardValue>1 {cryptoTicker} equals {conversion.symbol}{conversion.value.toLocaleString()}</S.CardValue>
+              <S.CardValue>1 {fromToken.ticker} equals {conversion.symbol}{conversion.value.toLocaleString()}</S.CardValue>
             </S.ConversionCard>
           ))}
         </S.ConversionGrid>
       </div>
       
       <div>
-        <S.SubHeading>Convert other assets to USDT</S.SubHeading>
+        <S.SubHeading>Convert other assets to {toToken.name}</S.SubHeading>
         <S.SectionDescription>
-          A selection of relevant cryptocurrencies you might be interested in based on your interest in {cryptoName}.
+          A selection of relevant cryptocurrencies you might be interested in based on your interest in {fromToken.name}.
         </S.SectionDescription>
         
         <S.ConversionGrid>
           {cryptoConversions.map((crypto, index) => (
             <S.ConversionCard href="#" key={index}>
               <S.CardHeader>
-                <S.CryptoIcon>
-                  {getCryptoIcon(crypto.ticker)}
-                </S.CryptoIcon>
-                <S.CardTitle>{crypto.name} to USDT</S.CardTitle>
+                <S.IconsWrapper>
+                  <S.CryptoIcon2
+                    src={`https://s2.coinmarketcap.com/static/img/coins/64x64/${crypto.cmcId}.png`}
+                    alt={crypto.name}
+                  />
+                  <S.CryptoIcon2
+                    src={`https://s2.coinmarketcap.com/static/img/coins/64x64/${toToken.cmcId}.png`}
+                    alt={toToken.name}
+                  />
+                </S.IconsWrapper>
+                <S.CardTitle>{crypto.name} to {toToken.name}</S.CardTitle>
               </S.CardHeader>
-              <S.CardValue>1 {crypto.ticker} equals {crypto.value.toLocaleString()} USDT</S.CardValue>
+              <S.CardValue>1 {crypto.ticker} equals {crypto.value.toLocaleString()} {toToken.name}</S.CardValue>
             </S.ConversionCard>
           ))}
         </S.ConversionGrid>
