@@ -3,7 +3,34 @@ import { NavbarWrapper, TabItem, TabList, ScrollButton, ScrollableContainer } fr
 import { useRouter } from 'next/router';
 import { ChevronRight, ChevronLeft } from 'lucide-react'; 
 
-const Navbar: React.FC = () => {
+
+interface TokenData {
+    id: string;
+    ticker: string;
+    name: string;
+    price: number;
+    iconUrl?: string;
+    cmcId: string;
+    status: string;
+    rank: number;
+    priceChange: {
+      '1h': number;
+      '24h': number;
+      '7d': number;
+    };
+    marketCap: string;
+    volume24h: string;
+    circulatingSupply: string | null;
+    lastUpdated?: string;
+  }
+
+
+interface NavbarProps {
+    fromToken: TokenData;
+    toToken: TokenData;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ fromToken, toToken }) => {
     const [activeTab, setActiveTab] = useState('markets');
     const [showLeftArrow, setShowLeftArrow] = useState(false);
     const [showRightArrow, setShowRightArrow] = useState(true);
@@ -49,7 +76,9 @@ const Navbar: React.FC = () => {
 
     const handleTabChange = (tabId: string) => {
         setActiveTab(tabId);
-        router.push(`/converter#${tabId}`, undefined, { shallow: true });
+        const fromTicker = fromToken.ticker.toLowerCase();
+        const toTicker = toToken.ticker.toLowerCase();
+        router.push(`/converter/${fromTicker}/${toTicker}#${tabId}`, undefined, { shallow: true });
         
         const element = document.getElementById(tabId);
         if (element) {
