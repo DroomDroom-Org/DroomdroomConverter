@@ -228,6 +228,27 @@ const FAQ: React.FC<FAQProps> = ({ fromToken, toToken, id }) => {
           </S.FAQAnswer>
         </S.FAQItem>
 
+        <S.FAQItem>
+          <S.FAQQuestion>How do I read {fromTicker}/{toTicker} price charts?</S.FAQQuestion>
+          <S.FAQAnswer>
+            {fromTicker}/{toTicker} charts display price movement over time. Candlestick patterns, volume indicators, and moving averages can help identify trends. Green candles indicate price increases, while red shows decreases.
+          </S.FAQAnswer>
+        </S.FAQItem>
+
+        <S.FAQItem>
+          <S.FAQQuestion>How does {fromName} mining affect the {fromTicker} to {toTicker} conversion rate?</S.FAQQuestion>
+          <S.FAQAnswer>
+            {fromName} mining introduces new {fromTicker} into circulation according to a predetermined schedule. As the rate of new {fromName} creation slows with each halving event, this supply restriction can impact prices relative to {toTicker}.
+          </S.FAQAnswer>
+        </S.FAQItem>
+
+        <S.FAQItem>
+          <S.FAQQuestion>Can I use this converter on mobile?</S.FAQQuestion>
+          <S.FAQAnswer>
+            Yes, our {fromTicker} to {toTicker} converter is mobile-friendly and works seamlessly on all devices — desktop, tablet, and smartphones.
+          </S.FAQAnswer>
+        </S.FAQItem>
+
       </S.FAQGrid>
     </S.FAQContainer>
   );
