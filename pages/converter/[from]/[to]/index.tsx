@@ -29,7 +29,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       marketCap: token.marketCap || '0',
       volume24h: token.volume24h || '0',
       circulatingSupply: token.circulatingSupply || null,
-      lastUpdated: token.lastUpdated || new Date().toISOString()
+      lastUpdated: token.lastUpdated || new Date().toISOString(),
+      isCrypto: !['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR', 'AED'].includes(token.ticker),
     }));
 
     const fromUpper = from.toUpperCase();

@@ -21,7 +21,7 @@ interface TokenData {
   volume24h: string;
   circulatingSupply: string | null;
   lastUpdated?: string;
-
+  isCrypto: boolean;
 }
 
 interface RelatedProps {
@@ -45,7 +45,7 @@ const Related: React.FC<RelatedProps> = ({ fromToken, toToken, id , tokens   }) 
     return {
       currency: currency.name,
       symbol: currency.symbol,
-      value: fromToken.price * (rates[code as keyof typeof CURRENCIES] || 1)
+      value: rates[code as keyof typeof CURRENCIES] || 1
     };
   });
 
@@ -84,7 +84,7 @@ const Related: React.FC<RelatedProps> = ({ fromToken, toToken, id , tokens   }) 
                 </S.CryptoIcon>
                 <S.CardTitle>{fromToken.name} to {conversion.currency}</S.CardTitle>
               </S.CardHeader>
-              <S.CardValue>1 {fromToken.ticker} equals {conversion.symbol}{conversion.value.toLocaleString()}</S.CardValue>
+              <S.CardValue>1 {fromToken.ticker} equals {conversion.symbol}{(fromToken.isCrypto ? (fromToken.price * conversion.value).toFixed(8) : (conversion.value/fromToken.price).toFixed(8))}</S.CardValue>
             </S.ConversionCard>
           ))}
         </S.ConversionGrid>
@@ -112,7 +112,7 @@ const Related: React.FC<RelatedProps> = ({ fromToken, toToken, id , tokens   }) 
                 </S.IconsWrapper>
                 <S.CardTitle>{crypto.name} to {toToken.name}</S.CardTitle>
               </S.CardHeader>
-              <S.CardValue>1 {crypto.ticker} equals {crypto.value.toLocaleString()} {toToken.name}</S.CardValue>
+              <S.CardValue>1 {crypto.ticker} equals {toToken.isCrypto ? (crypto.value / toToken.price)?.toFixed(8) : (crypto.value * toToken.price)?.toFixed(8)} {toToken.name}</S.CardValue>
             </S.ConversionCard>
           ))}
         </S.ConversionGrid>

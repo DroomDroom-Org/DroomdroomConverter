@@ -19,7 +19,7 @@ interface TokenData {
   volume24h: string;
   circulatingSupply: string | null;
   lastUpdated?: string;
-
+  isCrypto: boolean;
 }
 
 interface AboutProps {
@@ -29,22 +29,18 @@ interface AboutProps {
 }
 
 const About: React.FC<AboutProps> = ({ fromToken, toToken, id }) => {
-  // Bitcoin description
   const getBitcoinDescription = () => {
     return "The world's first cryptocurrency, Bitcoin is stored and exchanged securely on the internet through a digital ledger known as a blockchain. Bitcoins are divisible into smaller units known as satoshis — each satoshi is worth 0.00000001 bitcoin.";
   };
 
-  // Tether description
   const getTetherDescription = () => {
     return "Tether (USDT) is an Ethereum token that is pegged to the value of a U.S. dollar (also known as a stablecoin). Tether's issuer claims that USDT is backed by bank reserves and loans which match or exceed the value of USDT in circulation. Important note: at this time, Coinbase only supports USDT on the Ethereum blockchain (ERC-20). Do not send USDT on any other blockchain to Coinbase.";
   };
 
-  // Generic description for other tokens
   const getGenericDescription = (name: string) => {
     return `${name} is a cryptocurrency that operates on a decentralized network, allowing for secure peer-to-peer transactions without the need for intermediaries. It utilizes blockchain technology to maintain a public ledger of all transactions, ensuring transparency and security.`;
   };
 
-  // Get description based on token ticker
   const getDescription = (token: TokenData) => {
     if (!token || !token.ticker) return '';
     
@@ -54,7 +50,6 @@ const About: React.FC<AboutProps> = ({ fromToken, toToken, id }) => {
     return getGenericDescription(token.name || ticker);
   };
 
-  // Get links based on token ticker
   const getLinks = (token: TokenData) => {
     if (!token || !token.ticker) return { whitepaper: '#', website: '#' };
     
@@ -79,7 +74,7 @@ const About: React.FC<AboutProps> = ({ fromToken, toToken, id }) => {
 
   return (
     <S.AboutContainer id={id}>
-      {fromToken && (
+      {fromToken && fromToken.isCrypto && (
         <S.AboutSection>
           <S.AboutHeading>About {fromToken.name || fromToken.ticker}</S.AboutHeading>
           <S.AboutText>{getDescription(fromToken)}</S.AboutText>
@@ -106,7 +101,7 @@ const About: React.FC<AboutProps> = ({ fromToken, toToken, id }) => {
         </S.AboutSection>
       )}
 
-      {toToken && (
+      {toToken && toToken.isCrypto && (
         <S.AboutSection>
           <S.AboutHeading>About {toToken.name || toToken.ticker}</S.AboutHeading>
           <S.AboutText>{getDescription(toToken)}</S.AboutText>

@@ -11,7 +11,7 @@ interface TokenData {
   cmcId: string;
   status: string;
   rank: number;
-  priceChange:{
+  priceChange: {
     '1h': number;
     '24h': number;
     '7d': number;
@@ -20,6 +20,7 @@ interface TokenData {
   volume24h: string;
   circulatingSupply: string | null;
   lastUpdated?: string;
+  isCrypto: boolean;
 }
 
 
@@ -45,33 +46,32 @@ const Market: React.FC<CryptoMarketProps> = ({
       return `CA$${value.toFixed(2)}`;
     }
   };
-  
+
 
   const fromToRate = fromToken.price / toToken.price;
   const toFromRate = toToken.price / fromToken.price;
-  
+
   const formatPrice = (price: any, decimals: number = 2): string => {
     if (price === null || price === undefined) return '0';
-    
+
     if (typeof price === 'number') {
       if (price < 0.00001) {
         return price.toExponential(4);
       }
-      
+
       return price.toFixed(decimals);
     }
-    
+
     return String(price);
   };
-  
+
   const getDecimalPlaces = (ticker: string) => {
     if (ticker === 'USDT' || ticker === 'USDC' || ticker === 'DAI' || ticker === 'BUSD') {
-      return 2; 
+      return 2;
     }
-    return 8; 
+    return 8;
   };
-  
-  console.log(fromToken, toToken);
+
   const formatSupply = (value: number, unit: string) => {
     if (value >= 1000000000) {
       return `${(value / 1000000000).toFixed(1)}B ${unit}`;
@@ -114,13 +114,11 @@ const Market: React.FC<CryptoMarketProps> = ({
     return token?.priceChange && token?.priceChange['7d'] > 0 ? 'climbing' : 'falling';
   };
 
-  console.log(fromToken, toToken);
-
   return (
     <S.MarketContainer id={id}>
-      <S.MarketHeading>Market latest</S.MarketHeading>
+    {(fromToken?.isCrypto || toToken?.isCrypto) && <S.MarketHeading>Market latest</S.MarketHeading>}
 
-      <div key={fromToken.id || 0}>
+      {fromToken.isCrypto && <div key={fromToken.id || 0}>
         <S.MarketStatusSection>
           <S.MarketStatusTitle>
             {fromToken.name} is <span style={{ color: getTokenStatus(fromToken) === 'climbing' ? '#4ca777' : '#e15241' }}>{getTokenStatus(fromToken)}</span> this week
@@ -162,9 +160,9 @@ const Market: React.FC<CryptoMarketProps> = ({
           <span style={{ marginLeft: '8px', fontSize: '1.1rem' }}>→</span>
         </S.SeeMoreButton>
       </div>
+      }
 
-
-      <div key={toToken.id || 0}>
+      {toToken.isCrypto && <div key={toToken.id || 0}>
         <S.MarketStatusSection>
           <S.MarketStatusTitle>
             {toToken.name} is <span style={{ color: getTokenStatus(toToken) === 'climbing' ? '#4ca777' : '#e15241' }}>{getTokenStatus(toToken)}</span> this week
@@ -205,7 +203,7 @@ const Market: React.FC<CryptoMarketProps> = ({
           See more stats
           <span style={{ marginLeft: '8px', fontSize: '1.1rem' }}>→</span>
         </S.SeeMoreButton>
-      </div>
+      </div>}
 
     </S.MarketContainer>
   );

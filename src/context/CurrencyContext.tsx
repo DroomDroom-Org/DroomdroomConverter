@@ -27,6 +27,7 @@ interface CurrencyContextType {
   setCryptoAmount: (amount: string) => void;
   currencyAmount: string;
   setCurrencyAmount: (amount: string) => void;
+  fiatCurrencies: any;
 }
 
 const CurrencyContext = createContext<CurrencyContextType>({
@@ -43,6 +44,7 @@ const CurrencyContext = createContext<CurrencyContextType>({
   setCryptoAmount: () => {},
   currencyAmount: '',
   setCurrencyAmount: () => {},
+  fiatCurrencies: [],
 });
 
 export const useCurrency = () => useContext(CurrencyContext);
@@ -66,6 +68,90 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
     AED: 3.67,
   });
 
+  const currencyList = [{
+    ticker: 'USD',
+    name: 'US Dollar',
+    cmcId: 2781,
+    price: 1,
+    symbol: '$',
+    isCrypto:false,
+  },
+  {
+    ticker: 'EUR',
+    name: 'Euro',
+    cmcId: 2790,
+    price: 0.92,
+    symbol: '€',
+    isCrypto:false,
+  },
+  {
+    ticker: 'GBP',
+    name: 'British Pound',
+    cmcId: 2783,
+    price: 0.79,
+    symbol: '£',
+    isCrypto: false,
+  },
+  {
+    ticker: 'JPY',
+    name: 'Japanese Yen',
+    cmcId: 2794,
+    price: 150.59,
+    symbol: '¥',
+    isCrypto: false,
+  },
+  {
+    ticker: 'AUD',
+    name: 'Australian Dollar',
+    cmcId: 2784,
+    price: 1.52,
+    symbol: 'A$',
+    isCrypto: false,
+  },
+  {
+    ticker: 'CAD',
+    name: 'Canadian Dollar',
+    cmcId: 2785,
+    price: 1.35,
+    symbol: 'C$',
+    isCrypto: false,
+  },
+  {
+    ticker: 'CHF',
+    name: 'Swiss Franc',
+    cmcId: 2787,
+    price: 0.88,  
+    symbol: 'Fr',
+    isCrypto: false,
+  },
+  {
+    ticker: 'CNY',
+    name: 'Chinese Yuan',
+    cmcId: 2782, 
+    price: 7.19,
+    symbol: '¥',
+    isCrypto: false,
+  },
+  {
+    ticker: 'INR',
+    name: 'Indian Rupee',
+    cmcId: 2818,
+    price: 83.09,
+    symbol: '₹',  
+    isCrypto: false,
+  },
+  {
+    ticker: 'AED',
+    name: 'UAE Dirham',
+    cmcId: 2791,
+    price: 3.67,
+    symbol: 'د.إ',
+    isCrypto: false,
+  },
+  ]
+
+  const [fiatCurrencies, setFiatCurrencies] = useState<any>(currencyList);
+
   const [cryptoAmount, setCryptoAmount] = useState('');
 	const [currencyAmount, setCurrencyAmount] = useState('');
 
@@ -78,17 +164,20 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
         const data = await response.json();
         
         if (data.rates) {
-          // Create a new rates object with only our supported currencies
           const newRates = Object.keys(CURRENCIES).reduce((acc, curr) => {
-            // If the API has this currency, use it, otherwise keep our fallback rate
             if (data.rates[curr]) {
               acc[curr as CurrencyCode] = data.rates[curr];
             }
             return acc;
           }, { ...rates });
+
+          const newFiatCurrencies = currencyList.map((curr: { ticker: string; price: number , cmcId: number, symbol: string, name: string }) => ({
+            ...curr,
+            price: newRates[curr.ticker as CurrencyCode]
+          }));
           
           setRates(newRates);
-          console.log('Updated currency rates:', newRates);
+          setFiatCurrencies(newFiatCurrencies);
         }
       } catch (error) {
         console.error('Error fetching exchange rates:', error);
@@ -139,6 +228,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
         setCryptoAmount,
         currencyAmount,
         setCurrencyAmount,
+        fiatCurrencies,
       }}
     >
       {children}

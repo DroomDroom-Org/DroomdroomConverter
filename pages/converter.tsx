@@ -28,6 +28,7 @@ interface TokenData {
   cmcId: string;
   status: string;
   rank: number;
+  isCrypto: boolean;
   priceChange:{
     '1h': number;
     '24h': number;
@@ -385,6 +386,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     });
     
+    const fiatTickers = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR', 'AED'];
+    
     const tokens = response.data.tokens.map((token: any) => ({
       id: token.id || '',
       ticker: token.ticker || '',
@@ -399,6 +402,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       volume24h: token.volume24h || '0',
       circulatingSupply: token.circulatingSupply || '0',
       lastUpdated: token.lastUpdated || new Date().toISOString(),
+      isCrypto: !fiatTickers.includes(token.ticker),
     }));
 
     return {
@@ -447,6 +451,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
   const [showToSearch, setShowToSearch] = useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [copied, setCopied] = useState(false);
+  const { fiatCurrencies } = useCurrency();
 
 
   const fromButtonRef = useRef<HTMLButtonElement>(null);
@@ -456,8 +461,17 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
     if (fromToken && toToken && fromAmount) {
       const amount = parseFloat(fromAmount);
       if (!isNaN(amount)) {
-        const convertedAmount = (amount * fromToken.price) / toToken.price;
-        setToAmount(convertedAmount.toFixed(toToken.ticker === 'USDT' ? 2 : 8));
+        let convertedAmount;
+        
+        if (!fromToken.isCrypto && toToken.isCrypto) {
+          convertedAmount = amount / (fromToken.price * toToken.price);
+        } else if (fromToken.isCrypto && !toToken.isCrypto) {
+          convertedAmount = amount * fromToken.price * toToken.price;
+        } else {
+          // Both crypto or both fiat
+          convertedAmount = (amount * fromToken.price) / toToken.price;
+        }
+        setToAmount(convertedAmount.toFixed(!toToken.isCrypto ? 2 : 8));
       }
     }
   }, [fromToken, toToken, fromAmount]);
@@ -550,7 +564,6 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
     setIsRefreshing(true);
     
     try {
-      // Fetch both prices concurrently using cmcId
       const [fromPrice, toPrice] = await Promise.all([
         fetchCoinPrice(fromToken),
         fetchCoinPrice(toToken)
@@ -574,9 +587,10 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
         price: toPrice.price,
         rateChange: {
           daily: toPrice.price_change_24h,
-          hourly: 0 // If you don't have hourly data
+          hourly: 0
         }
       };
+
       
       setFromToken(updatedFromToken as TokenData);
       setToToken(updatedToToken as TokenData);
@@ -678,7 +692,6 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
     setShowToSearch(false);
   };
 
-  console.log(fromToken, toToken);
 
   useEffect(() => {
     if (fromToken && toToken) {
@@ -702,6 +715,8 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
     }
   };
 
+ 
+
   return (
     <ConverterContainer>
       <SEO
@@ -723,9 +738,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
           </TitleWrapper>
           
           <ExchangeRate>
-            {fromToken?.ticker}/{toToken?.ticker}: 1 {fromToken?.ticker} equals {(fromToken?.price && toToken?.price) 
-              ? (fromToken.price / toToken.price).toFixed(2)
-              : '0'} {toToken?.ticker}
+            {fromToken?.ticker}/{toToken?.ticker} {fromAmount} {fromToken?.ticker} equals {toAmount} {toToken?.ticker}
           </ExchangeRate>
           
           <BuyButtonWrapper>
@@ -757,6 +770,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
                 <SearchWrapper>
                   <SearchCoin
                     coins={tokens}
+                    fiatCurrencies={fiatCurrencies}
                     onSelectToken={(token) => {
                       setFromToken(token as TokenData);
                       setShowFromSearch(false);
@@ -795,6 +809,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
                 <SearchWrapper>
                   <SearchCoin
                     coins={tokens}
+                    fiatCurrencies={fiatCurrencies}
                     onSelectToken={(token) => {
                       setToToken(token as TokenData);
                       setShowToSearch(false);
@@ -827,14 +842,18 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
           </ShareButton>
         </LastUpdated>
       </ConverterCard>
+
+
+
+      
       {fromToken && toToken && <Navbar fromToken={fromToken} toToken={toToken} />}
 
       {fromToken && toToken && (
         <>
-          <Market id="markets" fromToken={fromToken} toToken={toToken} />
+          {/* <Market id="markets" fromToken={fromToken} toToken={toToken} />
           <About id="about" fromToken={fromToken} toToken={toToken} />
           <FAQ id="faq" fromToken={fromToken} toToken={toToken} />
-          <Related id="related" fromToken={fromToken} toToken={toToken} tokens={tokens} />
+          <Related id="related" fromToken={fromToken} toToken={toToken} tokens={tokens} /> */}
           <div id="conversion-tables">
             <ConversionTables id="conversion-tables" fromToken={fromToken} toToken={toToken} />
           </div>

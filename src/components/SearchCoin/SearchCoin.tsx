@@ -17,18 +17,23 @@ interface SearchCoinProps {
     onSelectToken: (token: CommonTokenData) => void;
     isVisible: boolean;
     onClose: () => void;
+    fiatCurrencies: CommonTokenData[];
 }
 
-const SearchCoin: React.FC<SearchCoinProps> = ({ coins, onSelectToken, isVisible, onClose }) => {
+
+
+const SearchCoin: React.FC<SearchCoinProps> = ({ coins, onSelectToken, isVisible, onClose, fiatCurrencies }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [results, setResults] = useState<CommonTokenData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
     const wrapperRef = useRef<HTMLDivElement>(null);
 
+    console.log("fiatCurrencies", fiatCurrencies);
+
     useEffect(() => {
         if (coins && coins.length > 0) {
-            setResults(coins.slice(0, 10));
+            setResults([...coins.slice(0, 10), ...fiatCurrencies]);
         } else {
             setResults([]);
         }

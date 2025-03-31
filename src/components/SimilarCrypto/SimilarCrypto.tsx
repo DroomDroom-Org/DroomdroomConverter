@@ -169,9 +169,7 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
                     new Map(formattedCoins.map(item => [item.id, item])).values()
                 );
 
-                console.log('API Response:', response.data);
-                console.log('Formatted Coins:', formattedCoins);
-                console.log('Unique Coins:', uniqueCoins);
+             
 
                 setSimilarCoins(uniqueCoins);
                 setBuyGuides(processedGuides.length > 0 ? processedGuides : []);
