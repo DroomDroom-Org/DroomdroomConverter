@@ -68,7 +68,6 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
   const hourlyChange = displayFromToken.priceChange?.['1h'] || 0.57;
   const dailyChange = displayFromToken.priceChange?.['24h'] || 3.06;
   const weeklyChange = displayFromToken.priceChange?.['7d'] || 3.18; 
-  const yearlyChange = 18.78; 
 
 
   const amounts = [0.5, 1, 5, 10, 50, 100, 500, 1000];
@@ -76,7 +75,6 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
   const price24HAgo = fromToPrice / (1 + (dailyChange / 100));
   const price1WAgo = fromToPrice / (1 + (weeklyChange / 100));
   const price1MAgo = fromToPrice / (1 + (weeklyChange * 4 / 100)); 
-  const price1YAgo = fromToPrice / (1 + (yearlyChange / 100));
 
   const generateComparisonData = (historicalPrice: number, changePercent: number) => {
     return amounts.map(amount => {
@@ -95,7 +93,6 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
 
   const comparisonData24h = generateComparisonData(price24HAgo, dailyChange);
   const comparisonData1m = generateComparisonData(price1MAgo, weeklyChange * 4); 
-  const comparisonData1y = generateComparisonData(price1YAgo, yearlyChange);
 
   const formatDecimal = (value: number) => {
     return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
@@ -153,8 +150,6 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
         and the lowest 24 hour value was 1 {displayFromToken.ticker} for {formatDecimal(fromToPrice * (1 - Math.abs(dailyChange)/200))} {displayToToken.ticker}. 
         This time last month, the value of 1 {displayFromToken.ticker} was {formatDecimal(price1MAgo)} {displayToToken.ticker}, 
         which is a {weeklyChange * 4}% {weeklyChange * 4 > 0 ? 'increase' : 'decrease'} from where it is now. 
-        Looking back a year, {displayFromToken.name} has changed by {formatDecimal(fromToPrice - price1YAgo)} {displayToToken.ticker}. 
-        That means that in a single year, the value of {displayFromToken.name} has {yearlyChange > 0 ? 'grown' : 'shrunk'} by {Math.abs(yearlyChange)}%.
       </SectionDescription>
 
       <PerformanceHeading>{displayFromToken.ticker} to {displayToToken.ticker} performance history</PerformanceHeading>
@@ -167,8 +162,6 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
             <th>Change 1W</th>
             <th>Price 1M ago</th>
             <th>Change 1M</th>
-            <th>Price 1Y ago</th>
-            <th>Change 1Y</th>
           </tr>
         </TableHead>
         <TableBody>
@@ -192,13 +185,6 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
               {weeklyChange * 4 > 0 ? 
                 <PositiveChange>+{(weeklyChange * 4).toFixed(2)}%</PositiveChange> : 
                 <NegativeChange>{(weeklyChange * 4).toFixed(2)}%</NegativeChange>
-              }
-            </td>
-            <td>{formatDecimal(price1YAgo)} {displayToToken.ticker}</td>
-            <td>
-              {yearlyChange > 0 ? 
-                <PositiveChange>+{yearlyChange.toFixed(2)}%</PositiveChange> : 
-                <NegativeChange>{yearlyChange.toFixed(2)}%</NegativeChange>
               }
             </td>
           </tr>
@@ -327,36 +313,6 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
                     <PositiveChange>+{(weeklyChange * 4).toFixed(2)}%</PositiveChange>
                   ) : (
                     <NegativeChange>{(weeklyChange * 4).toFixed(2)}%</NegativeChange>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </ComparisonTableBody>
-        </ComparisonTable>
-      </div>
-
-      <ComparisonHeading>Today vs. 1 year ago</ComparisonHeading>
-      <div role="region" aria-label="1 year comparison table" style={{ overflowX: 'auto', width: '100%', margin: 0, padding: 0 }}>
-        <ComparisonTable>
-          <ComparisonTableHead>
-            <tr>
-              <th>Amount</th>
-              <th>Today at {currentTime}</th>
-              <th>1 year ago</th>
-              <th>1Y Change</th>
-            </tr>
-          </ComparisonTableHead>
-          <ComparisonTableBody>
-            {comparisonData1y.map((item) => (
-              <tr key={`1y-${item.amount}`}>
-                <td>{item.amount} {displayFromToken.ticker}</td>
-                <td>{item.currentValue} {displayToToken.ticker}</td>
-                <td>{item.prevValue} {displayToToken.ticker}</td>
-                <td>
-                  {yearlyChange >= 0 ? (
-                    <PositiveChange>+{yearlyChange.toFixed(2)}%</PositiveChange>
-                  ) : (
-                    <NegativeChange>{yearlyChange.toFixed(2)}%</NegativeChange>
                   )}
                 </td>
               </tr>

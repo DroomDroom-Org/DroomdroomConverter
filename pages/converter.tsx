@@ -827,7 +827,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
           </ShareButton>
         </LastUpdated>
       </ConverterCard>
-      <Navbar fromToken={fromToken} toToken={toToken} />
+      {fromToken && toToken && <Navbar fromToken={fromToken} toToken={toToken} />}
 
       {fromToken && toToken && (
         <>
