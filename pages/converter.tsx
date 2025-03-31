@@ -457,21 +457,30 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
   const fromButtonRef = useRef<HTMLButtonElement>(null);
   const toButtonRef = useRef<HTMLButtonElement>(null);
 
+  const calculateConversionRate = (fromToken: TokenData, toToken: TokenData) => {
+    if (!fromToken.isCrypto && toToken.isCrypto) {
+      return 1 / (fromToken.price * toToken.price);
+    } else if (fromToken.isCrypto && !toToken.isCrypto) {
+      return fromToken.price * toToken.price;
+    } else {
+      // Both crypto or both fiat
+      return fromToken.price / toToken.price;
+    }
+  };
+
+  const getDecimalPlaces = (token: TokenData) => {
+    if (!token.isCrypto) return 2;
+    if (token.ticker === 'USDT' || token.ticker === 'USDC' || token.ticker === 'DAI' || token.ticker === 'BUSD') return 2;
+    return 8;
+  };
+
   useEffect(() => {
     if (fromToken && toToken && fromAmount) {
       const amount = parseFloat(fromAmount);
       if (!isNaN(amount)) {
-        let convertedAmount;
-        
-        if (!fromToken.isCrypto && toToken.isCrypto) {
-          convertedAmount = amount / (fromToken.price * toToken.price);
-        } else if (fromToken.isCrypto && !toToken.isCrypto) {
-          convertedAmount = amount * fromToken.price * toToken.price;
-        } else {
-          // Both crypto or both fiat
-          convertedAmount = (amount * fromToken.price) / toToken.price;
-        }
-        setToAmount(convertedAmount.toFixed(!toToken.isCrypto ? 2 : 8));
+        const rate = calculateConversionRate(fromToken, toToken);
+        const convertedAmount = amount * rate;
+        setToAmount(convertedAmount.toFixed(getDecimalPlaces(toToken)));
       }
     }
   }, [fromToken, toToken, fromAmount]);
@@ -560,7 +569,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
   };
 
   const handleRefresh = async () => {
-    if (isRefreshing) return;
+    if (isRefreshing || !fromToken || !toToken) return;
     setIsRefreshing(true);
     
     try {
@@ -573,35 +582,57 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
         throw new Error('Failed to fetch price data');
       }
 
-      const updatedFromToken = { 
-        ...fromToken, 
+      const updatedFromToken: TokenData = { 
+        id: fromToken.id,
+        ticker: fromToken.ticker,
+        name: fromToken.name,
         price: fromPrice.price,
-        rateChange: {
-          daily: fromPrice.price_change_24h,
-          hourly: 0
-        }
+        iconUrl: fromToken.iconUrl,
+        cmcId: fromToken.cmcId,
+        status: fromToken.status,
+        rank: fromToken.rank,
+        isCrypto: fromToken.isCrypto,
+        priceChange: {
+          '1h': 0,
+          '24h': fromPrice.price_change_24h,
+          '7d': 0
+        },
+        marketCap: fromToken.marketCap,
+        volume24h: fromToken.volume24h,
+        circulatingSupply: fromToken.circulatingSupply,
+        lastUpdated: new Date().toISOString()
       };
       
-      const updatedToToken = { 
-        ...toToken, 
+      const updatedToToken: TokenData = { 
+        id: toToken.id,
+        ticker: toToken.ticker,
+        name: toToken.name,
         price: toPrice.price,
-        rateChange: {
-          daily: toPrice.price_change_24h,
-          hourly: 0
-        }
+        iconUrl: toToken.iconUrl,
+        cmcId: toToken.cmcId,
+        status: toToken.status,
+        rank: toToken.rank,
+        isCrypto: toToken.isCrypto,
+        priceChange: {
+          '1h': 0,
+          '24h': toPrice.price_change_24h,
+          '7d': 0
+        },
+        marketCap: toToken.marketCap,
+        volume24h: toToken.volume24h,
+        circulatingSupply: toToken.circulatingSupply,
+        lastUpdated: new Date().toISOString()
       };
 
-      
-      setFromToken(updatedFromToken as TokenData);
-      setToToken(updatedToToken as TokenData);
+      setFromToken(updatedFromToken);
+      setToToken(updatedToToken);
 
       const amount = parseFloat(fromAmount);
       if (!isNaN(amount)) {
-        const convertedAmount = (amount * updatedFromToken.price) / updatedToToken.price;
-        setToAmount(convertedAmount.toFixed(updatedToToken.ticker === 'USDT' ? 2 : 8));
+        const rate = calculateConversionRate(updatedFromToken, updatedToToken);
+        const convertedAmount = amount * rate;
+        setToAmount(convertedAmount.toFixed(getDecimalPlaces(updatedToToken)));
       }
-
-     
     } catch (error) {
       console.error('Error refreshing data:', error);
     } finally {

@@ -47,30 +47,33 @@ const Market: React.FC<CryptoMarketProps> = ({
     }
   };
 
-
-  const fromToRate = fromToken.price / toToken.price;
-  const toFromRate = toToken.price / fromToken.price;
-
-  const formatPrice = (price: any, decimals: number = 2): string => {
-    if (price === null || price === undefined) return '0';
-
-    if (typeof price === 'number') {
-      if (price < 0.00001) {
-        return price.toExponential(4);
-      }
-
-      return price.toFixed(decimals);
+  const calculateConversionRate = (fromToken: TokenData, toToken: TokenData) => {
+    if (!fromToken.isCrypto && toToken.isCrypto) {
+      return 1 / (fromToken.price * toToken.price);
+    } else if (fromToken.isCrypto && !toToken.isCrypto) {
+      return fromToken.price * toToken.price;
+    } else {
+      // Both crypto or both fiat
+      return fromToken.price / toToken.price;
     }
-
-    return String(price);
   };
 
-  const getDecimalPlaces = (ticker: string) => {
-    if (ticker === 'USDT' || ticker === 'USDC' || ticker === 'DAI' || ticker === 'BUSD') {
-      return 2;
-    }
+  const getDecimalPlaces = (token: TokenData) => {
+    if (!token.isCrypto) return 2;
+    if (token.ticker === 'USDT' || token.ticker === 'USDC' || token.ticker === 'DAI' || token.ticker === 'BUSD') return 2;
     return 8;
   };
+
+  const formatPrice = (price: number, token: TokenData): string => {
+    if (price === null || price === undefined) return '0';
+    if (price < 0.00001) {
+      return price.toExponential(4);
+    }
+    return price.toFixed(getDecimalPlaces(token));
+  };
+
+  const fromToRate = calculateConversionRate(fromToken, toToken);
+  const toFromRate = calculateConversionRate(toToken, fromToken);
 
   const formatSupply = (value: number, unit: string) => {
     if (value >= 1000000000) {
@@ -81,8 +84,6 @@ const Market: React.FC<CryptoMarketProps> = ({
       return `${value.toFixed(1)} ${unit}`;
     }
   };
-
-
 
   const getSymbol = (coin: any): string => {
     return typeof coin.symbol === 'string' ? coin.symbol : '';
@@ -125,15 +126,15 @@ const Market: React.FC<CryptoMarketProps> = ({
           </S.MarketStatusTitle>
 
           <S.MarketStatusText>
-            The current {fromToken.ticker} to {toToken.ticker} conversion rate is <strong>{formatPrice(fromToRate, getDecimalPlaces(toToken.ticker))}</strong>.
-            Inversely, this means that if you convert 1 {fromToken.ticker} you will get {formatPrice(fromToRate, getDecimalPlaces(toToken.ticker))} {toToken.ticker}.
+            The current {fromToken.ticker} to {toToken.ticker} conversion rate is <strong>{formatPrice(fromToRate, toToken)}</strong>.
+            Inversely, this means that if you convert 1 {fromToken.ticker} you will get {formatPrice(fromToRate, toToken)} {toToken.ticker}.
             <br />
             The conversion rate of {fromToken.ticker}/{toToken.ticker} has
             <span style={{ color: (fromToken.priceChange?.['1h'] || 0) > 0 ? '#4ca777' : '#e15241' }}>
-              {' '}{(fromToken.priceChange?.['1h'] || 0) > 0 ? 'increased' : 'decreased'} by {Math.abs(fromToken.priceChange?.['1h'] || 0).toFixed(getDecimalPlaces(fromToken.ticker))}%
+              {' '}{(fromToken.priceChange?.['1h'] || 0) > 0 ? 'increased' : 'decreased'} by {Math.abs(fromToken.priceChange?.['1h'] || 0).toFixed(2)}%
             </span> in the last hour and
             <span style={{ color: (fromToken.priceChange?.['24h'] || 0) > 0 ? '#4ca777' : '#e15241' }}>
-              {' '}{(fromToken.priceChange?.['24h'] || 0) > 0 ? 'grown' : 'shrunk'} by {Math.abs(fromToken.priceChange?.['24h'] || 0).toFixed(getDecimalPlaces(fromToken.ticker))}%
+              {' '}{(fromToken.priceChange?.['24h'] || 0) > 0 ? 'grown' : 'shrunk'} by {Math.abs(fromToken.priceChange?.['24h'] || 0).toFixed(2)}%
             </span> in the last 24 hours.
           </S.MarketStatusText>
         </S.MarketStatusSection>
@@ -169,6 +170,7 @@ const Market: React.FC<CryptoMarketProps> = ({
           </S.MarketStatusTitle>
 
           <S.MarketStatusText>
+            The current {toToken.ticker} to {fromToken.ticker} conversion rate is <strong>{formatPrice(toFromRate, fromToken)}</strong>.
             The current {toToken.ticker} to {fromToken.ticker} conversion rate is <strong>{formatPrice(toFromRate, getDecimalPlaces(fromToken.ticker))}</strong>.
             Inversely, this means that if you convert 1 {toToken.ticker} you will get {formatPrice(toFromRate, getDecimalPlaces(fromToken.ticker))} {fromToken.ticker}.
             <br />

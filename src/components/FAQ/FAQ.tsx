@@ -30,15 +30,34 @@ interface FAQProps {
 
 const FAQ: React.FC<FAQProps> = ({ fromToken, toToken, id }) => {
   
-  const [fromToRate, setFromToRate] = useState(toToken.isCrypto ? fromToken.price : (fromToken.price*toToken.price).toFixed(8));
-  const [toFromRate, setToFromRate] = useState(toToken.isCrypto ? (1 / fromToken.price*toToken.price).toFixed(8) : (1 / (fromToken.price*toToken.price)).toFixed(8));
+  const calculateConversionRate = (fromToken: TokenData, toToken: TokenData) => {
+    if (!fromToken.isCrypto && toToken.isCrypto) {
+      return 1 / (fromToken.price * toToken.price);
+    } else if (fromToken.isCrypto && !toToken.isCrypto) {
+      return fromToken.price * toToken.price;
+    } else {
+      // Both crypto or both fiat
+      return fromToken.price / toToken.price;
+    }
+  };
+
+  const getDecimalPlaces = (token: TokenData) => {
+    if (!token.isCrypto) return 2;
+    if (token.ticker === 'USDT' || token.ticker === 'USDC' || token.ticker === 'DAI' || token.ticker === 'BUSD') return 2;
+    return 8;
+  };
+
+  const [fromToRate, setFromToRate] = useState(calculateConversionRate(fromToken, toToken));
+  const [toFromRate, setToFromRate] = useState(calculateConversionRate(toToken, fromToken));
   
   useEffect(() => {
-    setFromToRate(toToken.isCrypto ? fromToken.price : (fromToken.price*toToken.price).toFixed(8));
-    setToFromRate(toToken.isCrypto ? (1 / fromToken.price*toToken.price).toFixed(8) : (1 / (fromToken.price*toToken.price)).toFixed(8));
+    setFromToRate(calculateConversionRate(fromToken, toToken));
+    setToFromRate(calculateConversionRate(toToken, fromToken));
   }, [fromToken, toToken]);
 
-
+  const formatRate = (rate: number, token: TokenData) => {
+    return rate.toFixed(getDecimalPlaces(token));
+  };
 
   return (
     <S.FAQContainer id={id}>
@@ -48,14 +67,14 @@ const FAQ: React.FC<FAQProps> = ({ fromToken, toToken, id }) => {
         <S.FAQItem>
           <S.FAQQuestion>How much is 1 {fromToken.name} in {toToken.ticker}?</S.FAQQuestion>
           <S.FAQAnswer>
-            Right now, 1 {fromToken.name} is worth about {fromToRate} {toToken.ticker}.
+            Right now, 1 {fromToken.name} is worth about {formatRate(fromToRate, toToken)} {toToken.ticker}.
           </S.FAQAnswer>
         </S.FAQItem>
 
         <S.FAQItem>
           <S.FAQQuestion>How much {fromToken.ticker} could I buy for 1 {toToken.ticker}?</S.FAQQuestion>
           <S.FAQAnswer>
-            Based on the current rate, you could get {toFromRate} {fromToken.ticker} for 1 {toToken.ticker}.
+            Based on the current rate, you could get {formatRate(toFromRate, fromToken)} {fromToken.ticker} for 1 {toToken.ticker}.
           </S.FAQAnswer>
         </S.FAQItem>
 
@@ -65,7 +84,7 @@ const FAQ: React.FC<FAQProps> = ({ fromToken, toToken, id }) => {
             You can use our {fromToken.ticker} to {toToken.ticker} calculator at the top of this page to convert
             any amount of {fromToken.ticker} to {toToken.ticker}. We&apos;ve also created a couple of quick reference
             tables for the most popular conversions. For example, 5 {toToken.ticker} is equivalent
-            to {5*toFromRate} {fromToken.ticker}. Inversely, 5 {fromToken.ticker} will cost about {5*fromToRate} {toToken.ticker}.
+            to {formatRate(5 * toFromRate, fromToken)} {fromToken.ticker}. Inversely, 5 {fromToken.ticker} will cost about {formatRate(5 * fromToRate, toToken)} {toToken.ticker}.
           </S.FAQAnswer>
         </S.FAQItem>
 

@@ -61,21 +61,28 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
     return now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
   }, []);
 
+  const calculateConversionRate = (fromToken: TokenData, toToken: TokenData) => {
+    if (!fromToken.isCrypto && toToken.isCrypto) {
+      return 1 / (fromToken.price * toToken.price);
+    } else if (fromToken.isCrypto && !toToken.isCrypto) {
+      return fromToken.price * toToken.price;
+    } else {
+      // Both crypto or both fiat
+      return fromToken.price / toToken.price;
+    }
+  };
+
+  const getDecimalPlaces = (token: TokenData) => {
+    if (!token.isCrypto) return 2;
+    if (token.ticker === 'USDT' || token.ticker === 'USDC' || token.ticker === 'DAI' || token.ticker === 'BUSD') return 2;
+    return 8;
+  };
+
   useEffect(() => {
     if (fromToken && toToken) {
-      if (fromToken.isCrypto && toToken.isCrypto) {
-        setFromTokenPrice(fromToken.price);
-        setToTokenPrice(fromToken.price/toToken.price);
-      } else if (fromToken.isCrypto && !toToken.isCrypto) {
-        setFromTokenPrice(fromToken.price*toToken.price);
-        setToTokenPrice(toToken.price*fromToken.price);
-      } else if (!fromToken.isCrypto && toToken.isCrypto){
-        setFromTokenPrice(toToken.price/fromToken.price);
-        setToTokenPrice(fromToken.price*toToken.price);
-      } else {
-        setFromTokenPrice(fromToken.price/toToken.price);
-        setToTokenPrice(toToken.price/fromToken.price);
-      }
+      const rate = calculateConversionRate(fromToken, toToken);
+      setFromTokenPrice(rate);
+      setToTokenPrice(1 / rate);
     }
   }, [fromToken, toToken]);
 
@@ -91,18 +98,18 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
 
   const price24HAgo = Number(toAmount) / (1 + (dailyChange / 100));
   const price1WAgo = Number(toAmount) / (1 + (weeklyChange / 100));
-  const price1MAgo = Number(toAmount) / (1 + (weeklyChange * 4 / 100)); 
+  const price1MAgo = Number(toAmount) / (1 + (weeklyChange * 4 / 100));
   
   const generateComparisonData = (historicalPrice: number, changePercent: number) => {
     return amounts.map(amount => {
-      const currentValue = amount * toAmount;
+      const currentValue = amount * Number(toAmount);
       const prevValue = amount * historicalPrice;
       const change = `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
       
       return {
         amount,
-        currentValue: currentValue.toLocaleString(undefined, { maximumFractionDigits: 2 }),
-        prevValue: prevValue.toLocaleString(undefined, { maximumFractionDigits: 2 }),
+        currentValue: currentValue.toLocaleString(undefined, { maximumFractionDigits: getDecimalPlaces(toToken) }),
+        prevValue: prevValue.toLocaleString(undefined, { maximumFractionDigits: getDecimalPlaces(toToken) }),
         change
       };
     });
@@ -111,32 +118,18 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
   const comparisonData24h = generateComparisonData(price24HAgo, dailyChange);
   const comparisonData1m = generateComparisonData(price1MAgo, weeklyChange * 4); 
 
-  const formatDecimal = (value: number) => {
-    return value?.toLocaleString(undefined, { maximumFractionDigits: 2 });
+  const formatDecimal = (value: number, token: TokenData) => {
+    return value?.toLocaleString(undefined, { maximumFractionDigits: getDecimalPlaces(token) });
   };
 
-  const formatCryptoValue = (value: number): string => {
+  const formatCryptoValue = (value: number, token: TokenData): string => {
     if (value === 0) return '0';
-    
-    if (value < 0.0001) {
-      return value.toFixed(8);
-    } else if (value < 0.01) {
-      return value.toFixed(6);
-    } else if (value < 1) {
-      return value.toFixed(4);
-    } else {
-      return value.toFixed(2);
-    }
+    return value.toFixed(getDecimalPlaces(token));
   };
 
   const formatAmount = (amount: number, token: TokenData): string => {
-    const formattedAmount = formatCryptoValue(amount);
+    const formattedAmount = formatCryptoValue(amount, token);
     return `${formattedAmount} ${token.ticker}`;
-  };
-  
-  const calculateConversion = (amount: number, fromToken: TokenData, toToken: TokenData): string => {
-    const convertedAmount = amount * (fromToken.price / toToken.price);
-    return formatAmount(convertedAmount, toToken);
   };
 
   return (
@@ -148,19 +141,19 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
       </SectionDescription>
       
       <SectionDescription>
-        The current value of 1 {fromToken.ticker} is {formatDecimal(fromTokenPrice)} {toToken.ticker}. 
-        In other words, to buy 5 {fromToken.name}, it would cost you {formatDecimal(fromTokenPrice*5)} {toToken.ticker}. 
-        Inversely, 1 {toToken.ticker} would allow you to trade for {formatCryptoValue(1/toTokenPrice)} {fromToken.ticker} 
-        while 50 {toToken.ticker} would convert to {formatCryptoValue(50/toTokenPrice)} {fromToken.ticker}, not 
+        The current value of 1 {fromToken.ticker} is {formatDecimal(fromTokenPrice, toToken)} {toToken.ticker}. 
+        In other words, to buy 5 {fromToken.name}, it would cost you {formatDecimal(fromTokenPrice*5, toToken)} {toToken.ticker}. 
+        Inversely, 1 {toToken.ticker} would allow you to trade for {formatCryptoValue(1/toTokenPrice, fromToken)} {fromToken.ticker} 
+        while 50 {toToken.ticker} would convert to {formatCryptoValue(50/toTokenPrice, fromToken)} {fromToken.ticker}, not 
         including platform or gas fees.
       </SectionDescription>
       
       <SectionDescription>
         In the last 7 days, the exchange rate has {weeklyChange > 0 ? 'increased' : 'decreased'} by {Math.abs(weeklyChange)}%. 
         Meanwhile, in the last 24 hours, the rate has changed by {dailyChange}%, which means that the 
-        highest exchange rate of 1 {fromToken.ticker} to {toToken.ticker} was {formatDecimal(fromTokenPrice * (1 + Math.abs(dailyChange)/200))} {toToken.ticker} 
-        and the lowest 24 hour value was 1 {fromToken.ticker} for {formatDecimal(fromTokenPrice * (1 - Math.abs(dailyChange)/200))} {toToken.ticker}. 
-        This time last month, the value of 1 {fromToken.ticker} was {formatDecimal(price1MAgo)} {toToken.ticker}, 
+        highest exchange rate of 1 {fromToken.ticker} to {toToken.ticker} was {formatDecimal(fromTokenPrice * (1 + Math.abs(dailyChange)/200), toToken)} {toToken.ticker} 
+        and the lowest 24 hour value was 1 {fromToken.ticker} for {formatDecimal(fromTokenPrice * (1 - Math.abs(dailyChange)/200), toToken)} {toToken.ticker}. 
+        This time last month, the value of 1 {fromToken.ticker} was {formatDecimal(price1MAgo, toToken)} {toToken.ticker}, 
         which is a {weeklyChange * 4}% {weeklyChange * 4 > 0 ? 'increase' : 'decrease'} from where it is now. 
       </SectionDescription>
 
@@ -178,21 +171,21 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
         </TableHead>
         <TableBody>
           <tr>
-            <td>{Number(price24HAgo).toFixed(8)} {toToken.ticker}</td>
+            <td>{formatCryptoValue(price24HAgo, toToken)} {toToken.ticker}</td>
             <td>
               {dailyChange > 0 ? 
                 <PositiveChange>+{dailyChange.toFixed(2)}%</PositiveChange> : 
                 <NegativeChange>{dailyChange.toFixed(2)}%</NegativeChange>
               }
             </td>
-            <td>{Number(price1WAgo).toFixed(8)} {toToken.ticker}</td>
+            <td>{formatCryptoValue(price1WAgo, toToken)} {toToken.ticker}</td>
             <td>
               {weeklyChange > 0 ? 
                 <PositiveChange>+{weeklyChange.toFixed(2)}%</PositiveChange> : 
                 <NegativeChange>{weeklyChange.toFixed(2)}%</NegativeChange>
               }
             </td>
-            <td>{Number(price1MAgo).toFixed(8)} {toToken.ticker}</td>
+            <td>{formatCryptoValue(price1MAgo, toToken)} {toToken.ticker}</td>
             <td>
               {weeklyChange * 4 > 0 ? 
                 <PositiveChange>+{(weeklyChange * 4).toFixed(2)}%</PositiveChange> : 
@@ -232,7 +225,7 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
                 {amounts.map((amount) => (
                   <tr key={`from-${amount}`}>
                     <td>{amount} {fromToken.ticker}</td>
-                    <td>{(amount * fromTokenPrice)?.toFixed(8)} {toToken.ticker}</td>
+                    <td>{formatCryptoValue(amount * fromTokenPrice, toToken)} {toToken.ticker}</td>
                   </tr>
                 ))}
               </TableBody>
@@ -264,7 +257,7 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
                 {amounts.map((amount) => (
                   <tr key={`to-${amount}`}>
                     <td>{amount} {toToken.ticker}</td>
-                    <td>{( amount/toTokenPrice)?.toFixed(8)} {fromToken.ticker}</td>
+                    <td>{formatCryptoValue(amount * toTokenPrice, fromToken)} {fromToken.ticker}</td>
                   </tr>
                 ))}
               </TableBody>
@@ -317,7 +310,7 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
           <ComparisonTableBody>
             {comparisonData1m.map((item) => (
               <tr key={`1m-${item.amount}`}>
-                  <td>{item.amount} {fromToken.ticker}</td>
+                <td>{item.amount} {fromToken.ticker}</td>
                 <td>{item.currentValue} {toToken.ticker}</td>
                 <td>{item.prevValue} {toToken.ticker}</td>
                 <td>
