@@ -853,7 +853,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
           <Market id="markets" fromToken={fromToken} toToken={toToken} />
           <About id="about" fromToken={fromToken} toToken={toToken} />
           <FAQ id="faq" fromToken={fromToken} toToken={toToken} />
-          <Related id="related" fromToken={fromToken} toToken={toToken} tokens={tokens} />
+          <Related id="related" fromToken={fromToken} toToken={toToken} tokens={tokens} setFromToken={setFromToken} setToToken={setToToken}  />
           <div id="conversion-tables">
             <ConversionTables id="conversion-tables" fromToken={fromToken} toToken={toToken}  fromAmount={fromAmount} toAmount={toAmount}/>
           </div>
@@ -868,6 +868,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
         id="more"
         advancedOptions={advancedOptions}
         currencyOptions={currencyOptions}
+        
       />
 
     </ConverterContainer>

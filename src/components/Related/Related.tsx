@@ -29,6 +29,8 @@ interface RelatedProps {
   fromToken: TokenData;
   toToken: TokenData;
   id?: string;
+  setFromToken: (token: TokenData) => void;
+  setToToken: (token: TokenData) => void;
 }
 
 const getCryptoIcon = (cmcId: string) => {
@@ -37,7 +39,7 @@ const getCryptoIcon = (cmcId: string) => {
   );
 };
 
-const Related: React.FC<RelatedProps> = ({ fromToken, toToken, id , tokens   }) => {
+const Related: React.FC<RelatedProps> = ({ fromToken, toToken, id , tokens, setFromToken, setToToken   }) => {
   const { rates } = useCurrency();
  
 
@@ -98,7 +100,13 @@ const Related: React.FC<RelatedProps> = ({ fromToken, toToken, id , tokens   }) 
         
         <S.ConversionGrid>
           {cryptoConversions.map((crypto, index) => (
-            <S.ConversionCard href="#" key={index}>
+            <S.ConversionCard href="#" key={index} onClick={() => {
+              const token = allTokens.find(token => token.cmcId === crypto.cmcId);
+              if (token) {
+                setFromToken(token);
+                setToToken(toToken);
+              }
+            }}>
               <S.CardHeader>
                 <S.IconsWrapper>
                   <S.CryptoIcon2
