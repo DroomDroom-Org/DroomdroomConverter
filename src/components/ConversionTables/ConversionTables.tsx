@@ -48,9 +48,11 @@ interface ConversionTablesProps {
   fromToken: TokenData | null;
   toToken: TokenData | null;
   id :string ;
+  fromAmount: number;
+  toAmount: number;
 }
 
-const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toToken }) => {
+const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toToken, fromAmount, toAmount }) => {
   const [fromTokenPrice, setFromTokenPrice] = useState(0);
   const [toTokenPrice, setToTokenPrice] = useState(0);
 
@@ -87,13 +89,13 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
 
   const amounts = [0.5, 1, 5, 10, 50, 100, 500, 1000];
 
-  const price24HAgo = fromTokenPrice / (1 + (dailyChange / 100));
-  const price1WAgo = fromTokenPrice / (1 + (weeklyChange / 100));
-  const price1MAgo = fromTokenPrice / (1 + (weeklyChange * 4 / 100)); 
+  const price24HAgo = toAmount / (1 + (dailyChange / 100));
+  const price1WAgo = toAmount / (1 + (weeklyChange / 100));
+  const price1MAgo = toAmount / (1 + (weeklyChange * 4 / 100)); 
   
   const generateComparisonData = (historicalPrice: number, changePercent: number) => {
     return amounts.map(amount => {
-      const currentValue = amount * fromTokenPrice;
+      const currentValue = amount * toAmount;
       const prevValue = amount * historicalPrice;
       const change = `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
       
@@ -176,21 +178,21 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
         </TableHead>
         <TableBody>
           <tr>
-            <td>{formatDecimal(price24HAgo)} {toToken.ticker}</td>
+            <td>{Number(toAmount).toFixed(2)} {toToken.ticker}</td>
             <td>
               {dailyChange > 0 ? 
                 <PositiveChange>+{dailyChange.toFixed(2)}%</PositiveChange> : 
                 <NegativeChange>{dailyChange.toFixed(2)}%</NegativeChange>
               }
             </td>
-            <td>{formatDecimal(price1WAgo)} {toToken.ticker}</td>
+            <td>{Number(toAmount).toFixed(2)} {toToken.ticker}</td>
             <td>
               {weeklyChange > 0 ? 
                 <PositiveChange>+{weeklyChange.toFixed(2)}%</PositiveChange> : 
                 <NegativeChange>{weeklyChange.toFixed(2)}%</NegativeChange>
               }
             </td>
-            <td>{formatDecimal(price1MAgo)} {toToken.ticker}</td>
+            <td>{Number(toAmount).toFixed(2)} {toToken.ticker}</td>
             <td>
               {weeklyChange * 4 > 0 ? 
                 <PositiveChange>+{(weeklyChange * 4).toFixed(2)}%</PositiveChange> : 
@@ -230,7 +232,7 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
                 {amounts.map((amount) => (
                   <tr key={`from-${amount}`}>
                     <td>{amount} {fromToken.ticker}</td>
-                    <td>{calculateConversion(amount, fromToken, toToken)}</td>
+                    <td>{(amount * fromTokenPrice)?.toFixed(2)} {toToken.ticker}</td>
                   </tr>
                 ))}
               </TableBody>
@@ -262,7 +264,7 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
                 {amounts.map((amount) => (
                   <tr key={`to-${amount}`}>
                     <td>{amount} {toToken.ticker}</td>
-                    <td>{calculateConversion(amount, toToken, fromToken)}</td>
+                    <td>{(amount * toTokenPrice)?.toFixed(2)} {fromToken.ticker}</td>
                   </tr>
                 ))}
               </TableBody>

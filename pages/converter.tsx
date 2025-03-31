@@ -850,12 +850,12 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
 
       {fromToken && toToken && (
         <>
-          <Market id="markets" fromToken={fromToken} toToken={toToken} />
+          {/* <Market id="markets" fromToken={fromToken} toToken={toToken} />
           <About id="about" fromToken={fromToken} toToken={toToken} />
           <FAQ id="faq" fromToken={fromToken} toToken={toToken} />
-          <Related id="related" fromToken={fromToken} toToken={toToken} tokens={tokens} />
+          <Related id="related" fromToken={fromToken} toToken={toToken} tokens={tokens} /> */}
           <div id="conversion-tables">
-            <ConversionTables id="conversion-tables" fromToken={fromToken} toToken={toToken} />
+            <ConversionTables id="conversion-tables" fromToken={fromToken} toToken={toToken}  fromAmount={fromAmount} toAmount={toAmount}/>
           </div>
         </>
       )}
