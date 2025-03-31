@@ -71,7 +71,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
   const currencyList = [{
     ticker: 'USD',
     name: 'US Dollar',
-    cmcId: 2781,
+    cmcId: 4217,
     price: 1,
     symbol: '$',
     isCrypto:false,
@@ -79,7 +79,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
   {
     ticker: 'EUR',
     name: 'Euro',
-    cmcId: 2790,
+    cmcId: 4217,
     price: 0.92,
     symbol: '€',
     isCrypto:false,
@@ -87,7 +87,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
   {
     ticker: 'GBP',
     name: 'British Pound',
-    cmcId: 2783,
+    cmcId: 4217,
     price: 0.79,
     symbol: '£',
     isCrypto: false,
@@ -95,7 +95,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
   {
     ticker: 'JPY',
     name: 'Japanese Yen',
-    cmcId: 2794,
+    cmcId: 4217,
     price: 150.59,
     symbol: '¥',
     isCrypto: false,
@@ -103,7 +103,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
   {
     ticker: 'AUD',
     name: 'Australian Dollar',
-    cmcId: 2784,
+    cmcId: 4217,
     price: 1.52,
     symbol: 'A$',
     isCrypto: false,
@@ -111,7 +111,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
   {
     ticker: 'CAD',
     name: 'Canadian Dollar',
-    cmcId: 2785,
+    cmcId: 4217,
     price: 1.35,
     symbol: 'C$',
     isCrypto: false,
@@ -119,7 +119,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
   {
     ticker: 'CHF',
     name: 'Swiss Franc',
-    cmcId: 2787,
+    cmcId: 4217,
     price: 0.88,  
     symbol: 'Fr',
     isCrypto: false,
@@ -127,7 +127,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
   {
     ticker: 'CNY',
     name: 'Chinese Yuan',
-    cmcId: 2782, 
+    cmcId: 4217, 
     price: 7.19,
     symbol: '¥',
     isCrypto: false,
@@ -135,7 +135,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
   {
     ticker: 'INR',
     name: 'Indian Rupee',
-    cmcId: 2818,
+    cmcId: 4217,
     price: 83.09,
     symbol: '₹',  
     isCrypto: false,
@@ -143,7 +143,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
   {
     ticker: 'AED',
     name: 'UAE Dirham',
-    cmcId: 2791,
+    cmcId: 4217,
     price: 3.67,
     symbol: 'د.إ',
     isCrypto: false,
