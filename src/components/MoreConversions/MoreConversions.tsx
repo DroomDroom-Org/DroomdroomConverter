@@ -1,6 +1,28 @@
 import React from 'react';
 import * as S from './MoreConversions.styled';
 import Link from 'next/link';
+import { FaDove } from 'react-icons/fa';
+
+interface TokenData {
+  id: string;
+  ticker: string;
+  name: string;
+  price: number;
+  iconUrl?: string;
+  cmcId: string;
+  status: string;
+  rank: number;
+  isCrypto: boolean;
+  priceChange: {
+    '1h': number;
+    '24h': number;
+    '7d': number;
+  };
+  marketCap: string;
+  volume24h: string;
+  circulatingSupply: string | null;
+  lastUpdated?: string;
+}
 
 interface ConversionOption {
   id: string;
@@ -10,22 +32,29 @@ interface ConversionOption {
   fromTicker: string;
   toTicker: string;
   iconUrl?: string;
+
 }
 
 interface MoreConversionsProps {
   advancedOptions: ConversionOption[];
   currencyOptions: ConversionOption[];
   id?: string;
+  allTokens: TokenData[];
+  setFromToken: (token: TokenData) => void;
+  setToToken: (token: TokenData) => void;
 }
 
 const MoreConversions: React.FC<MoreConversionsProps> = ({ 
   advancedOptions,
   currencyOptions,
-  id
+  id,
+  allTokens,
+  setFromToken,
+  setToToken
 }) => {
-  const getConversionPath = (option: ConversionOption) => {
-    return `/convert/${option.fromTicker.toLowerCase()}-to-${option.toTicker.toLowerCase()}`;
-  };
+
+
+
 
 
   return (
@@ -37,18 +66,25 @@ const MoreConversions: React.FC<MoreConversionsProps> = ({
       
       <S.ConversionGrid>
         {advancedOptions.map((option) => (
-          <Link key={option.id} href={getConversionPath(option)} passHref legacyBehavior>
-            <S.ConversionCard>
-              <S.CryptoIcon 
-                src={option.iconUrl || `/icons/placeholder.svg`} 
-                alt={option.fromToken}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = '/icons/placeholder.svg';
-                }}
-              />
-              <S.ConversionText>{option.fromToken} to {option.toToken}</S.ConversionText>
-            </S.ConversionCard>
-          </Link>
+         <S.ConversionCard href="#"
+         onClick={() => {
+           const toToken = allTokens.find(t => t.ticker === option.fromTicker);  
+           const fromToken = allTokens.find(t => t.ticker === option.toTicker);
+           if (toToken && fromToken) {
+             setFromToken(fromToken);
+             setToToken(toToken);
+           }
+         }}
+       >
+         <S.CryptoIcon 
+           src={option.iconUrl || `/icons/placeholder.svg`} 
+           alt={option.fromToken}
+           onError={(e) => {
+             (e.target as HTMLImageElement).src = '/icons/placeholder.svg';
+           }}
+         />
+         <S.ConversionText>{option.fromToken} to {option.toToken}</S.ConversionText>
+       </S.ConversionCard>
         ))}
       </S.ConversionGrid>
 
@@ -59,18 +95,27 @@ const MoreConversions: React.FC<MoreConversionsProps> = ({
       
       <S.ConversionGrid>
         {currencyOptions.map((option) => (
-          <Link key={option.id} href={getConversionPath(option)} passHref legacyBehavior>
-            <S.ConversionCard>
-              <S.CryptoIcon 
-                src={option.iconUrl || `/icons/placeholder.svg`} 
-                alt={option.fromToken}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = '/icons/placeholder.svg';
-                }}
-              />
-              <S.ConversionText>{option.fromToken} to {option.toToken}</S.ConversionText>
-            </S.ConversionCard>
-          </Link>
+           <S.ConversionCard href="#"
+           onClick={() => {
+            const toToken = allTokens.find(t => t.ticker === option.fromTicker);  
+            const fromToken = allTokens.find(t => t.ticker === option.toTicker);
+            if (toToken && fromToken) {
+              setFromToken(fromToken);
+              setToToken(toToken);
+            }
+            console.log(fromToken, toToken);
+          }}
+          
+         >
+           <S.CryptoIcon 
+             src={option.iconUrl || `/icons/placeholder.svg`} 
+             alt={option.fromToken}
+             onError={(e) => {
+               (e.target as HTMLImageElement).src = '/icons/placeholder.svg';
+             }}
+           />
+           <S.ConversionText>{option.fromToken} to {option.toToken}</S.ConversionText>
+         </S.ConversionCard>
         ))}
       </S.ConversionGrid>
     </S.Container>

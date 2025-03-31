@@ -629,7 +629,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
           toToken: 'Tether',
           fromTicker: crypto.ticker,
           toTicker: 'USDT',
-          iconUrl: crypto.iconUrl
+          iconUrl: crypto.iconUrl,
         });
       });
     }
@@ -643,7 +643,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
           toToken: 'USDC',
           fromTicker: crypto.ticker,
           toTicker: 'USDC',
-          iconUrl: crypto.iconUrl
+          iconUrl: crypto.iconUrl,
         });
       });
     }
@@ -659,7 +659,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
         toToken: toCrypto.name,
         fromTicker: fromCrypto.ticker,
         toTicker: toCrypto.ticker,
-        iconUrl: fromCrypto.iconUrl
+        iconUrl: fromCrypto.iconUrl,
       });
     }
 
@@ -680,7 +680,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
       toToken: fiatCurrencies[index].name,
       fromTicker: crypto.ticker,
       toTicker: fiatCurrencies[index].code,
-      iconUrl: crypto.iconUrl
+      iconUrl: crypto.iconUrl,
     }));
   };
 
@@ -868,7 +868,9 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
         id="more"
         advancedOptions={advancedOptions}
         currencyOptions={currencyOptions}
-        
+        allTokens={[...tokens, ...fiatCurrencies]}
+        setFromToken={setFromToken}
+        setToToken={setToToken}
       />
 
     </ConverterContainer>

@@ -63,7 +63,7 @@ export const ConversionCard = styled.a`
   transition: all 0.2s ease;
   
   &:hover {
-    background: ${({ theme }) => theme.colors.bgColorHover};
+    background: ${({ theme }) => theme.colors.controlBackgroundColor};
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   }
