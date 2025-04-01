@@ -7,7 +7,7 @@ export const Container = styled.div`
   width: 100%;
 
   @media (max-width: 768px) {
-    padding: 120px 0px 0px 0px ;
+    padding: 120px 0px 0px 0px;
   }
 `;
 
@@ -34,51 +34,68 @@ export const SectionDescription = styled.p`
 `;
 
 export const ConversionGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 40px;
-  
-  @media (max-width: 1024px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
   
   @media (max-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
+    gap: 0.5rem;
   }
 `;
 
 export const ConversionCard = styled.a`
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  padding: 16px;
-  background: ${({ theme }) => theme.colors.controlBackgroundColor};
-  border: 1px solid ${({ theme }) => theme.colors.colorNeutral2};
-  border-radius: 12px;
-  text-decoration: none;
+  padding: 0.2rem 0.60rem;
+  border-radius: 100px;
+  background: ${({ theme }) => theme.colors.bgColor};
   transition: all 0.2s ease;
+  border: 1px solid ${({ theme }) => theme.colors.colorNeutral2};
+  text-decoration: none;
+  color: ${({ theme }) => theme.colors.textColor};
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
   
   &:hover {
-    background: ${({ theme }) => theme.colors.controlBackgroundColor};
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border-color: ${({ theme }) => theme.colors.textColorSub};
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    background: ${({ theme }) => `linear-gradient(145deg, ${theme.colors.bgColor}, ${theme.colors.colorNeutral2}15)`};
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.25rem 0.4rem;
+    font-size: 0.7rem;
   }
 `;
 
 export const CryptoIcon = styled.img`
-  width: 32px;
-  height: 32px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  margin-right: 12px;
+  margin-right: 8px;
   background: ${({ theme }) => theme.colors.colorNeutral2};
+  object-fit: cover;
+
+  @media (max-width: 480px) {
+    width: 18px;
+    height: 18px;
+  }
 `;
 
 export const ConversionText = styled.span`
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 0.80rem;
+  font-weight: 500;
   color: ${({ theme }) => theme.colors.textColor};
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  @media (max-width: 480px) {
+    font-size: 0.70rem;
+    max-width: 150px;
+  }
 `;
