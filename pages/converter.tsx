@@ -453,11 +453,31 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
   const [copied, setCopied] = useState(false);
   const { fiatCurrencies } = useCurrency();
 
-
   const fromButtonRef = useRef<HTMLButtonElement>(null);
   const toButtonRef = useRef<HTMLButtonElement>(null);
 
-  const calculateConversionRate = (fromToken: TokenData, toToken: TokenData) => {
+  const calculateConversionRate = (
+    fromToken: TokenData,
+    toToken: TokenData
+  ) => {
+    // Validate that both tokens have valid prices
+    if (
+      !fromToken?.price ||
+      !toToken?.price ||
+      isNaN(fromToken.price) ||
+      isNaN(toToken.price) ||
+      fromToken.price <= 0 ||
+      toToken.price <= 0
+    ) {
+      console.warn("Invalid price detected:", {
+        fromToken: fromToken?.ticker,
+        fromPrice: fromToken?.price,
+        toToken: toToken?.ticker,
+        toPrice: toToken?.price,
+      });
+      return 0;
+    }
+
     if (!fromToken.isCrypto && toToken.isCrypto) {
       return 1 / (fromToken.price * toToken.price);
     } else if (fromToken.isCrypto && !toToken.isCrypto) {
@@ -479,8 +499,14 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
       const amount = parseFloat(fromAmount);
       if (!isNaN(amount)) {
         const rate = calculateConversionRate(fromToken, toToken);
-        const convertedAmount = amount * rate;
-        setToAmount(convertedAmount.toFixed(getDecimalPlaces(toToken)));
+        if (rate === 0) {
+          setToAmount("Price unavailable");
+        } else {
+          const convertedAmount = amount * rate;
+          setToAmount(convertedAmount.toFixed(getDecimalPlaces(toToken)));
+        }
+      } else {
+        setToAmount("0");
       }
     }
   }, [fromToken, toToken, fromAmount]);
@@ -502,25 +528,40 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
     };
   }, []);
 
- const fetchCoinPrice = async (token: TokenData | null) => {
+  const fetchCoinPrice = async (token: TokenData | null) => {
     if (!token || !token.cmcId) {
+      console.warn("Invalid token or missing cmcId:", token);
       return null;
     }
-    
+
     try {
       const basePath = config.basePath || '';
       const url = `${basePath}/api/coin/price/${token.cmcId}`;      
       const response = await fetch(url);
+
       if (!response.ok) {
         throw new Error('Failed to fetch price');
       }
-      return await response.json();
+
+      const data = await response.json();
+
+      // Validate the price data
+      if (
+        !data ||
+        typeof data.price !== "number" ||
+        isNaN(data.price) ||
+        data.price <= 0
+      ) {
+        console.warn("Invalid price data received:", data);
+        return null;
+      }
+
+      return data;
     } catch (error) {
       console.error(`Error fetching price for ${token.ticker}:`, error);
       return null;
     }
   };
-  
 
   useEffect(() => {
     const handleDocumentClick = () => {
@@ -553,7 +594,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
       setShowToSearch(false);
     }
     setTimeout(() => {
-      setShowFromSearch(prev => !prev);
+      setShowFromSearch((prev) => !prev);
     }, 10);
   };
 
@@ -564,64 +605,45 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
       setShowFromSearch(false);
     }
     setTimeout(() => {
-      setShowToSearch(prev => !prev);
+      setShowToSearch((prev) => !prev);
     }, 10);
   };
 
   const handleRefresh = async () => {
     if (isRefreshing || !fromToken || !toToken) return;
     setIsRefreshing(true);
-    
+
     try {
       const [fromPrice, toPrice] = await Promise.all([
         fetchCoinPrice(fromToken),
-        fetchCoinPrice(toToken)
+        fetchCoinPrice(toToken),
       ]);
 
-      if (!fromPrice || !toPrice) {
-        throw new Error('Failed to fetch price data');
+      if (!fromPrice?.price || !toPrice?.price) {
+        console.warn("Failed to fetch valid price data");
+        return;
       }
 
-      const updatedFromToken: TokenData = { 
-        id: fromToken.id,
-        ticker: fromToken.ticker,
-        name: fromToken.name,
+      const updatedFromToken: TokenData = {
+        ...fromToken,
         price: fromPrice.price,
-        iconUrl: fromToken.iconUrl,
-        cmcId: fromToken.cmcId,
-        status: fromToken.status,
-        rank: fromToken.rank,
-        isCrypto: fromToken.isCrypto,
         priceChange: {
-          '1h': 0,
-          '24h': fromPrice.price_change_24h,
-          '7d': 0
+          "1h": 0,
+          "24h": fromPrice.price_change_24h || 0,
+          "7d": 0,
         },
-        marketCap: fromToken.marketCap,
-        volume24h: fromToken.volume24h,
-        circulatingSupply: fromToken.circulatingSupply,
-        lastUpdated: new Date().toISOString()
+        lastUpdated: new Date().toISOString(),
       };
-      
-      const updatedToToken: TokenData = { 
-        id: toToken.id,
-        ticker: toToken.ticker,
-        name: toToken.name,
+
+      const updatedToToken: TokenData = {
+        ...toToken,
         price: toPrice.price,
-        iconUrl: toToken.iconUrl,
-        cmcId: toToken.cmcId,
-        status: toToken.status,
-        rank: toToken.rank,
-        isCrypto: toToken.isCrypto,
         priceChange: {
-          '1h': 0,
-          '24h': toPrice.price_change_24h,
-          '7d': 0
+          "1h": 0,
+          "24h": toPrice.price_change_24h || 0,
+          "7d": 0,
         },
-        marketCap: toToken.marketCap,
-        volume24h: toToken.volume24h,
-        circulatingSupply: toToken.circulatingSupply,
-        lastUpdated: new Date().toISOString()
+        lastUpdated: new Date().toISOString(),
       };
 
       setFromToken(updatedFromToken);
@@ -630,22 +652,30 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
       const amount = parseFloat(fromAmount);
       if (!isNaN(amount)) {
         const rate = calculateConversionRate(updatedFromToken, updatedToToken);
-        const convertedAmount = amount * rate;
-        setToAmount(convertedAmount.toFixed(getDecimalPlaces(updatedToToken)));
+        if (rate === 0) {
+          setToAmount("Price unavailable");
+        } else {
+          const convertedAmount = amount * rate;
+          setToAmount(
+            convertedAmount.toFixed(getDecimalPlaces(updatedToToken))
+          );
+        }
       }
     } catch (error) {
-      console.error('Error refreshing data:', error);
+      console.error("Error refreshing data:", error);
     } finally {
       setIsRefreshing(false);
     }
   };
 
+  console.log(fromToken, toToken);
+
   const generateAdvancedOptions = () => {
-    const from = tokens.find(t => t.ticker === fromToken?.ticker);
-    const to = tokens.find(t => t.ticker === toToken?.ticker);
+    const from = tokens.find((t) => t.ticker === fromToken?.ticker);
+    const to = tokens.find((t) => t.ticker === toToken?.ticker);
 
     const topCryptos = tokens
-      .filter(t => !['USDT', 'USDC', 'DAI', 'BUSD'].includes(t.ticker))
+      .filter((t) => !["USDT", "USDC", "DAI", "BUSD"].includes(t.ticker))
       .sort((a, b) => parseFloat(b.marketCap) - parseFloat(a.marketCap))
       .slice(0, 10);
 
@@ -671,9 +701,9 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
           id: `advanced-usdc-${index}`,
           name: `${crypto.name} to USDC`,
           fromToken: crypto.name,
-          toToken: 'USDC',
+          toToken: "USDC",
           fromTicker: crypto.ticker,
-          toTicker: 'USDC',
+          toTicker: "USDC",
           iconUrl: crypto.iconUrl,
         });
       });
@@ -748,8 +778,6 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
     }
   };
 
- 
-
   return (
     <ConverterContainer>
       <SEO
@@ -766,14 +794,19 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
               <CryptoIcon src={`https://s2.coinmarketcap.com/static/img/coins/64x64/${toToken?.cmcId}.png`} alt="USDT" />
             </IconsWrapper>
             <Title>
-              Convert and swap <TokenName ticker={fromToken?.ticker}>{fromToken?.name}</TokenName> to <TokenName ticker={toToken?.ticker}>{toToken?.name}</TokenName>
+              Convert and swap{" "}
+              <TokenName ticker={fromToken?.ticker}>
+                {fromToken?.name}
+              </TokenName>{" "}
+              to <TokenName ticker={toToken?.ticker}>{toToken?.name}</TokenName>
             </Title>
           </TitleWrapper>
-          
+
           <ExchangeRate>
-            {fromToken?.ticker}/{toToken?.ticker} {fromAmount} {fromToken?.ticker} equals {toAmount} {toToken?.ticker}
+            {fromToken?.ticker}/{toToken?.ticker} {fromAmount}{" "}
+            {fromToken?.ticker} equals {toAmount} {toToken?.ticker}
           </ExchangeRate>
-          
+
           <BuyButtonWrapper>
             <BuyButton>Buy {fromToken?.name}</BuyButton>
           </BuyButtonWrapper>
@@ -857,45 +890,58 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
         </ConversionForm>
 
         <LastUpdated>
-          Last update: {formatDate(fromToken?.lastUpdated || new Date(), 'MMM d, yyyy h:mm a')}
-          <RefreshButton 
-            onClick={handleRefresh} 
-            disabled={isRefreshing}
-          >
+          Last update:{" "}
+          {formatDate(
+            fromToken?.lastUpdated || new Date(),
+            "MMM d, yyyy h:mm a"
+          )}
+          <RefreshButton onClick={handleRefresh} disabled={isRefreshing}>
             {isRefreshing ? (
               <>
                 <Loader size={14} />
                 Refreshing...
               </>
-            ) : 'Refresh'}
+            ) : (
+              "Refresh"
+            )}
           </RefreshButton>
           <ShareButton onClick={handleShare}>
             <Share2 size={14} />
-            {copied ? 'Copied!' : 'Share'}
+            {copied ? "Copied!" : "Share"}
           </ShareButton>
         </LastUpdated>
       </ConverterCard>
 
-
-
-      
-      {fromToken && toToken && <Navbar fromToken={fromToken} toToken={toToken} />}
+      {fromToken && toToken && (
+        <Navbar fromToken={fromToken} toToken={toToken} />
+      )}
 
       {fromToken && toToken && (
         <>
           <Market id="markets" fromToken={fromToken} toToken={toToken} />
           <About id="about" fromToken={fromToken} toToken={toToken} />
           <FAQ id="faq" fromToken={fromToken} toToken={toToken} />
-          <Related id="related" fromToken={fromToken} toToken={toToken} tokens={tokens} setFromToken={setFromToken} setToToken={setToToken}  />
+          <Related
+            id="related"
+            fromToken={fromToken}
+            toToken={toToken}
+            tokens={tokens}
+            setFromToken={setFromToken}
+            setToToken={setToToken}
+          />
           <div id="conversion-tables">
-            <ConversionTables id="conversion-tables" fromToken={fromToken} toToken={toToken}  fromAmount={fromAmount} toAmount={toAmount}/>
+            <ConversionTables
+              id="conversion-tables"
+              fromToken={fromToken}
+              toToken={toToken}
+              fromAmount={fromAmount}
+              toAmount={toAmount}
+            />
           </div>
         </>
       )}
 
-      {fromToken && (
-        <SimilarCrypto coin={fromToken} />
-      )}
+      {fromToken && <SimilarCrypto coin={fromToken} />}
 
       <MoreConversions
         id="more"
@@ -905,7 +951,6 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
         setFromToken={setFromToken}
         setToToken={setToToken}
       />
-
     </ConverterContainer>
   );
 };
