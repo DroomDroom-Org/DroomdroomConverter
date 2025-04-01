@@ -21,7 +21,8 @@ import {
     ShimmerCard,
     ShimmerImage,
     ShimmerText,
-    ShimmerPrice
+    ShimmerPrice,
+    HowToBuy
 } from './SimilarCrypto.styled';
 import axios from 'axios';
 import { getApiUrl, getCmcImageUrl } from "utils/config";
@@ -86,16 +87,14 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
                 let formattedCoins: any[] = [];
                 let processedGuides: any[] = [];
 
-                // Handle array response (old format)
                 if (Array.isArray(response.data)) {
-                    // Make sure each item in the array has a unique token
+
                     formattedCoins = response.data
-                        .filter(item => item.token && item.token.id) // Filter out any invalid tokens
+                        .filter(item => item.token && item.token.id) 
                         .map((item: any, index: number) => {
                             const priceChange = item.token.priceChange?.day1 || 0;
                             const isPositive = priceChange >= 0;
 
-                            // Create buy guide data
                             if (index < 12 && !processedGuides.some(g => g.cmcId === item.token.cmcId)) {
                                 processedGuides.push({
                                     name: item.token.name,
@@ -104,7 +103,6 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
                                 });
                             }
 
-                            // Prepare chart data
                             let chartData: any[] = [];
                             if (item.chartData && Array.isArray(item.chartData)) {
                                 chartData = item.chartData;
@@ -125,15 +123,14 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
                             };
                         });
                 }
-                // Handle new response format 
+                   
                 else if (response.data.similar && Array.isArray(response.data.similar)) {
                     formattedCoins = response.data.similar
-                        .filter(item => item.token && item.token.id) // Filter out any invalid tokens
+                        .filter((item: any) => item.token && item.token.id) 
                         .map((item: any, index: number) => {
                             const priceChange = item.token.priceChange?.day1 || 0;
                             const isPositive = priceChange >= 0;
 
-                            // Create buy guide data
                             if (index < 12 && !processedGuides.some(g => g.cmcId === item.token.cmcId)) {
                                 processedGuides.push({
                                     name: item.token.name,
@@ -142,7 +139,6 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
                                 });
                             }
 
-                            // Prepare chart data
                             let chartData: any[] = [];
                             if (item.chartData && Array.isArray(item.chartData)) {
                                 chartData = item.chartData;
@@ -164,7 +160,6 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
                         });
                 }
 
-                // Remove any duplicate coins by ID
                 const uniqueCoins = Array.from(
                     new Map(formattedCoins.map(item => [item.id, item])).values()
                 );
@@ -217,10 +212,8 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
         return Array(count).fill(0).map((_, index) => (
             <ShimmerCard key={`shimmer-${index}`} className="shimmer-effect">
                 <ShimmerImage />
-                <CoinInfo>
-                    <ShimmerText width="60%" />
-                    <ShimmerPrice />
-                </CoinInfo>
+                <ShimmerText />
+                <ShimmerPrice />
             </ShimmerCard>
         ));
     };
@@ -245,31 +238,20 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
                             <CoinCard
                                 key={coinData.id || `similar-${index}`}
                                 className="simplified-card"
-                                style={{
-                                    padding: '20px 24px',
-                                    borderRadius: '12px',
-                                    background: theme.name === 'dark' ? 'rgba(34, 37, 49, 0.7)' : 'rgba(255, 255, 255, 0.7)',
-                                    border: `1px solid ${theme.name === 'dark' ? 'rgba(50, 53, 70, 0.5)' : 'rgba(207, 214, 228, 0.8)'}`,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between'
-                                }}
                             >
-                                <div style={{ display: 'flex', alignItems: 'center' }}>
-                                    <Image
-                                        src={getCmcImageUrl(coinData.cmcId)}
-                                        alt={coinData.name}
-                                        width={32}
-                                        height={32}
-                                        style={{
-                                            borderRadius: '50%',
-                                            marginRight: '12px'
-                                        }}
-                                    />
+                                <CoinInfo>
+                                    <CoinLogo>
+                                        <Image
+                                            src={getCmcImageUrl(coinData.cmcId)}
+                                            alt={coinData.name}
+                                            width={22}
+                                            height={22}
+                                        />
+                                    </CoinLogo>
                                     <CoinName>{coinData.name}</CoinName>
-                                </div>
-                                <Price style={{ margin: 0 }}>
-                                    ${coinData.price.toLocaleString()}
+                                </CoinInfo>
+                                <Price>
+                                    {formatPrice(coinData.price)}
                                 </Price>
                             </CoinCard>
                         ))
@@ -294,30 +276,19 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
                         <CoinCard
                             key={coin.ticker}
                             className="simplified-card"
-                            style={{
-                                padding: '20px 24px',
-                                borderRadius: '12px',
-                                background: theme.name === 'dark' ? 'rgba(34, 37, 49, 0.7)' : 'rgba(255, 255, 255, 0.7)',
-                                border: `1px solid ${theme.name === 'dark' ? 'rgba(50, 53, 70, 0.5)' : 'rgba(207, 214, 228, 0.8)'}`,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between'
-                            }}
                         >
-                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                                <Image
-                                    src={getCmcImageUrl(coin.cmcId)}
-                                    alt={coin.name}
-                                    width={32}
-                                    height={32}
-                                    style={{
-                                        borderRadius: '50%',
-                                        marginRight: '12px'
-                                    }}
-                                />
+                            <CoinInfo>
+                                <CoinLogo>
+                                    <Image
+                                        src={getCmcImageUrl(coin.cmcId)}
+                                        alt={coin.name}
+                                        width={22}
+                                        height={22}
+                                    />
+                                </CoinLogo>
                                 <CoinName>{coin.name}</CoinName>
-                            </div>
-                            <Price style={{ margin: 0 }}>
+                            </CoinInfo>
+                            <Price>
                                 ${coin.price.toLocaleString()}
                             </Price>
                         </CoinCard>
@@ -342,27 +313,18 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
                             className="simplified-card"
                             as="a"
                             href="#"
-                            style={{
-                                textDecoration: 'none',
-                                padding: '20px 24px',
-                                borderRadius: '12px',
-                                background: theme.name === 'dark' ? 'rgba(34, 37, 49, 0.7)' : 'rgba(255, 255, 255, 0.7)',
-                                border: `1px solid ${theme.name === 'dark' ? 'rgba(50, 53, 70, 0.5)' : 'rgba(207, 214, 228, 0.8)'}`,
-                                display: 'flex',
-                                alignItems: 'center'
-                            }}
                         >
-                            <Image
-                                src={getCmcImageUrl(coin.cmcId)}
-                                alt={coin.name}
-                                width={32}
-                                height={32}
-                                style={{
-                                    borderRadius: '50%',
-                                    marginRight: '12px'
-                                }}
-                            />
-                            <CoinName>How to Buy {coin.name}</CoinName>
+                            <CoinInfo>
+                                <CoinLogo>
+                                    <Image
+                                        src={getCmcImageUrl(coin.cmcId)}
+                                        alt={coin.name}
+                                        width={22}
+                                        height={22}
+                                    />
+                                </CoinLogo>
+                                <HowToBuy>How to Buy {coin.name}</HowToBuy>
+                            </CoinInfo>
                         </CoinCard>
                     )) : (
                         renderShimmerCards(6)

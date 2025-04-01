@@ -82,47 +82,42 @@ export const SeeMoreButton = styled.button<{ children?: React.ReactNode; onClick
 `;
 
 export const GridContainer = styled.div`
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
   
-  @media (min-width: 640px) {
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  }
-  
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  @media (min-width: 1200px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  
-  &.simplified-grid {
-    @media (min-width: 640px) {
-      grid-template-columns: repeat(2, 1fr);
-    }
-    
-    @media (min-width: 1200px) {
-      grid-template-columns: repeat(3, 1fr);
-    }
+  @media (max-width: 768px) {
+    gap: 0.5rem;
   }
 `;
 
 export const CoinCard = styled.div<{ children?: React.ReactNode; className?: string; key?: string }>`
-  border-radius: 12px;
-  padding: 1rem;
-  background: ${({ theme }) => theme.name === 'dark' 
-    ? 'rgba(34, 37, 49, 0.7)' 
-    : 'rgba(255, 255, 255, 0.7)'};
-  border: 1px solid ${({ theme }) => theme.name === 'dark'
-    ? 'rgba(50, 53, 70, 0.5)'
-    : 'rgba(207, 214, 228, 0.8)'};
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.60rem;
+  border-radius: 100px;
+  background: ${({ theme }) => theme.name === 'dark' ? 'rgba(34, 37, 49, 0.7)' : 'rgba(255, 255, 255, 0.7)'};
+  transition: all 0.2s ease;
+  border: 1px solid ${({ theme }) => theme.name === 'dark' ? 'rgba(50, 53, 70, 0.5)' : 'rgba(207, 214, 228, 0.8)'};
+  text-decoration: none;
+  color: ${({ theme }) => theme.colors.textColor};
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
   
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 12px ${({ theme }) => theme.name === 'dark' ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.08)'};
+    transform: translateY(-2px);
+    border-color: ${({ theme }) => theme.name === 'dark' ? 'rgba(71, 77, 87, 0.7)' : 'rgba(207, 214, 228, 1)'};
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    background: ${({ theme }) => theme.name === 'dark' 
+      ? 'linear-gradient(145deg, rgba(34, 37, 49, 0.8), rgba(50, 53, 70, 0.15))'
+      : 'linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(239, 242, 245, 0.15))'};
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.25rem 0.4rem;
+    font-size: 0.7rem;
   }
 `;
 
@@ -191,24 +186,64 @@ export const ChartContainer = styled.div<{ children?: React.ReactNode; className
 export const CoinInfo = styled.div`
   display: flex;
   align-items: center;
-  width: 100%;
+  gap: 0.5rem;
 `;
 
 export const CoinName = styled.div`
-  font-weight: 600;
+  font-size: 0.80rem;
+  font-weight: 500;
   color: ${({ theme }) => theme.colors.textColor};
-  margin-left: 8px;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  @media (max-width: 480px) {
+    font-size: 0.70rem;
+    max-width: 80px;
+  }
+`;
+
+export const HowToBuy = styled.div`
+  font-size: 0.80rem;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.textColor};
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  @media (max-width: 480px) {
+    font-size: 0.70rem;
+    max-width: 150px;
+  }
 `;
 
 export const CoinLogo = styled.div`
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: ${props => props.theme.colors.backgroundHover};
+  
+  img {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  @media (max-width: 480px) {
+    width: 18px;
+    height: 18px;
+    
+    img {
+      width: 18px;
+      height: 18px;
+    }
+  }
 `;
 
 export const PriceContainer = styled.div`
@@ -224,9 +259,14 @@ export const PriceContainer = styled.div`
 `;
 
 export const Price = styled.span`
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.textColorSub};
-  margin-left: auto;
+  font-size: 0.80rem;
+  color: ${({ theme }) => theme.colors.textColor};
+  font-weight: 500;
+  margin-left: 8px;
+
+  @media (max-width: 480px) {
+    font-size: 0.70rem;
+  }
 `;
 
 export const PriceChange = styled.div<{ isPositive: boolean; children?: React.ReactNode }>`
@@ -278,18 +318,16 @@ const shimmer = keyframes`
 
 // Shimmer card component
 export const ShimmerCard = styled.div`
-  display: flex;
-  flex-direction: column;
-  background: ${({ theme }) => theme.name === 'dark' ? 'rgba(30, 33, 45, 0.5)' : 'rgba(255, 255, 255, 0.6)'};
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.60rem;
+  border-radius: 100px;
+  background: ${({ theme }) => theme.name === 'dark' ? 'rgba(34, 37, 49, 0.7)' : 'rgba(255, 255, 255, 0.7)'};
+  border: 1px solid ${({ theme }) => theme.name === 'dark' ? 'rgba(50, 53, 70, 0.5)' : 'rgba(207, 214, 228, 0.8)'};
+  backdrop-filter: blur(8px);
   position: relative;
-  backdrop-filter: blur(10px);
-  border: 1px solid ${({ theme }) => theme.name === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
-  padding: 12px;
-  min-height: 75px;
+  overflow: hidden;
+  min-width: 200px;
 
   &.shimmer-effect {
     &::before {
@@ -310,28 +348,49 @@ export const ShimmerCard = styled.div`
       z-index: 1;
     }
   }
+
+  @media (max-width: 480px) {
+    padding: 0.25rem 0.4rem;
+    min-width: 150px;
+  }
 `;
 
 export const ShimmerImage = styled.div`
-  width: 32px;
-  height: 32px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: ${({ theme }) => theme.name === 'dark' ? 'rgba(60, 63, 80, 0.8)' : 'rgba(220, 225, 230, 0.8)'};
-  margin-right: 12px;
+  margin-right: 8px;
+  flex-shrink: 0;
+
+  @media (max-width: 480px) {
+    width: 18px;
+    height: 18px;
+  }
 `;
 
 export const ShimmerText = styled.div<{ width?: string }>`
-  height: 14px;
-  width: ${props => props.width || '100%'};
+  height: 12px;
+  width: ${props => props.width || '80px'};
   background: ${({ theme }) => theme.name === 'dark' ? 'rgba(60, 63, 80, 0.8)' : 'rgba(220, 225, 230, 0.8)'};
   border-radius: 4px;
-  margin-bottom: 8px;
+  margin-right: 8px;
+
+  @media (max-width: 480px) {
+    width: ${props => props.width ? `calc(${props.width} * 0.8)` : '60px'};
+    height: 10px;
+  }
 `;
 
 export const ShimmerPrice = styled.div`
-  height: 16px;
-  width: 60px;
+  height: 12px;
+  width: 50px;
   background: ${({ theme }) => theme.name === 'dark' ? 'rgba(60, 63, 80, 0.8)' : 'rgba(220, 225, 230, 0.8)'};
   border-radius: 4px;
   margin-left: auto;
+
+  @media (max-width: 480px) {
+    width: 40px;
+    height: 10px;
+  }
 `;
