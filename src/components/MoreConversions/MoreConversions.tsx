@@ -66,7 +66,9 @@ const MoreConversions: React.FC<MoreConversionsProps> = ({
       
       <S.ConversionGrid>
         {advancedOptions.map((option) => (
-         <S.ConversionCard href="#"
+         <S.ConversionCard 
+         key={`adv-${option.id}`}
+         href="#"
          onClick={() => {
            const toToken = allTokens.find(t => t.ticker === option.fromTicker);  
            const fromToken = allTokens.find(t => t.ticker === option.toTicker);
@@ -95,7 +97,9 @@ const MoreConversions: React.FC<MoreConversionsProps> = ({
       
       <S.ConversionGrid>
         {currencyOptions.map((option) => (
-           <S.ConversionCard href="#"
+           <S.ConversionCard 
+           key={`curr-${option.id}`}
+           href="#"
            onClick={() => {
             const toToken = allTokens.find(t => t.ticker === option.fromTicker);  
             const fromToken = allTokens.find(t => t.ticker === option.toTicker);
@@ -105,7 +109,6 @@ const MoreConversions: React.FC<MoreConversionsProps> = ({
             }
             console.log(fromToken, toToken);
           }}
-          
          >
            <S.CryptoIcon 
              src={option.iconUrl || `/icons/placeholder.svg`} 
