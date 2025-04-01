@@ -13,11 +13,11 @@ const nextConfig = {
 		  }
 		]
 	  },
-  basePath: '/price',
-  assetPrefix: '/price',
+  basePath: '',
+  assetPrefix: '/',
   publicRuntimeConfig: {
-    basePath: '/price',
-    apiPath: '/price/api',
+    basePath: '',
+    apiPath: '/api',
     cmcImageUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64',
     // Add any other public config values here
   },
