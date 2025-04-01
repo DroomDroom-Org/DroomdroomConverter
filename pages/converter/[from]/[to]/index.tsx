@@ -14,8 +14,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     });
 
-   
- 
     const tokens = response.data.tokens.map((token: any) => ({
       id: token.id || '',
       ticker: token.ticker || '',
@@ -33,16 +31,17 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       isCrypto: !['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR', 'AED'].includes(token.ticker),
     }));
 
-    const fromUpper = from.toUpperCase();
-    const toUpper = to.toUpperCase();
+    // Parse the slugs to get tickers
+    const fromTicker = from.split('-').pop()?.toUpperCase() || '';
+    const toTicker = to.split('-').pop()?.toUpperCase() || '';
 
-    const fromToken = tokens.find((t: any) => t.ticker.toUpperCase() === fromUpper);
-    const toToken = tokens.find((t: any) => t.ticker.toUpperCase() === toUpper);
+    const fromToken = tokens.find((t: any) => t.ticker.toUpperCase() === fromTicker);
+    const toToken = tokens.find((t: any) => t.ticker.toUpperCase() === toTicker);
 
     if (!fromToken || !toToken) {
       return {
         redirect: {
-          destination: '/converter/btc/usdt',
+          destination: '/converter/bitcoin-btc/tether-usdt-usdt',
           permanent: false,
         },
       };
@@ -59,7 +58,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     console.error('Error fetching tokens:', error);
     return {
       redirect: {
-        destination: '/converter/btc/usdt',
+        destination: '/converter/bitcoin-btc/tether-usdt-usdt',
         permanent: false,
       },
     };

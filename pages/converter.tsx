@@ -726,8 +726,10 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
 
   useEffect(() => {
     if (fromToken && toToken) {
+      const fromSlug = `${fromToken.name.toLowerCase().replace(/\s+/g, '-')}-${fromToken.ticker.toLowerCase()}`;
+      const toSlug = `${toToken.name.toLowerCase().replace(/\s+/g, '-')}-${toToken.ticker.toLowerCase()}`;
       router.push(
-        `/converter/${fromToken.ticker.toLowerCase()}/${toToken.ticker.toLowerCase()}`,
+        `/converter/${fromSlug}/${toSlug}`,
         undefined,
         { shallow: true }
       );

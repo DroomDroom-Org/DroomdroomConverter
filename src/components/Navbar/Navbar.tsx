@@ -76,9 +76,9 @@ const Navbar: React.FC<NavbarProps> = ({ fromToken, toToken }) => {
 
     const handleTabChange = (tabId: string) => {
         setActiveTab(tabId);
-        const fromTicker = fromToken.ticker.toLowerCase();
-        const toTicker = toToken.ticker.toLowerCase();
-        router.push(`/converter/${fromTicker}/${toTicker}#${tabId}`, undefined, { shallow: true });
+        const fromSlug = `${fromToken.name.toLowerCase().replace(/\s+/g, '-')}-${fromToken.ticker.toLowerCase()}`;
+        const toSlug = `${toToken.name.toLowerCase().replace(/\s+/g, '-')}-${toToken.ticker.toLowerCase()}`;
+        router.push(`/converter/${fromSlug}/${toSlug}#${tabId}`, undefined, { shallow: true });
         
         const element = document.getElementById(tabId);
         if (element) {

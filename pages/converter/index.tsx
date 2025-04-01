@@ -3,7 +3,7 @@ import { GetServerSideProps } from 'next';
 export const getServerSideProps: GetServerSideProps = async () => {
   return {
     redirect: {
-      destination: '/converter/btc/usdt',
+      destination: '/converter/bitcoin-btc/tether-usdt-usdt',
       permanent: false,
     },
   };
