@@ -106,7 +106,8 @@ const SearchCoin: React.FC<SearchCoinProps> = ({ coins, onSelectToken, isVisible
         debouncedSearch(e.target.value);
     };
 
-    const handleCoinClick = (coin: CommonTokenData) => {
+    const handleCoinClick = (coin: any) => {
+        console.log("coin", coin);
         onSelectToken(coin);
         setSearchTerm('');
         onClose();

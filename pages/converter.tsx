@@ -778,6 +778,32 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
     }
   };
 
+  const handleCoinClick = (coin: any, side: 'from' | 'to') => {
+    const token = {
+      ...coin,
+      isCrypto: true,
+      cmcId: coin?.cmcId ?? 0,
+      iconUrl: coin?.iconUrl ?? `https://s2.coinmarketcap.com/static/img/coins/64x64/${coin?.cmcId}.png`,
+      price: coin?.currentPrice?.usd ?? coin?.price ?? 0,
+      priceChange: {
+        "1h": coin?.priceChange?.day1 ?? coin?.priceChange?.["1h"] ?? 0,
+        "24h": coin?.priceChange?.day1 ?? coin?.priceChange?.["24h"] ?? 0,
+        "7d": coin?.priceChange?.day1 ?? coin?.priceChange?.["7d"] ?? 0,
+      },
+      marketCap: coin?.marketData?.marketCap ?? coin?.marketCap ?? 0,
+      volume24h: coin?.marketData?.volume24h ?? coin?.volume24h ?? 0,
+      circulatingSupply: coin?.marketData?.circulatingSupply ?? coin?.circulatingSupply ?? 0,
+      lastUpdated: coin?.cmcData?.lastUpdated ?? coin?.lastUpdated ?? new Date(),
+    }
+    if (side === 'from') {
+      setFromToken(token as TokenData);
+    } else {
+      setToToken(token as TokenData);
+    }
+  };
+
+
+
   return (
     <ConverterContainer>
       <SEO
@@ -838,7 +864,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
                     coins={tokens}
                     fiatCurrencies={fiatCurrencies}
                     onSelectToken={(token) => {
-                      setFromToken(token as TokenData);
+                      handleCoinClick(token, 'from');
                       setShowFromSearch(false);
                     }}
                     isVisible={showFromSearch}
@@ -877,7 +903,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
                     coins={tokens}
                     fiatCurrencies={fiatCurrencies}
                     onSelectToken={(token) => {
-                      setToToken(token as TokenData);
+                      handleCoinClick(token, 'to');
                       setShowToSearch(false);
                     }}
                     isVisible={showToSearch}
