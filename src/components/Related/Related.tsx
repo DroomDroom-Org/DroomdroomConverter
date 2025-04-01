@@ -84,9 +84,9 @@ const Related: React.FC<RelatedProps> = ({ fromToken, toToken, id , tokens, setF
                 <S.CryptoIcon>
                   {getCryptoIcon(fromToken.cmcId)}
                 </S.CryptoIcon>
-                <S.CardTitle>{fromToken.name} to {conversion.currency}</S.CardTitle>
+                <S.CardTitle>{fromToken.name} to <span style= {{opacity: 0.7}}>{conversion.currency} | </span></S.CardTitle>
               </S.CardHeader>
-              <S.CardValue>1 {fromToken.ticker} equals {conversion.symbol}{(fromToken.isCrypto ? (fromToken.price * conversion.value).toFixed(8) : (conversion.value/fromToken.price).toFixed(8))}</S.CardValue>
+              <S.CardValue>1 {fromToken.ticker} equals {conversion.symbol}{(fromToken.isCrypto ? (fromToken.price * conversion.value).toFixed(2) : (conversion.value/fromToken.price).toFixed(8))}</S.CardValue>
             </S.ConversionCard>
           ))}
         </S.ConversionGrid>
@@ -118,9 +118,9 @@ const Related: React.FC<RelatedProps> = ({ fromToken, toToken, id , tokens, setF
                     alt={toToken.name}
                   />
                 </S.IconsWrapper>
-                <S.CardTitle>{crypto.name} to {toToken.name}</S.CardTitle>
+                <S.CardTitle><S.CryptoName>{crypto.name}</S.CryptoName> to <S.CryptoName style={{opacity: '0.7'}}>|</S.CryptoName> <S.CryptoName>{toToken.name}</S.CryptoName></S.CardTitle>
               </S.CardHeader>
-              <S.CardValue>1 {crypto.ticker} equals {toToken.isCrypto ? (crypto.value / toToken.price)?.toFixed(8) : (crypto.value * toToken.price)?.toFixed(8)} {toToken.name}</S.CardValue>
+              <S.CardValue style={{fontSize: '0.8rem'}}>1 {crypto.ticker} equals {toToken.isCrypto ? (crypto.value / toToken.price)?.toFixed(2) : (crypto.value * toToken.price)?.toFixed(8)} {toToken.name}</S.CardValue>
             </S.ConversionCard>
           ))}
         </S.ConversionGrid>
