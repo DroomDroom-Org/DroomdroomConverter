@@ -19,7 +19,7 @@ import { config } from 'src/utils/config';
 import { useRouter } from 'next/router';
 import { formatDate } from 'date-fns';
 
-interface TokenData {
+export interface TokenData {
   id: string;
   ticker: string;
   name: string;
@@ -461,6 +461,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
     toToken: TokenData
   ) => {
     // Validate that both tokens have valid prices
+    console.log(fromToken, toToken);
     if (
       !fromToken?.price ||
       !toToken?.price ||
@@ -759,7 +760,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
       const fromSlug = `${fromToken.name.toLowerCase().replace(/\s+/g, '-')}-${fromToken.ticker.toLowerCase()}`;
       const toSlug = `${toToken.name.toLowerCase().replace(/\s+/g, '-')}-${toToken.ticker.toLowerCase()}`;
       router.push(
-        `/converter/${fromSlug}/${toSlug}`,
+        `/${fromSlug}/${toSlug}`,
         undefined,
         { shallow: true }
       );

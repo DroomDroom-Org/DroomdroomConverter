@@ -266,7 +266,7 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
             <div style={{ marginBottom: '2.5rem' }}>
                 <SubHeading style={{ marginTop: '1.5rem', marginBottom: '0.75rem' }}>Top trading volume</SubHeading>
                 <SectionDescription style={{ marginBottom: '1.5rem' }}>
-                    Browse the assets with the highest trading volume in the past 24H on Coinbase.
+                    Browse the assets with the highest trading volume in the past 24H on DroomDroom.
                 </SectionDescription>
 
                 <GridContainer style={{ gap: '1.25rem' }} className="simplified-grid">

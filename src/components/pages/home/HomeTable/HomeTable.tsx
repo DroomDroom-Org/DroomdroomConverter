@@ -4,7 +4,7 @@ import Link from 'next/link';
 import PercentageChange from 'components/PercentageChange/PercentageChange';
 import PriceDisplay from 'components/PriceDisplay/PriceDisplay';
 import { useMemo } from 'react';
-import { TokenData } from 'pages';
+import { TokenData } from 'pages/converter';
 import { formatLargeValue } from 'utils/formatValues';
 import { useTheme } from 'styled-components';
 import { generateTokenUrl } from '../../../../utils/url';

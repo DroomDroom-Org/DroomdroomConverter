@@ -4,7 +4,7 @@ import Pagination from 'components/Pagination/Pagination';
 import SEO from 'components/SEO/SEO';
 import { capitalize } from 'lodash';
 import type { GetServerSideProps, NextPage } from 'next';
-import { CoinData } from 'pages';
+import { CoinData } from 'pages/converter';
 
 interface CategoryProps {
 	coins: CoinData[];

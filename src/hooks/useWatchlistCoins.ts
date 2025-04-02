@@ -1,7 +1,7 @@
 import { Watchlist } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { CoinData } from 'pages';
+import { CoinData } from 'pages/converter';
 import { Dispatch, SetStateAction } from 'react';
 
 const fetchWatchlistCoins = async (coins: string) =>

@@ -6,7 +6,7 @@ import Converter from 'pages/converter';
 export const getServerSideProps: GetServerSideProps = async (context) => {
   try {
     const { from, to } = context.params as { from: string; to: string };
-    
+    console.log(getApiUrl(`/coins`));
     const response = await axios.get(getApiUrl(`/coins`), {
       params: {
         page: 1,
@@ -41,7 +41,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     if (!fromToken || !toToken) {
       return {
         redirect: {
-          destination: '/converter/bitcoin-btc/tether-usdt-usdt',
+          destination: '/bitcoin-btc/tether-usdt-usdt',
           permanent: false,
         },
       };
@@ -58,7 +58,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     console.error('Error fetching tokens:', error);
     return {
       redirect: {
-        destination: '/converter/bitcoin-btc/tether-usdt-usdt',
+        destination: '/bitcoin-btc/tether-usdt-usdt',
         permanent: false,
       },
     };

@@ -37,13 +37,13 @@ const Market: React.FC<CryptoMarketProps> = ({
 }) => {
   const formatCurrency = (value: number) => {
     if (value >= 1000000000000) {
-      return `CA$${(value / 1000000000000).toFixed(2)}T`;
+      return `$${(value / 1000000000000).toFixed(2)}T`;
     } else if (value >= 1000000000) {
-      return `CA$${(value / 1000000000).toFixed(2)}B`;
+      return `$${(value / 1000000000).toFixed(2)}B`;
     } else if (value >= 1000000) {
-      return `CA$${(value / 1000000).toFixed(2)}M`;
+      return `$${(value / 1000000).toFixed(2)}M`;
     } else {
-      return `CA$${value.toFixed(2)}`;
+      return `$${value.toFixed(2)}`;
     }
   };
 

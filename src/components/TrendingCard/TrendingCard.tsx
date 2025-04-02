@@ -1,4 +1,4 @@
-import { TokenData } from 'pages';
+import { TokenData } from 'pages/converter';
 import { getCmcImageUrl } from "utils/config";
 import { useCurrency } from '../../context/CurrencyContext';
 import {

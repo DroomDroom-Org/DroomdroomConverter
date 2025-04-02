@@ -14,15 +14,12 @@ export const getApiUrl = (path: string) => {
   if (path.startsWith('/')) {
     uri = path.slice(1);
   }
-  let finalUri = `${config.apiPath}/${uri}`;
+  let finalUri = `${process.env.NEXT_PUBLIC_API_URL}/api/${uri}`;
   if (finalUri.includes("/undefined")) {
     finalUri = finalUri.replace("/undefined", "");
     finalUri = finalUri.replace("undefined", "");
   }
-  // get the host url from the NEXT_PUBLIC_API_URL env
-  let host = new URL(process.env.NEXT_PUBLIC_API_URL!)
-  // it should be host/config.apiPath/uri
-  return `${host.protocol}//${host.host}${config.apiPath}/${uri}`;
+  return finalUri;
 }
 export const getCmcImageUrl = (cmcId: string | number) => `${config.cmcImageUrl}/${cmcId}.png`;
 export const getPageUrl = (path: string) => path == "" || path == undefined ? `${config.basePath}` : `${config.basePath}${path}`;

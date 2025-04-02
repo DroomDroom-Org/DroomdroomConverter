@@ -1,7 +1,7 @@
 import React from 'react';
 import SectionHeader from 'components/SectionHeader/SectionHeader';
 import HomeTable from 'components/pages/home/HomeTable/HomeTable';
-import { TokenData } from 'pages';
+import { TokenData } from 'pages/converter';
 import * as S from './SearchResults.styled';
 
 interface SearchResultsProps {

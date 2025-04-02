@@ -1,6 +1,6 @@
 import Table, { TableColumn } from 'components/Table/Table';
 import React, { useState } from 'react';
-import { CoinData } from 'pages';
+import { CoinData } from 'pages/converter';
 import { Sparklines, SparklinesLine } from 'react-sparklines';
 import PercentageChange from 'components/PercentageChange/PercentageChange';
 import Image from 'next/image';

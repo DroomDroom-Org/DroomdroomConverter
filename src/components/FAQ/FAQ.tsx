@@ -89,9 +89,9 @@ const FAQ: React.FC<FAQProps> = ({ fromToken, toToken, id }) => {
         </S.FAQItem>
 
         <S.FAQItem>
-          <S.FAQQuestion>How can I buy 1 {fromToken.name} on Coinbase?</S.FAQQuestion>
+          <S.FAQQuestion>How can I buy 1 {fromToken.name} on Exchanges?</S.FAQQuestion>
           <S.FAQAnswer>
-            {fromToken.name} is currently available to buy on Coinbase&apos;s centralized exchange.
+            {fromToken.name} is currently available to buy on multiple centralized exchange.
             Check out our guide to get more detailed instructions on <S.FAQLink href="#" target="_blank">how to buy {fromToken.name}</S.FAQLink>.
           </S.FAQAnswer>
         </S.FAQItem>
