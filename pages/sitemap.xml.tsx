@@ -1,11 +1,7 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import prisma from '../../src/lib/prisma';
-import getConfig from 'next/config';
-import { generateTokenUrl } from '../../src/utils/url';
-import { CURRENCIES } from '../../src/context/CurrencyContext';
-
-const { publicRuntimeConfig } = getConfig();
-const SITE_URL = process.env.NEXT_PUBLIC_DOMAIN || 'https://www.droomdroom.com'; // Use environment variable or fallback
+import { GetServerSideProps } from 'next';
+import prisma from '../src/lib/prisma';
+import { generateTokenUrl } from '../src/utils/url';
+import { CURRENCIES } from '../src/context/CurrencyContext';
 
 // Function to escape XML special characters
 const escapeXml = (unsafe: string) => {
@@ -21,8 +17,15 @@ const escapeXml = (unsafe: string) => {
   });
 };
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+// This disables the layout for this page
+export const config = {
+  unstable_runtimeJS: false,
+};
+
+export const getServerSideProps: GetServerSideProps = async ({ res }) => {
   try {
+    const SITE_URL = process.env.NEXT_PUBLIC_DOMAIN || 'https://www.droomdroom.com'; // Use environment variable or fallback
+
     // Fetch all tokens, ordered by rank
     const tokens = await prisma.token.findMany({
       select: {
@@ -181,9 +184,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=43200');
     
     // Send response
-    res.status(200).send(sitemap);
+    res.write(sitemap);
+    res.end();
+
+    return {
+      props: {},
+    };
   } catch (error) {
     console.error('Error generating sitemap:', error);
-    res.status(500).json({ error: 'Error generating sitemap' });
+    return {
+      props: {},
+    };
   }
-}
+};
+
+// Return empty component as we're handling everything in getServerSideProps
+const Sitemap = () => null;
+export default Sitemap;
