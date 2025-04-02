@@ -2,6 +2,7 @@ import { GetServerSideProps } from 'next';
 import prisma from '../src/lib/prisma';
 import { generateTokenUrl } from '../src/utils/url';
 import { CURRENCIES } from '../src/context/CurrencyContext';
+import { redisHandler } from '../src/utils/redis';
 
 // Function to escape XML special characters
 const escapeXml = (unsafe: string) => {
@@ -22,9 +23,36 @@ export const config = {
   unstable_runtimeJS: false,
 };
 
+// Redis cache key for the sitemap
+const SITEMAP_CACHE_KEY = 'sitemap_xml_cache';
+// Cache expiration time in seconds (24 hours)
+const CACHE_EXPIRATION = 86400;
+
 export const getServerSideProps: GetServerSideProps = async ({ res }) => {
   try {
     const SITE_URL = process.env.NEXT_PUBLIC_DOMAIN || 'https://www.droomdroom.com'; // Use environment variable or fallback
+    const domain = `https://${new URL(SITE_URL).hostname}`;
+    
+    // Try to get the sitemap from Redis cache first
+    const cachedSitemap = await redisHandler.get<string>(SITEMAP_CACHE_KEY);
+    
+    if (cachedSitemap) {
+      console.log('Serving sitemap from Redis cache');
+      
+      // Set headers
+      res.setHeader('Content-Type', 'application/xml');
+      res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=43200');
+      
+      // Send cached response
+      res.write(cachedSitemap);
+      res.end();
+      
+      return {
+        props: {},
+      };
+    }
+    
+    console.log('Generating fresh sitemap and caching in Redis');
 
     // Fetch all tokens, ordered by rank
     const tokens = await prisma.token.findMany({
@@ -63,17 +91,12 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
     // Add static pages
     urlEntries.push(`
       <url>
-        <loc>${escapeXml(`${SITE_URL}/`)}</loc>
+        <loc>${escapeXml(`${domain}/`)}</loc>
         <changefreq>daily</changefreq>
         <priority>1.0</priority>
       </url>
       <url>
-        <loc>${escapeXml(`${SITE_URL}/search`)}</loc>
-        <changefreq>daily</changefreq>
-        <priority>0.8</priority>
-      </url>
-      <url>
-        <loc>${escapeXml(`${SITE_URL}/converter`)}</loc>
+        <loc>${escapeXml(`${domain}/converter`)}</loc>
         <changefreq>daily</changefreq>
         <priority>0.9</priority>
       </url>
@@ -84,7 +107,7 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
     for (const fiatCode of fiatCurrencies) {
       urlEntries.push(`
         <url>
-          <loc>${escapeXml(`${SITE_URL}/converter/${btcSlug}/${fiatCode.toLowerCase()}`)}</loc>
+          <loc>${escapeXml(`${domain}/converter/${btcSlug}/${fiatCode.toLowerCase()}`)}</loc>
           <changefreq>daily</changefreq>
           <priority>0.9</priority>
         </url>
@@ -96,7 +119,7 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
     for (const fiatCode of fiatCurrencies) {
       urlEntries.push(`
         <url>
-          <loc>${escapeXml(`${SITE_URL}/converter/${ethSlug}/${fiatCode.toLowerCase()}`)}</loc>
+          <loc>${escapeXml(`${domain}/converter/${ethSlug}/${fiatCode.toLowerCase()}`)}</loc>
           <changefreq>daily</changefreq>
           <priority>0.9</priority>
         </url>
@@ -110,7 +133,7 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
         const tokenSlug = generateTokenUrl(token.name, token.ticker);
         urlEntries.push(`
           <url>
-            <loc>${escapeXml(`${SITE_URL}/converter/${usdtSlug}/${tokenSlug}`)}</loc>
+            <loc>${escapeXml(`${domain}/converter/${usdtSlug}/${tokenSlug}`)}</loc>
             <changefreq>daily</changefreq>
             <priority>0.8</priority>
           </url>
@@ -124,7 +147,7 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
         const tokenSlug = generateTokenUrl(token.name, token.ticker);
         urlEntries.push(`
           <url>
-            <loc>${escapeXml(`${SITE_URL}/converter/${btcSlug}/${tokenSlug}`)}</loc>
+            <loc>${escapeXml(`${domain}/converter/${btcSlug}/${tokenSlug}`)}</loc>
             <changefreq>daily</changefreq>
             <priority>0.8</priority>
           </url>
@@ -138,7 +161,7 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
         const tokenSlug = generateTokenUrl(token.name, token.ticker);
         urlEntries.push(`
           <url>
-            <loc>${escapeXml(`${SITE_URL}/converter/${ethSlug}/${tokenSlug}`)}</loc>
+            <loc>${escapeXml(`${domain}/converter/${ethSlug}/${tokenSlug}`)}</loc>
             <changefreq>daily</changefreq>
             <priority>0.8</priority>
           </url>
@@ -152,7 +175,7 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
       for (const fiatCode of fiatCurrencies) {
         urlEntries.push(`
           <url>
-            <loc>${escapeXml(`${SITE_URL}/converter/${tokenSlug}/${fiatCode.toLowerCase()}`)}</loc>
+            <loc>${escapeXml(`${domain}/converter/${tokenSlug}/${fiatCode.toLowerCase()}`)}</loc>
             <changefreq>daily</changefreq>
             <priority>0.7</priority>
           </url>
@@ -160,24 +183,27 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
       }
     }
     
-    // 7. Individual token pages for top 2000 coins
-    for (const token of tokens) {
-      const tokenSlug = generateTokenUrl(token.name, token.ticker);
-      urlEntries.push(`
-        <url>
-          <loc>${escapeXml(`${SITE_URL}/${tokenSlug}`)}</loc>
-          <lastmod>${token.updatedAt.toISOString()}</lastmod>
-          <changefreq>hourly</changefreq>
-          <priority>0.9</priority>
-        </url>
-      `);
-    }
+    // // 7. Individual token pages for top 2000 coins
+    // for (const token of tokens) {
+    //   const tokenSlug = generateTokenUrl(token.name, token.ticker);
+    //   urlEntries.push(`
+    //     <url>
+    //       <loc>${escapeXml(`${SITE_URL}/${tokenSlug}`)}</loc>
+    //       <lastmod>${token.updatedAt.toISOString()}</lastmod>
+    //       <changefreq>hourly</changefreq>
+    //       <priority>0.9</priority>
+    //     </url>
+    //   `);
+    // }
 
     // Create XML sitemap
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
     <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
       ${urlEntries.join('')}
     </urlset>`;
+
+    // Cache the sitemap in Redis
+    await redisHandler.set(SITEMAP_CACHE_KEY, sitemap, { expirationTime: CACHE_EXPIRATION });
 
     // Set headers
     res.setHeader('Content-Type', 'application/xml');
