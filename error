@@ -1,0 +1,8 @@
+70 Error occurred prerendering page "/bitcoin-btc/trueusd-tusd". Read more: https://nextjs.org/docs/messages/prerender-error
+2025-Apr-04 20:00:52.825592 #13 28.70 Error: `redirect` can not be returned from getStaticProps during prerendering (/bitcoin-btc/trueusd-tusd)
+2025-Apr-04 20:00:52.825592 #13 28.70 See more info here: https://nextjs.org/docs/messages/gsp-redirect-during-prerender
+2025-Apr-04 20:00:52.825592 #13 28.70     at renderToHTML (/app/node_modules/next/dist/server/render.js:412:23)
+2025-Apr-04 20:00:52.825592 #13 28.70     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-Apr-04 20:00:52.825592 #13 28.70     at async /app/node_modules/next/dist/export/worker.js:259:36
+2025-Apr-04 20:00:52.825592 #13 28.70     at async Span.traceAsyncFn (/app/node_modules/next/dist/trace/trace.js:79:20)
+2025-Apr-04 20:00:53.087479 #13 28.97 { 

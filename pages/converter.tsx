@@ -46,6 +46,10 @@ interface ConverterProps {
   tokens: TokenData[];
   initialFrom: string;
   initialTo: string;
+  notFound?: boolean;
+  requestedFrom?: string;
+  requestedTo?: string;
+  error?: boolean;
 }
 
 const ConverterContainer = styled.div`
@@ -437,7 +441,7 @@ const getToSymbol = (coin: any): string => {
       : '';
 };
 
-const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo }) => {
+const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, notFound, requestedFrom, requestedTo, error }) => {
   const router = useRouter();
   const [fromToken, setFromToken] = useState<TokenData | null>(
     tokens.find(t => t.ticker === initialFrom) || tokens.find(t => t.ticker === 'BTC') || tokens[0]
@@ -756,6 +760,13 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
 
 
   useEffect(() => {
+    // Handle redirect for not found routes on client-side
+    if (notFound && router && typeof window !== 'undefined') {
+      // Use router.replace instead of redirect for client-side navigation
+      router.replace('/bitcoin-btc/tether-usdt-usdt', undefined, { shallow: true });
+      return;
+    }
+    
     if (fromToken && toToken) {
       const fromSlug = `${fromToken.name.toLowerCase().replace(/\s+/g, '-')}-${fromToken.ticker.toLowerCase()}`;
       const toSlug = `${toToken.name.toLowerCase().replace(/\s+/g, '-')}-${toToken.ticker.toLowerCase()}`;
@@ -765,7 +776,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo })
         { shallow: true }
       );
     }
-  }, [fromToken?.ticker, toToken?.ticker]);
+  }, [fromToken?.ticker, toToken?.ticker, notFound, router]);
 
   const handleShare = async () => {
     try {

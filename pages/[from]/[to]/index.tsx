@@ -141,12 +141,24 @@ export const getStaticProps: GetStaticProps = async (context) => {
     const fromToken = tokens.find((t: any) => t.ticker.toUpperCase() === fromTicker);
     const toToken = tokens.find((t: any) => t.ticker.toUpperCase() === toTicker);
 
+    // For static generation, we need to handle missing tokens without redirects
+    // Instead, provide default tokens and let client-side handle redirection if needed
     if (!fromToken || !toToken) {
+      // Find default tokens to use
+      const btcToken = tokens.find((t: any) => t.ticker.toUpperCase() === 'BTC') || tokens[0];
+      const usdtToken = tokens.find((t: any) => t.ticker.toUpperCase() === 'USDT') || tokens[1] || tokens[0];
+      
       return {
-        redirect: {
-          destination: '/bitcoin-btc/tether-usdt-usdt',
-          permanent: false,
+        props: {
+          tokens,
+          initialFrom: btcToken.ticker,
+          initialTo: usdtToken.ticker,
+          notFound: true, // Flag to indicate the requested pair wasn't found
+          requestedFrom: fromTicker,
+          requestedTo: toTicker
         },
+        // Re-generate the page more frequently for not-found pairs
+        revalidate: 1800,
       };
     }
 
@@ -155,16 +167,20 @@ export const getStaticProps: GetStaticProps = async (context) => {
         tokens,
         initialFrom: fromToken.ticker,
         initialTo: toToken.ticker,
+        notFound: false
       },
       // Re-generate the page at most once per hour
       revalidate: 3600,
     };
   } catch (error) {
     console.error('Error fetching tokens:', error);
+    // For build-time errors, return fallback props instead of redirect
     return {
-      redirect: {
-        destination: '/bitcoin-btc/tether-usdt-usdt',
-        permanent: false,
+      props: {
+        tokens: [],
+        initialFrom: 'BTC',
+        initialTo: 'USDT',
+        error: true
       },
       revalidate: 60, // Try again sooner if there was an error
     };
