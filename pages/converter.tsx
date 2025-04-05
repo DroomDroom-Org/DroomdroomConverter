@@ -6,7 +6,7 @@ import { getApiUrl } from 'utils/config';
 import SEO from 'components/SEO/SEO';
 import Navbar from 'components/Navbar/Navbar';
 import Market from 'src/components/Market/Market';
-import About from 'src/components/About';
+import About from 'src/components/About/About';
 import FAQ from 'src/components/FAQ';
 import Related from 'src/components/Related';
 import ConversionTables from 'src/components/ConversionTables';
@@ -956,7 +956,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
 
       {fromToken && toToken && (
         <>
-          <Market id="markets" fromToken={fromToken} toToken={toToken}  tokens={tokens} fiatCurrencies={fiatCurrencies}/>
+          <Market id="markets" fromToken={fromToken} toToken={toToken} tokens={tokens} fiatCurrencies={fiatCurrencies}/>
           <About id="about" fromToken={fromToken} toToken={toToken} />
           <FAQ id="faq" fromToken={fromToken} toToken={toToken} />
           <Related
@@ -969,7 +969,6 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
           />
           <div id="conversion-tables">
             <ConversionTables
-              id="conversion-tables"
               fromToken={fromToken}
               toToken={toToken}
               fromAmount={fromAmount}

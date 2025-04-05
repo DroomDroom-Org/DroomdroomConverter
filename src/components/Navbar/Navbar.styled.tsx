@@ -3,7 +3,9 @@ import styled from 'styled-components';
 export const NavbarWrapper = styled.div`
   background: ${props => props.theme.colors.background};
   border-bottom: 1px solid ${props => props.theme.colors.colorLightNeutral3};
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 100;
   width: 100%;
   display: flex;
   align-items: center;

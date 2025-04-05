@@ -36,8 +36,8 @@ const Navbar: React.FC<NavbarProps> = ({ fromToken, toToken }) => {
     const [showRightArrow, setShowRightArrow] = useState(true);
     const [isMobile, setIsMobile] = useState(false);
     const router = useRouter();
-    const { slug } = router.query;
     const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const navbarRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const checkIfMobile = () => {
@@ -76,72 +76,59 @@ const Navbar: React.FC<NavbarProps> = ({ fromToken, toToken }) => {
 
     const handleTabChange = (tabId: string) => {
         setActiveTab(tabId);
+        
+        // Add the hash to the URL without affecting scroll position
         const fromSlug = `${fromToken.name.toLowerCase().replace(/\s+/g, '-')}-${fromToken.ticker.toLowerCase()}`;
         const toSlug = `${toToken.name.toLowerCase().replace(/\s+/g, '-')}-${toToken.ticker.toLowerCase()}`;
-        router.push(`/${fromSlug}/${toSlug}#${tabId}`, undefined, { shallow: true });
         
-        const element = document.getElementById(tabId);
-        if (element) {
-            const navbar = document.querySelector('nav');
-            const navbarHeight = navbar ? navbar.offsetHeight : 80;
-            const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
-            window.scrollTo({
-                top: elementPosition - navbarHeight,
-                behavior: 'smooth'
-            });
-        }
-    };
-
-    useEffect(() => {
-        const handleScroll = () => {
-            const hash = window.location.hash.replace('#', '');
-            if (hash) {
-                const scrollToSection = () => {
-                    const element = document.getElementById(hash);
-                    if (element) {
-                        const navbar = document.querySelector('nav');
-                        const navbarHeight = navbar?.clientHeight || 80;
-                        window.scrollTo({
-                            top: element.offsetTop - navbarHeight,
-                            behavior: 'auto'
-                        });
-                    }
-                };
-
-                if (document.getElementById(hash)) {
-                    scrollToSection();
-                } else {
-                    const retry = setTimeout(scrollToSection, 500);
-                    return () => clearTimeout(retry);
+        // Handle the scrolling directly without relying on hash change
+        const scrollToSection = (sectionIndex: number) => {
+            // Get all main sections in the page
+            const sections = document.querySelectorAll('main > div > div');
+            
+            // Convert sections to array for easier debugging
+            const sectionsArray = Array.from(sections);
+            console.log('Found sections:', sectionsArray.length);
+            
+            // Calculate the section to scroll to based on tab clicked
+            // Markets = index 2 (after converter and navbar)
+            const sectionIndexMap: Record<string, number> = {
+                'markets': 2,
+                'about': 3,
+                'faq': 4,
+                'related': 5,
+                'conversion-tables': 6,
+                'more': 7
+            };
+            
+            const targetSectionIndex = sectionIndexMap[tabId] || 2;
+            
+            if (sectionsArray.length > targetSectionIndex) {
+                const section = sectionsArray[targetSectionIndex];
+                if (section) {
+                    const navbarHeight = navbarRef.current?.offsetHeight || 100;
+                    const yOffset = section.getBoundingClientRect().top + window.scrollY - navbarHeight;
+                    
+                    window.scrollTo({
+                        top: yOffset,
+                        behavior: 'smooth'
+                    });
+                    
+                    console.log(`Scrolling to section index ${targetSectionIndex} for tab ${tabId}`);
+                    return true;
                 }
             }
+            
+            console.warn(`Could not find section for tab ${tabId}`);
+            return false;
         };
-
-        handleScroll();
         
-        window.addEventListener('hashchange', handleScroll);
-        return () => window.removeEventListener('hashchange', handleScroll);
-    }, [router.asPath]);
-
-    useEffect(() => {
-        const handleInitialScroll = () => {
-            const hash = window.location.hash.replace('#', '');
-            if (hash) {
-                setTimeout(() => {
-                    const element = document.getElementById(hash);
-                    if (element) {
-                        const navbar = document.querySelector('nav');
-                        const navbarHeight = navbar?.clientHeight || 80;
-                        window.scrollTo({
-                            top: element.offsetTop - navbarHeight,
-                            behavior: 'auto'
-                        });
-                    }
-                }, 500);
-            }
-        };
-        handleInitialScroll();
-    }, []);
+        // Update URL first
+        router.push(`/${fromSlug}/${toSlug}#${tabId}`, undefined, { shallow: true });
+        
+        // Then trigger scrolling after a small delay to ensure DOM is updated
+       
+    };
 
     const scrollLeft = () => {
         if (scrollContainerRef.current) {
@@ -156,7 +143,7 @@ const Navbar: React.FC<NavbarProps> = ({ fromToken, toToken }) => {
     };
 
     return (
-        <NavbarWrapper>
+        <NavbarWrapper ref={navbarRef}>
             {isMobile && showLeftArrow && (
                 <ScrollButton direction="left" onClick={scrollLeft}>
                     <ChevronLeft size={18} />
@@ -166,7 +153,7 @@ const Navbar: React.FC<NavbarProps> = ({ fromToken, toToken }) => {
             <ScrollableContainer ref={scrollContainerRef}>
                 <TabList>
                     <TabItem
-                        id="tab-markets"
+                        id="markets"
                         active={activeTab === 'markets'}
                         onClick={() => handleTabChange('markets')}
                     >
@@ -174,7 +161,7 @@ const Navbar: React.FC<NavbarProps> = ({ fromToken, toToken }) => {
                     </TabItem>
 
                     <TabItem
-                        id="tab-about"
+                        id="about"
                         active={activeTab === 'about'}
                         onClick={() => handleTabChange('about')}
                     >
@@ -182,7 +169,7 @@ const Navbar: React.FC<NavbarProps> = ({ fromToken, toToken }) => {
                     </TabItem>
 
                     <TabItem
-                        id="tab-faq"
+                        id="faq"
                         active={activeTab === 'faq'}
                         onClick={() => handleTabChange('faq')}
                     >
@@ -190,7 +177,7 @@ const Navbar: React.FC<NavbarProps> = ({ fromToken, toToken }) => {
                     </TabItem>
 
                     <TabItem
-                        id="tab-related"
+                        id="related"
                         active={activeTab === 'related'}
                         onClick={() => handleTabChange('related')}
                     >
@@ -198,7 +185,7 @@ const Navbar: React.FC<NavbarProps> = ({ fromToken, toToken }) => {
                     </TabItem>
 
                     <TabItem
-                        id="tab-conversion-tables"
+                        id="conversion-tables"
                         active={activeTab === 'conversion-tables'}
                         onClick={() => handleTabChange('conversion-tables')}
                     >
@@ -206,7 +193,7 @@ const Navbar: React.FC<NavbarProps> = ({ fromToken, toToken }) => {
                     </TabItem>
 
                     <TabItem
-                        id="tab-more"
+                        id="more"
                         active={activeTab === 'more'}
                         onClick={() => handleTabChange('more')}
                     >
