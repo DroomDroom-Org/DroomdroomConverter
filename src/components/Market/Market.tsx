@@ -1,5 +1,6 @@
 import React from 'react';
 import * as S from './Market.styled';
+import FiatTable from 'components/FiatCoinTable/FiatTable';
 
 
 interface TokenData {
@@ -28,12 +29,16 @@ interface CryptoMarketProps {
   fromToken: TokenData;
   toToken: TokenData;
   id?: string;
+  tokens?: TokenData[];
+  fiatCurrencies?: any[];
 }
 
 const Market: React.FC<CryptoMarketProps> = ({
   fromToken,
   toToken,
-  id
+  id,
+  tokens,
+  fiatCurrencies
 }) => {
   const formatCurrency = (value: number) => {
     if (value >= 1000000000000) {
@@ -171,12 +176,12 @@ const Market: React.FC<CryptoMarketProps> = ({
 
           <S.MarketStatusText>
             The current {toToken.ticker} to {fromToken.ticker} conversion rate is <strong>{formatPrice(toFromRate, fromToken)}</strong>.
-            The current {toToken.ticker} to {fromToken.ticker} conversion rate is <strong>{formatPrice(toFromRate, getDecimalPlaces(fromToken.ticker))}</strong>.
+            The current {toToken.ticker} to {fromToken.ticker} conversion rate is <strong>{formatPrice(toFromRate, getDecimalPlaces(fromToken.ticker ))}</strong>.
             Inversely, this means that if you convert 1 {toToken.ticker} you will get {formatPrice(toFromRate, getDecimalPlaces(fromToken.ticker))} {fromToken.ticker}.
             <br />
             The conversion rate of {toToken.ticker}/{fromToken.ticker} has
             <span style={{ color: (toToken.priceChange?.['1h'] || 0) > 0 ? '#4ca777' : '#e15241' }}>
-              {' '}{(toToken.priceChange?.['1h'] || 0) > 0 ? 'increased' : 'decreased'} by {Math.abs(toToken.priceChange?.['1h'] || 0).toFixed(getDecimalPlaces(toToken.ticker))}%
+              {' '}{(toToken.priceChange?.['1h'] || 0) > 0 ? 'increased' : 'decreased'} by {Math.abs(toToken.priceChange?.['1h'] || 0).toFixed(2)}%
             </span> in the last hour and
             <span style={{ color: (toToken.priceChange?.['24h'] || 0) > 0 ? '#4ca777' : '#e15241' }}>
               {' '}{(toToken.priceChange?.['24h'] || 0) > 0 ? 'grown' : 'shrunk'} by {Math.abs(toToken.priceChange?.['24h'] || 0).toFixed(getDecimalPlaces(toToken.ticker))}%
@@ -206,6 +211,13 @@ const Market: React.FC<CryptoMarketProps> = ({
           <span style={{ marginLeft: '8px', fontSize: '1.1rem' }}>→</span>
         </S.SeeMoreButton>
       </div>}
+
+       
+       <S.FiatTableContainer>
+        <FiatTable heading={"Popular crypto to fiat markets"} tokens={tokens} fiatCurrencies={fiatCurrencies} />
+       </S.FiatTableContainer>
+
+
 
     </S.MarketContainer>
   );

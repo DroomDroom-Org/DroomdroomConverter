@@ -956,7 +956,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
 
       {fromToken && toToken && (
         <>
-          <Market id="markets" fromToken={fromToken} toToken={toToken} />
+          <Market id="markets" fromToken={fromToken} toToken={toToken}  tokens={tokens} fiatCurrencies={fiatCurrencies}/>
           <About id="about" fromToken={fromToken} toToken={toToken} />
           <FAQ id="faq" fromToken={fromToken} toToken={toToken} />
           <Related

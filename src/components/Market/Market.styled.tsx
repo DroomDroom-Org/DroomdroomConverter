@@ -135,3 +135,12 @@ export const SeeMoreButton = styled.button`
     transform: translateY(-2px);
   }
 `;
+
+export const FiatTableContainer = styled.div`
+  max-width: 100%;
+  margin: 0 auto;
+  @media (max-width: 768px) {
+    max-width: 100%;
+    padding: 0 16px;
+  }
+`;
