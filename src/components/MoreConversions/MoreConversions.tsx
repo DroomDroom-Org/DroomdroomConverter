@@ -32,7 +32,6 @@ interface ConversionOption {
   fromTicker: string;
   toTicker: string;
   iconUrl?: string;
-
 }
 
 interface MoreConversionsProps {
@@ -52,10 +51,20 @@ const MoreConversions: React.FC<MoreConversionsProps> = ({
   setFromToken,
   setToToken
 }) => {
+  const splitIntoRows = (items: any[], itemsPerRow: number) => {
+    const result = [];
+    for (let i = 0; i < items.length; i += itemsPerRow) {
+      result.push(items.slice(i, i + itemsPerRow));
+    }
+    return result;
+  };
 
+  const duplicateForScroll = (items: any[]) => {
+    return [...items, ...items, ...items];
+  };
 
-
-
+  const advancedOptionsRows = splitIntoRows(advancedOptions, 8);
+  const currencyOptionsRows = splitIntoRows(currencyOptions, 8);
 
   return (
     <S.Container id={id}>
@@ -64,63 +73,74 @@ const MoreConversions: React.FC<MoreConversionsProps> = ({
         A selection of relevant cryptocurrencies you might be interested in based on your interest in Bitcoin.
       </S.SectionDescription>
       
-      <S.ConversionGrid>
-        {advancedOptions.map((option) => (
-         <S.ConversionCard 
-         key={`adv-${option.id}`}
-         href="#"
-         onClick={() => {
-           const toToken = allTokens.find(t => t.ticker === option.fromTicker);  
-           const fromToken = allTokens.find(t => t.ticker === option.toTicker);
-           if (toToken && fromToken) {
-             setFromToken(fromToken);
-             setToToken(toToken);
-           }
-         }}
-       >
-         <S.CryptoIcon 
-           src={option.iconUrl || `/icons/placeholder.svg`} 
-           alt={option.fromToken}
-           onError={(e) => {
-             (e.target as HTMLImageElement).src = '/icons/placeholder.svg';
-           }}
-         />
-         <S.ConversionText>{option.fromToken} to {option.toToken}</S.ConversionText>
-       </S.ConversionCard>
+      <S.MarqueeContainer>
+        {advancedOptionsRows.map((row, rowIndex) => (
+          <S.MarqueeRow key={`adv-row-${rowIndex}`}>
+            <S.MarqueeContent isReverse={rowIndex % 2 === 1}>
+              {duplicateForScroll(row).map((option, index) => (
+                <S.ConversionCard 
+                  key={`adv-${option.id}-${index}`}
+                  href="#"
+                  onClick={() => {
+                    const toToken = allTokens.find(t => t.ticker === option.fromTicker);  
+                    const fromToken = allTokens.find(t => t.ticker === option.toTicker);
+                    if (toToken && fromToken) {
+                      setFromToken(fromToken);
+                      setToToken(toToken);
+                    }
+                  }}
+                >
+                  <S.CryptoIcon 
+                    src={option.iconUrl || `/icons/placeholder.svg`} 
+                    alt={option.fromToken}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/icons/placeholder.svg';
+                    }}
+                  />
+                  <S.ConversionText>{option.fromToken} to {option.toToken}</S.ConversionText>
+                </S.ConversionCard>
+              ))}
+            </S.MarqueeContent>
+          </S.MarqueeRow>
         ))}
-      </S.ConversionGrid>
+      </S.MarqueeContainer>
 
       <S.SectionTitle>More currency conversions</S.SectionTitle>
       <S.SectionDescription>
         A selection of conversions for different assets and currencies.
       </S.SectionDescription>
       
-      <S.ConversionGrid>
-        {currencyOptions.map((option) => (
-           <S.ConversionCard 
-           key={`curr-${option.id}`}
-           href="#"
-           onClick={() => {
-            const toToken = allTokens.find(t => t.ticker === option.fromTicker);  
-            const fromToken = allTokens.find(t => t.ticker === option.toTicker);
-            if (toToken && fromToken) {
-              setFromToken(fromToken);
-              setToToken(toToken);
-            }
-            console.log(fromToken, toToken);
-          }}
-         >
-           <S.CryptoIcon 
-             src={option.iconUrl || `/icons/placeholder.svg`} 
-             alt={option.fromToken}
-             onError={(e) => {
-               (e.target as HTMLImageElement).src = '/icons/placeholder.svg';
-             }}
-           />
-           <S.ConversionText>{option.fromToken} to {option.toToken}</S.ConversionText>
-         </S.ConversionCard>
+      <S.MarqueeContainer>
+        {currencyOptionsRows.map((row, rowIndex) => (
+          <S.MarqueeRow key={`curr-row-${rowIndex}`}>
+            <S.MarqueeContent isReverse={rowIndex % 2 === 1}>
+              {duplicateForScroll(row).map((option, index) => (
+                <S.ConversionCard 
+                  key={`curr-${option.id}-${index}`}
+                  href="#"
+                  onClick={() => {
+                    const toToken = allTokens.find(t => t.ticker === option.fromTicker);  
+                    const fromToken = allTokens.find(t => t.ticker === option.toTicker);
+                    if (toToken && fromToken) {
+                      setFromToken(fromToken);
+                      setToToken(toToken);
+                    }
+                  }}
+                >
+                  <S.CryptoIcon 
+                    src={option.iconUrl || `/icons/placeholder.svg`} 
+                    alt={option.fromToken}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/icons/placeholder.svg';
+                    }}
+                  />
+                  <S.ConversionText>{option.fromToken} to {option.toToken}</S.ConversionText>
+                </S.ConversionCard>
+              ))}
+            </S.MarqueeContent>
+          </S.MarqueeRow>
         ))}
-      </S.ConversionGrid>
+      </S.MarqueeContainer>
     </S.Container>
   );
 };

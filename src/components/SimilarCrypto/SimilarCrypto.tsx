@@ -22,14 +22,15 @@ import {
     ShimmerImage,
     ShimmerText,
     ShimmerPrice,
-    HowToBuy
+    HowToBuy,
+    MarqueeContainer,
+    MarqueeRow,
+    MarqueeContent
 } from './SimilarCrypto.styled';
 import axios from 'axios';
 import { getApiUrl, getCmcImageUrl } from "utils/config";
 import { useTheme } from 'styled-components';
 import Image from 'next/image';
-
-
 
 const SimilarCrypto = ({ coin }: { coin: any }) => {
     const [similarCoins, setSimilarCoins] = useState<any[]>([]);
@@ -90,7 +91,7 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
                 if (Array.isArray(response.data)) {
 
                     formattedCoins = response.data
-                        .filter(item => item.token && item.token.id) 
+                        .filter(item => item.token && item.token.id)
                         .map((item: any, index: number) => {
                             const priceChange = item.token.priceChange?.day1 || 0;
                             const isPositive = priceChange >= 0;
@@ -123,10 +124,10 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
                             };
                         });
                 }
-                   
+
                 else if (response.data.similar && Array.isArray(response.data.similar)) {
                     formattedCoins = response.data.similar
-                        .filter((item: any) => item.token && item.token.id) 
+                        .filter((item: any) => item.token && item.token.id)
                         .map((item: any, index: number) => {
                             const priceChange = item.token.priceChange?.day1 || 0;
                             const isPositive = priceChange >= 0;
@@ -164,7 +165,7 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
                     new Map(formattedCoins.map(item => [item.id, item])).values()
                 );
 
-             
+
 
                 setSimilarCoins(uniqueCoins);
                 setBuyGuides(processedGuides.length > 0 ? processedGuides : []);
@@ -177,7 +178,7 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
         }
     }, [coin?.cmcId]);
 
-   
+
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
@@ -207,16 +208,43 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
         return 'rgba(239, 242, 245, 0.9)';
     };
 
-    // Loading shimmer components
+    const splitIntoRows = (coinsArray: any[], rowSize: number = 6) => {
+        const rows = [];
+        const totalRows = Math.ceil(coinsArray.length / rowSize) || 1;
+
+        for (let i = 0; i < totalRows; i++) {
+            rows.push(coinsArray.slice(i * rowSize, (i + 1) * rowSize));
+        }
+
+        return rows;
+    };
+
+    const duplicateForScroll = (items: any[]) => {
+        return [...items, ...items, ...items];
+    };
+
     const renderShimmerCards = (count: number) => {
         return Array(count).fill(0).map((_, index) => (
             <ShimmerCard key={`shimmer-${index}`} className="shimmer-effect">
-                <ShimmerImage />
-                <ShimmerText />
-                <ShimmerPrice />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <ShimmerImage />
+                    <div style={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    gap: '0.25rem', 
+                    marginLeft: '0.75rem' 
+                }}>
+                    <ShimmerPrice />
+                    <ShimmerText width="40px" />
+                </div>
+                </div>
+                
             </ShimmerCard>
         ));
     };
+
+    const similarCoinsRows = splitIntoRows(similarCoins);
+    const topCoinsRows = splitIntoRows(topCoins);
 
     return (
         <Container>
@@ -230,72 +258,102 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
                     Browse cryptocurrencies that share characteristics with {assetName}.
                 </SectionDescription>
 
-                <GridContainer style={{ gap: '1.25rem' }}>
-                    {loadingSimilar ? (
-                        renderShimmerCards(6)
-                    ) : similarCoins.length > 0 ? (
-                        similarCoins.slice(0, 6).map((coinData, index) => (
-                            <CoinCard
-                                key={coinData.id || `similar-${index}`}
-                                className="simplified-card"
-                            >
-                                <CoinInfo>
-                                    <CoinLogo>
-                                        <Image
-                                            src={getCmcImageUrl(coinData.cmcId)}
-                                            alt={coinData.name}
-                                            width={22}
-                                            height={22}
-                                        />
-                                    </CoinLogo>
-                                    <CoinName>{coinData.name}</CoinName>
-                                </CoinInfo>
-                                <Price>
-                                    {formatPrice(coinData.price)}
-                                </Price>
-                            </CoinCard>
-                        ))
-                    ) : (
-                        <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem' }}>
-                            No similar coins found
-                        </div>
-                    )}
-                </GridContainer>
+                {loadingSimilar ? (
+                    <MarqueeContainer>
+                        <MarqueeRow>
+                            <div style={{ display: 'flex', gap: '0.75rem', padding: '0.5rem 0' }}>
+                                {renderShimmerCards(6)}
+                            </div>
+                        </MarqueeRow>
+                    </MarqueeContainer>
+                ) : similarCoins.length > 0 ? (
+                    <MarqueeContainer>
+                        {similarCoinsRows.map((row, rowIndex) => (
+                            <MarqueeRow key={`similar-row-${rowIndex}`}>
+                                <MarqueeContent isReverse={rowIndex % 2 === 1}>
+                                    {duplicateForScroll(row).map((coinData, index) => (
+                                        <CoinCard
+                                            key={`${coinData.id || `similar-${index}`}-${rowIndex}`}
+                                            className="simplified-card"
+                                        >
+                                            <CoinInfo>
+                                                <CoinLogo>
+                                                    <Image
+                                                        src={getCmcImageUrl(coinData.cmcId)}
+                                                        alt={coinData.name}
+                                                        width={32}
+                                                        height={32}
+                                                    />
+                                                </CoinLogo>
+                                                <CoinName>{coinData.name}</CoinName>
+                                            </CoinInfo>
+                                            <PriceContainer>
+                                                <Price>{formatPrice(coinData.price)}</Price>
+                                                <PriceChange isPositive={coinData.priceChange >= 0}>
+                                                    {coinData.priceChange >= 0 ? '+' : '-'}
+                                                    {Math.abs(coinData.priceChange || 0).toFixed(2)}%
+                                                </PriceChange>
+                                            </PriceContainer>
+                                        </CoinCard>
+                                    ))}
+                                </MarqueeContent>
+                            </MarqueeRow>
+                        ))}
+                    </MarqueeContainer>
+                ) : (
+                    <div>No similar coins found</div>
+                )}
             </div>
 
             <div style={{ marginBottom: '2.5rem' }}>
-                <SubHeading style={{ marginTop: '1.5rem', marginBottom: '0.75rem' }}>Top trading volume</SubHeading>
+                <SubHeading style={{ marginBottom: '0.75rem' }}>Top cryptocurrencies</SubHeading>
                 <SectionDescription style={{ marginBottom: '1.5rem' }}>
-                    Browse the assets with the highest trading volume in the past 24H on DroomDroom.
+                    Explore popular cryptocurrencies by market capitalization and trading volume.
                 </SectionDescription>
 
-                <GridContainer style={{ gap: '1.25rem' }} className="simplified-grid">
-                    {loadingTop ? (
-                        renderShimmerCards(6)
-                    ) : topCoins.length > 0 ? topCoins.slice(0, 6).map((coin) => (
-                        <CoinCard
-                            key={coin.ticker}
-                            className="simplified-card"
-                        >
-                            <CoinInfo>
-                                <CoinLogo>
-                                    <Image
-                                        src={getCmcImageUrl(coin.cmcId)}
-                                        alt={coin.name}
-                                        width={22}
-                                        height={22}
-                                    />
-                                </CoinLogo>
-                                <CoinName>{coin.name}</CoinName>
-                            </CoinInfo>
-                            <Price>
-                                ${coin.price.toLocaleString()}
-                            </Price>
-                        </CoinCard>
-                    )) : (
-                        renderShimmerCards(6)
-                    )}
-                </GridContainer>
+                {loadingTop ? (
+                    <MarqueeContainer>
+                        <MarqueeRow>
+                            <div style={{ display: 'flex', gap: '0.75rem', padding: '0.5rem 0' }}>
+                                {renderShimmerCards(6)}
+                            </div>
+                        </MarqueeRow>
+                    </MarqueeContainer>
+                ) : topCoins.length > 0 ? (
+                    <MarqueeContainer>
+                        {topCoinsRows.map((row, rowIndex) => (
+                            <MarqueeRow key={`top-row-${rowIndex}`}>
+                                <MarqueeContent isReverse={rowIndex % 2 === 1}>
+                                    {duplicateForScroll(row).map((coinData, index) => (
+                                        <CoinCard
+                                            key={`${coinData.cmcId || `top-${index}`}-${rowIndex}`}
+                                            className="simplified-card"
+                                        >
+                                            <CoinInfo>
+                                                <CoinLogo>
+                                                    <Image
+                                                        src={getCmcImageUrl(coinData.cmcId)}
+                                                        alt={coinData.name}
+                                                        width={32}
+                                                        height={32}
+                                                    />
+                                                </CoinLogo>
+                                                
+                                            </CoinInfo>
+                                            <PriceContainer>
+                                            <CoinName>{coinData.ticker}</CoinName>
+                                                <Price>{formatPrice(coinData.price)}</Price>
+                                            
+                                            </PriceContainer>
+                                        </CoinCard>
+                                    ))}
+                                </MarqueeContent>
+                            </MarqueeRow>
+                        ))}
+                    </MarqueeContainer>
+                ) : (
+                    <div>No top coins found</div>
+                )}
             </div>
 
             <div style={{ marginBottom: '2.5rem' }}>
@@ -304,32 +362,46 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
                     A selection of guides on how to buy some of the top assets by market capitalization.
                 </SectionDescription>
 
-                <GridContainer style={{ gap: '1.25rem' }} className="simplified-grid">
-                    {loadingSimilar ? (
-                        renderShimmerCards(6)
-                    ) : buyGuides.length > 0 ? buyGuides.slice(0, 6).map((coin) => (
-                        <CoinCard
-                            key={coin.ticker}
-                            className="simplified-card"
-                            as="a"
-                            href="#"
-                        >
-                            <CoinInfo>
-                                <CoinLogo>
-                                    <Image
-                                        src={getCmcImageUrl(coin.cmcId)}
-                                        alt={coin.name}
-                                        width={22}
-                                        height={22}
-                                    />
-                                </CoinLogo>
-                                <HowToBuy>How to Buy {coin.name}</HowToBuy>
-                            </CoinInfo>
-                        </CoinCard>
-                    )) : (
-                        renderShimmerCards(6)
-                    )}
-                </GridContainer>
+                {loadingSimilar ? (
+                    <MarqueeContainer>
+                        <MarqueeRow>
+                            <div style={{ display: 'flex', gap: '0.75rem', padding: '0.5rem 0' }}>
+                                {renderShimmerCards(6)}
+                            </div>
+                        </MarqueeRow>
+                    </MarqueeContainer>
+                ) : buyGuides.length > 0 ? (
+                    <MarqueeContainer>
+                        {splitIntoRows(buyGuides, 6).map((row, rowIndex) => (
+                            <MarqueeRow key={`guide-row-${rowIndex}`}>
+                                <MarqueeContent isReverse={rowIndex % 2 === 1}>
+                                    {duplicateForScroll(row).map((coin, index) => (
+                                        <CoinCard
+                                            key={`${coin.ticker || `guide-${index}`}-${rowIndex}`}
+                                            className="simplified-card"
+                                            as="a"
+                                            href="#"
+                                        >
+                                            <CoinInfo>
+                                                <CoinLogo>
+                                                    <Image
+                                                        src={getCmcImageUrl(coin.cmcId)}
+                                                        alt={coin.name}
+                                                        width={32}
+                                                        height={32}
+                                                    />
+                                                </CoinLogo>
+                                                <HowToBuy>How to Buy {coin.name}</HowToBuy>
+                                            </CoinInfo>
+                                        </CoinCard>
+                                    ))}
+                                </MarqueeContent>
+                            </MarqueeRow>
+                        ))}
+                    </MarqueeContainer>
+                ) : (
+                    <div>No buy guides available</div>
+                )}
             </div>
         </Container>
     );
