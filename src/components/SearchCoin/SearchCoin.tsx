@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, memo } from 'react';
 import * as S from './SearchCoin.styled';
 import debounce from 'lodash/debounce';
 import { getApiUrl } from 'utils/config';
@@ -20,9 +20,7 @@ interface SearchCoinProps {
     fiatCurrencies: CommonTokenData[];
 }
 
-
-
-const SearchCoin: React.FC<SearchCoinProps> = ({ coins, onSelectToken, isVisible, onClose, fiatCurrencies }) => {
+const SearchCoin: React.FC<SearchCoinProps> = memo(({ coins, onSelectToken, isVisible, onClose, fiatCurrencies }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [results, setResults] = useState<CommonTokenData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -37,7 +35,7 @@ const SearchCoin: React.FC<SearchCoinProps> = ({ coins, onSelectToken, isVisible
         } else {
             setResults([]);
         }
-    }, [coins]);
+    }, [coins, fiatCurrencies]);
 
     useEffect(() => {
         if (isVisible && inputRef.current) {
@@ -60,7 +58,6 @@ const SearchCoin: React.FC<SearchCoinProps> = ({ coins, onSelectToken, isVisible
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [isVisible, onClose]);
-
 
     const debouncedSearch = useCallback(
         debounce(async (term: string) => {
@@ -99,19 +96,17 @@ const SearchCoin: React.FC<SearchCoinProps> = ({ coins, onSelectToken, isVisible
         [coins, fiatCurrencies]
     );
 
-
-
-    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleSearch = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
         debouncedSearch(e.target.value);
-    };
+    }, [debouncedSearch]);
 
-    const handleCoinClick = (coin: any) => {
+    const handleCoinClick = useCallback((coin: any) => {
         console.log("coin", coin);
         onSelectToken(coin);
         setSearchTerm('');
         onClose();
-    };
+    }, [onSelectToken, onClose]);
 
     if (!isVisible) return null;
 
@@ -153,6 +148,8 @@ const SearchCoin: React.FC<SearchCoinProps> = ({ coins, onSelectToken, isVisible
             </S.ResultsList>
         </S.SearchPopup>
     );
-};
+});
+
+SearchCoin.displayName = 'SearchCoin';
 
 export default SearchCoin;

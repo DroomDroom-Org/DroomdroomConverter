@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
 import { GetServerSideProps } from 'next';
@@ -460,7 +460,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
   const fromButtonRef = useRef<HTMLButtonElement>(null);
   const toButtonRef = useRef<HTMLButtonElement>(null);
 
-  const calculateConversionRate = (
+  const calculateConversionRate = useCallback((
     fromToken: TokenData,
     toToken: TokenData
   ) => {
@@ -491,13 +491,13 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
       // Both crypto or both fiat
       return fromToken.price / toToken.price;
     }
-  };
+  }, []);
 
-  const getDecimalPlaces = (token: TokenData) => {
+  const getDecimalPlaces = useCallback((token: TokenData) => {
     if (!token.isCrypto) return 2;
     if (token.ticker === 'USDT' || token.ticker === 'USDC' || token.ticker === 'DAI' || token.ticker === 'BUSD') return 2;
     return 8;
-  };
+  }, []);
 
   useEffect(() => {
     if (fromToken && toToken && fromAmount) {
@@ -505,16 +505,23 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
       if (!isNaN(amount)) {
         const rate = calculateConversionRate(fromToken, toToken);
         if (rate === 0) {
-          setToAmount("Price unavailable");
+          if (toAmount !== "Price unavailable") {
+            setToAmount("Price unavailable");
+          }
         } else {
           const convertedAmount = amount * rate;
-          setToAmount(convertedAmount.toFixed(getDecimalPlaces(toToken)));
+          const formattedAmount = convertedAmount.toFixed(getDecimalPlaces(toToken));
+          if (toAmount !== formattedAmount) {
+            setToAmount(formattedAmount);
+          }
         }
       } else {
-        setToAmount("0");
+        if (toAmount !== "0") {
+          setToAmount("0");
+        }
       }
     }
-  }, [fromToken, toToken, fromAmount]);
+  }, [fromToken, toToken, fromAmount, calculateConversionRate, getDecimalPlaces, toAmount]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -576,13 +583,16 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
       }
     };
 
-    document.addEventListener('click', handleDocumentClick);
-    return () => {
-      document.removeEventListener('click', handleDocumentClick);
-    };
+    // Only add the event listener if search modals are open
+    if (showFromSearch || showToSearch) {
+      document.addEventListener('click', handleDocumentClick);
+      return () => {
+        document.removeEventListener('click', handleDocumentClick);
+      };
+    }
   }, [showFromSearch, showToSearch]);
 
-  const handleSwapTokens = () => {
+  const handleSwapTokens = useCallback(() => {
     const tempToken = fromToken;
     setFromToken(toToken);
     setToToken(tempToken);
@@ -590,31 +600,41 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
     if (toAmount) {
       setFromAmount(toAmount);
     }
-  };
+  }, [fromToken, toToken, toAmount]);
 
-  const toggleFromSearch = (e: React.MouseEvent) => {
+  const toggleFromSearch = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (showToSearch) {
       setShowToSearch(false);
     }
-    setTimeout(() => {
-      setShowFromSearch((prev) => !prev);
-    }, 10);
-  };
+    // Only toggle if the state would actually change
+    if (showFromSearch) {
+      setShowFromSearch(false);
+    } else {
+      setTimeout(() => {
+        setShowFromSearch(true);
+      }, 10);
+    }
+  }, [showToSearch, showFromSearch]);
 
-  const toggleToSearch = (e: React.MouseEvent) => {
+  const toggleToSearch = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (showFromSearch) {
       setShowFromSearch(false);
     }
-    setTimeout(() => {
-      setShowToSearch((prev) => !prev);
-    }, 10);
-  };
+    // Only toggle if the state would actually change
+    if (showToSearch) {
+      setShowToSearch(false);
+    } else {
+      setTimeout(() => {
+        setShowToSearch(true);
+      }, 10);
+    }
+  }, [showFromSearch, showToSearch]);
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     if (isRefreshing || !fromToken || !toToken) return;
     setIsRefreshing(true);
 
@@ -626,44 +646,61 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
 
       if (!fromPrice?.price || !toPrice?.price) {
         console.warn("Failed to fetch valid price data");
+        setIsRefreshing(false);
         return;
       }
 
-      const updatedFromToken: TokenData = {
-        ...fromToken,
-        price: fromPrice.price,
-        priceChange: {
-          "1h": 0,
-          "24h": fromPrice.price_change_24h || 0,
-          "7d": 0,
-        },
-        lastUpdated: new Date().toISOString(),
-      };
+      // Only update tokens if prices have changed
+      const fromPriceChanged = fromPrice.price !== fromToken.price;
+      const toPriceChanged = toPrice.price !== toToken.price;
+      
+      if (fromPriceChanged || toPriceChanged) {
+        const updatedFromToken: TokenData = {
+          ...fromToken,
+          price: fromPrice.price,
+          priceChange: {
+            "1h": 0,
+            "24h": fromPrice.price_change_24h || 0,
+            "7d": 0,
+          },
+          lastUpdated: new Date().toISOString(),
+        };
 
-      const updatedToToken: TokenData = {
-        ...toToken,
-        price: toPrice.price,
-        priceChange: {
-          "1h": 0,
-          "24h": toPrice.price_change_24h || 0,
-          "7d": 0,
-        },
-        lastUpdated: new Date().toISOString(),
-      };
+        const updatedToToken: TokenData = {
+          ...toToken,
+          price: toPrice.price,
+          priceChange: {
+            "1h": 0,
+            "24h": toPrice.price_change_24h || 0,
+            "7d": 0,
+          },
+          lastUpdated: new Date().toISOString(),
+        };
 
-      setFromToken(updatedFromToken);
-      setToToken(updatedToToken);
+        if (fromPriceChanged) {
+          setFromToken(updatedFromToken);
+        }
+        
+        if (toPriceChanged) {
+          setToToken(updatedToToken);
+        }
 
-      const amount = parseFloat(fromAmount);
-      if (!isNaN(amount)) {
-        const rate = calculateConversionRate(updatedFromToken, updatedToToken);
-        if (rate === 0) {
-          setToAmount("Price unavailable");
-        } else {
-          const convertedAmount = amount * rate;
-          setToAmount(
-            convertedAmount.toFixed(getDecimalPlaces(updatedToToken))
+        // Only recalculate if prices changed
+        const amount = parseFloat(fromAmount);
+        if (!isNaN(amount)) {
+          const rate = calculateConversionRate(
+            fromPriceChanged ? updatedFromToken : fromToken, 
+            toPriceChanged ? updatedToToken : toToken
           );
+          
+          if (rate === 0) {
+            setToAmount("Price unavailable");
+          } else {
+            const convertedAmount = amount * rate;
+            setToAmount(
+              convertedAmount.toFixed(getDecimalPlaces(toPriceChanged ? updatedToToken : toToken))
+            );
+          }
         }
       }
     } catch (error) {
@@ -671,11 +708,9 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
     } finally {
       setIsRefreshing(false);
     }
-  };
+  }, [isRefreshing, fromToken, toToken, fromAmount, calculateConversionRate, getDecimalPlaces]);
 
-  console.log(fromToken, toToken);
-
-  const generateAdvancedOptions = () => {
+  const generateAdvancedOptions = useCallback(() => {
     const from = tokens.find((t) => t.ticker === fromToken?.ticker);
     const to = tokens.find((t) => t.ticker === toToken?.ticker);
 
@@ -730,9 +765,9 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
     }
 
     return options.slice(0, 12);
-  };
+  }, [tokens, fromToken, toToken]);
 
-  const generateCurrencyOptions = () => {
+  const generateCurrencyOptions = useCallback(() => {
     const fiatCurrencies = Object.values(CURRENCIES);
 
     const diverseCryptos = tokens
@@ -748,37 +783,46 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
       toTicker: fiatCurrencies[index].code,
       iconUrl: crypto.iconUrl,
     }));
-  };
+  }, [tokens]);
 
-  const advancedOptions = generateAdvancedOptions();
-  const currencyOptions = generateCurrencyOptions();
+  const advancedOptions = useMemo(() => generateAdvancedOptions(), [generateAdvancedOptions]);
+  const currencyOptions = useMemo(() => generateCurrencyOptions(), [generateCurrencyOptions]);
 
-  const closeAllSearchModals = () => {
+  const closeAllSearchModals = useCallback(() => {
     setShowFromSearch(false);
     setShowToSearch(false);
-  };
+  }, []);
 
-
+  // Handle not found routes separately
   useEffect(() => {
-    // Handle redirect for not found routes on client-side
     if (notFound && router && typeof window !== 'undefined') {
-      // Use router.replace instead of redirect for client-side navigation
       router.replace('/bitcoin-btc/tether-usdt-usdt', undefined, { shallow: true });
-      return;
     }
-    
-    if (fromToken && toToken) {
-      const fromSlug = `${fromToken.name.toLowerCase().replace(/\s+/g, '-')}-${fromToken.ticker.toLowerCase()}`;
-      const toSlug = `${toToken.name.toLowerCase().replace(/\s+/g, '-')}-${toToken.ticker.toLowerCase()}`;
-      router.push(
-        `/${fromSlug}/${toSlug}`,
-        undefined,
-        { shallow: true }
-      );
-    }
-  }, [fromToken?.ticker, toToken?.ticker, notFound, router]);
+  }, [notFound, router]);
 
-  const handleShare = async () => {
+  // Debounce URL updates to prevent rapid re-renders
+  useEffect(() => {
+    if (!fromToken || !toToken) return;
+    
+    const fromSlug = `${fromToken.name.toLowerCase().replace(/\s+/g, '-')}-${fromToken.ticker.toLowerCase()}`;
+    const toSlug = `${toToken.name.toLowerCase().replace(/\s+/g, '-')}-${toToken.ticker.toLowerCase()}`;
+    const newPath = `/${fromSlug}/${toSlug}`;
+    
+    // Only update URL if it's different from current path
+    if (router.asPath !== newPath) {
+      const timer = setTimeout(() => {
+        router.push(
+          newPath,
+          undefined,
+          { shallow: true }
+        );
+      }, 300); // 300ms debounce
+      
+      return () => clearTimeout(timer);
+    }
+  }, [fromToken?.ticker, toToken?.ticker, router]);
+
+  const handleShare = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
       setCopied(true);
@@ -788,9 +832,9 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
     } catch (err) {
       console.error('Failed to copy URL:', err);
     }
-  };
+  }, []);
 
-  const handleCoinClick = (coin: any, side: 'from' | 'to') => {
+  const handleCoinClick = useCallback((coin: any, side: 'from' | 'to') => {
     const token = {
       ...coin,
       isCrypto: true,
@@ -812,9 +856,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
     } else {
       setToToken(token as TokenData);
     }
-  };
-
-
+  }, []);
 
   return (
     <ConverterContainer>
@@ -969,6 +1011,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
           />
           <div id="conversion-tables">
             <ConversionTables
+              id="conversion-tables"
               fromToken={fromToken}
               toToken={toToken}
               fromAmount={fromAmount}

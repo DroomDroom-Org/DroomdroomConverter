@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   TablesContainer,
   SectionHeading,
@@ -61,7 +61,7 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
     return now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
   }, []);
 
-  const calculateConversionRate = (fromToken: TokenData, toToken: TokenData) => {
+  const calculateConversionRate = useCallback((fromToken: TokenData, toToken: TokenData) => {
     if (!fromToken.isCrypto && toToken.isCrypto) {
       return 1 / (fromToken.price * toToken.price);
     } else if (fromToken.isCrypto && !toToken.isCrypto) {
@@ -70,13 +70,13 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
       // Both crypto or both fiat
       return fromToken.price / toToken.price;
     }
-  };
+  }, []);
 
-  const getDecimalPlaces = (token: TokenData) => {
+  const getDecimalPlaces = useCallback((token: TokenData) => {
     if (!token.isCrypto) return 2;
     if (token.ticker === 'USDT' || token.ticker === 'USDC' || token.ticker === 'DAI' || token.ticker === 'BUSD') return 2;
     return 8;
-  };
+  }, []);
 
   useEffect(() => {
     if (fromToken && toToken) {
@@ -84,7 +84,7 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
       setFromTokenPrice(rate);
       setToTokenPrice(1 / rate);
     }
-  }, [fromToken, toToken]);
+  }, [fromToken, toToken, calculateConversionRate]);
 
   if (!fromToken || !toToken) {
     return null;
@@ -94,13 +94,13 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
   const dailyChange = fromToken.priceChange?.['24h'] || 3.06;
   const weeklyChange = fromToken.priceChange?.['7d'] || 3.18;
 
-  const amounts = [0.5, 1, 5, 10, 50, 100, 500, 1000];
+  const amounts = useMemo(() => [0.5, 1, 5, 10, 50, 100, 500, 1000], []);
 
-  const price24HAgo = Number(toAmount) / (1 + (dailyChange / 100));
-  const price1WAgo = Number(toAmount) / (1 + (weeklyChange / 100));
-  const price1MAgo = Number(toAmount) / (1 + (weeklyChange * 4 / 100));
+  const price24HAgo = useMemo(() => Number(toAmount) / (1 + (dailyChange / 100)), [toAmount, dailyChange]);
+  const price1WAgo = useMemo(() => Number(toAmount) / (1 + (weeklyChange / 100)), [toAmount, weeklyChange]);
+  const price1MAgo = useMemo(() => Number(toAmount) / (1 + (weeklyChange * 4 / 100)), [toAmount, weeklyChange]);
   
-  const generateComparisonData = (historicalPrice: number, changePercent: number) => {
+  const generateComparisonData = useCallback((historicalPrice: number, changePercent: number) => {
     return amounts.map(amount => {
       const currentValue = amount * Number(toAmount);
       const prevValue = amount * historicalPrice;
@@ -113,24 +113,24 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
         change
       };
     });
-  };
+  }, [amounts, toAmount, toToken, getDecimalPlaces]);
 
-  const comparisonData24h = generateComparisonData(price24HAgo, dailyChange);
-  const comparisonData1m = generateComparisonData(price1MAgo, weeklyChange * 4); 
+  const comparisonData24h = useMemo(() => generateComparisonData(price24HAgo, dailyChange), [generateComparisonData, price24HAgo, dailyChange]);
+  const comparisonData1m = useMemo(() => generateComparisonData(price1MAgo, weeklyChange * 4), [generateComparisonData, price1MAgo, weeklyChange]); 
 
-  const formatDecimal = (value: number, token: TokenData) => {
+  const formatDecimal = useCallback((value: number, token: TokenData) => {
     return value?.toLocaleString(undefined, { maximumFractionDigits: getDecimalPlaces(token) });
-  };
+  }, [getDecimalPlaces]);
 
-  const formatCryptoValue = (value: number, token: TokenData): string => {
+  const formatCryptoValue = useCallback((value: number, token: TokenData): string => {
     if (value === 0) return '0';
     return value.toFixed(getDecimalPlaces(token));
-  };
+  }, [getDecimalPlaces]);
 
-  const formatAmount = (amount: number, token: TokenData): string => {
+  const formatAmount = useCallback((amount: number, token: TokenData): string => {
     const formattedAmount = formatCryptoValue(amount, token);
     return `${formattedAmount} ${token.ticker}`;
-  };
+  }, [formatCryptoValue]);
 
   return (
     <TablesContainer>

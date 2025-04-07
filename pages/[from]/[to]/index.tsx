@@ -6,10 +6,8 @@ import prisma from '../../../src/lib/prisma';
 import { generateTokenUrl } from '../../../src/utils/url';
 import { CURRENCIES } from '../../../src/context/CurrencyContext';
 
-// This function generates all the possible paths that should be pre-rendered
 export const getStaticPaths: GetStaticPaths = async () => {
   try {
-    // Fetch all tokens, ordered by rank
     const tokens = await prisma.token.findMany({
       select: {
         id: true,
@@ -22,15 +20,13 @@ export const getStaticPaths: GetStaticPaths = async () => {
       },
       where: {
         rank: {
-          lte: 2000 // Only include tokens with rank less than or equal to 2000
+          lte: 2000 
         }
       }
     });
 
-    // Get fiat currencies from our context
     const fiatCurrencies = Object.keys(CURRENCIES);
     
-    // Define special tokens
     const btc = tokens.find(t => t.ticker.toUpperCase() === 'BTC');
     const eth = tokens.find(t => t.ticker.toUpperCase() === 'ETH');
     const usdt = tokens.find(t => t.ticker.toUpperCase() === 'USDT');
@@ -45,22 +41,19 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
     let paths: { params: { from: string, to: string } }[] = [];
     
-    // 1. BTC to all fiat currencies
     for (const fiatCode of fiatCurrencies) {
       paths.push({
         params: { from: btcSlug, to: fiatCode.toLowerCase() }
       });
     }
     
-    // 2. ETH to all fiat currencies
     for (const fiatCode of fiatCurrencies) {
       paths.push({
         params: { from: ethSlug, to: fiatCode.toLowerCase() }
       });
     }
     
-    // 3. Top 100 coins to USDT (limiting to top 100 for build performance)
-    const top100Tokens = tokens.filter(t => t.rank <= 100 && t.ticker.toUpperCase() !== 'USDT');
+    const top100Tokens = tokens.filter(t => t.rank && t.rank <= 100 && t.ticker.toUpperCase() !== 'USDT');
     for (const token of top100Tokens) {
       const tokenSlug = generateTokenUrl(token.name, token.ticker);
       paths.push({
@@ -68,7 +61,6 @@ export const getStaticPaths: GetStaticPaths = async () => {
       });
     }
     
-    // 4. BTC to top 100 coins
     for (const token of top100Tokens.filter(t => t.ticker.toUpperCase() !== 'BTC')) {
       const tokenSlug = generateTokenUrl(token.name, token.ticker);
       paths.push({
@@ -76,7 +68,6 @@ export const getStaticPaths: GetStaticPaths = async () => {
       });
     }
     
-    // 5. ETH to top 100 coins
     for (const token of top100Tokens.filter(t => t.ticker.toUpperCase() !== 'ETH')) {
       const tokenSlug = generateTokenUrl(token.name, token.ticker);
       paths.push({
@@ -84,7 +75,6 @@ export const getStaticPaths: GetStaticPaths = async () => {
       });
     }
     
-    // 6. Top 100 coins to USD (as a representative fiat)
     for (const token of top100Tokens) {
       const tokenSlug = generateTokenUrl(token.name, token.ticker);
       paths.push({
@@ -94,7 +84,6 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
     return {
       paths,
-      // fallback: 'blocking' means pages that are not pre-rendered will be generated at runtime
       fallback: 'blocking'
     };
   } catch (error) {
@@ -134,17 +123,13 @@ export const getStaticProps: GetStaticProps = async (context) => {
       isCrypto: !['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR', 'AED'].includes(token.ticker),
     }));
 
-    // Parse the slugs to get tickers
     const fromTicker = from.split('-').pop()?.toUpperCase() || '';
     const toTicker = to.split('-').pop()?.toUpperCase() || '';
 
     const fromToken = tokens.find((t: any) => t.ticker.toUpperCase() === fromTicker);
     const toToken = tokens.find((t: any) => t.ticker.toUpperCase() === toTicker);
 
-    // For static generation, we need to handle missing tokens without redirects
-    // Instead, provide default tokens and let client-side handle redirection if needed
     if (!fromToken || !toToken) {
-      // Find default tokens to use
       const btcToken = tokens.find((t: any) => t.ticker.toUpperCase() === 'BTC') || tokens[0];
       const usdtToken = tokens.find((t: any) => t.ticker.toUpperCase() === 'USDT') || tokens[1] || tokens[0];
       
@@ -153,12 +138,10 @@ export const getStaticProps: GetStaticProps = async (context) => {
           tokens,
           initialFrom: btcToken.ticker,
           initialTo: usdtToken.ticker,
-          notFound: true, // Flag to indicate the requested pair wasn't found
+          notFound: true,
           requestedFrom: fromTicker,
           requestedTo: toTicker
         },
-        // Re-generate the page more frequently for not-found pairs
-        revalidate: 1800,
       };
     }
 
@@ -169,12 +152,10 @@ export const getStaticProps: GetStaticProps = async (context) => {
         initialTo: toToken.ticker,
         notFound: false
       },
-      // Re-generate the page at most once per hour
       revalidate: 3600,
     };
   } catch (error) {
     console.error('Error fetching tokens:', error);
-    // For build-time errors, return fallback props instead of redirect
     return {
       props: {
         tokens: [],

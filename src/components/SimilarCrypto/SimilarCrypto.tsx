@@ -273,7 +273,7 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
                                 <MarqueeContent isReverse={rowIndex % 2 === 1}>
                                     {duplicateForScroll(row).map((coinData, index) => (
                                         <CoinCard
-                                            key={`${coinData.id || `similar-${index}`}-${rowIndex}`}
+                                            key={`similar-${coinData.id || index}-${rowIndex}-${index}`}
                                             className="simplified-card"
                                         >
                                             <CoinInfo>
@@ -326,7 +326,7 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
                                 <MarqueeContent isReverse={rowIndex % 2 === 1}>
                                     {duplicateForScroll(row).map((coinData, index) => (
                                         <CoinCard
-                                            key={`${coinData.cmcId || `top-${index}`}-${rowIndex}`}
+                                            key={`top-${coinData.cmcId || index}-${rowIndex}-${index}`}
                                             className="simplified-card"
                                         >
                                             <CoinInfo>
@@ -377,10 +377,8 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
                                 <MarqueeContent isReverse={rowIndex % 2 === 1}>
                                     {duplicateForScroll(row).map((coin, index) => (
                                         <CoinCard
-                                            key={`${coin.ticker || `guide-${index}`}-${rowIndex}`}
+                                            key={`guide-${coin.ticker || index}-${rowIndex}-${index}`}
                                             className="simplified-card"
-                                            as="a"
-                                            href="#"
                                         >
                                             <CoinInfo>
                                                 <CoinLogo>
