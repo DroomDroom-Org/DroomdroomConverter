@@ -14,11 +14,12 @@ import getConfig from 'next/config';
 import { getPageUrl } from 'utils/config';
 import ProfileDropdown from './ProfileDropdown';
 import { useState, useRef, useEffect } from 'react';
+import { IconProp } from '@fortawesome/fontawesome-svg-core';
 
 const { publicRuntimeConfig } = getConfig();
 
 const Header = () => {
-  const [, dispatch] = useThemeContext();
+  const [theme, dispatch] = useThemeContext();
   const { name } = useTheme();
   const dispatchMenu = useAppDispatch();
   const { data: session } = useSession();
@@ -73,22 +74,16 @@ const Header = () => {
           </S.ThemeButtonContainer>
         </S.HeaderActions>
         <S.LogoContainer>
-          <Link href="/">
-            {/* <Image
-              src="/logo.png"
-              alt="DroomDroom Logo"
-              width={248}
-              height={35}
-              priority
-            /> */}
-            {/* Use svg placed in public folder for light and dark mode seperate named as DroomDroom_Black.svg and DroomDroom_White.svg */}
-            <Image
-              src={`${getPageUrl("")}/DroomDroom_${name === 'light' ? 'Black' : 'White'}.svg`}
-              alt="DroomDroom Logo"
-              width={200}
-              height={35}
-              priority
-            />
+          <Link href="/" passHref legacyBehavior>
+            <a>
+              <Image
+                src={`${getPageUrl("")}/DroomDroom_${name === 'light' ? 'Black' : 'White'}.svg`}
+                alt="DroomDroom Logo"
+                width={200}
+                height={35}
+                priority
+              />
+            </a>
           </Link>
         </S.LogoContainer>
         <S.RightContainer>
@@ -103,7 +98,7 @@ const Header = () => {
           </div> */}
           <S.MenuButtonContainer>
             <S.MenuButton onClick={handleToggleMenu} aria-label="Open menu">
-              <FontAwesomeIcon icon={faBars} />
+              <FontAwesomeIcon icon={faBars as IconProp} />
             </S.MenuButton>
           </S.MenuButtonContainer>
         </S.RightContainer>
