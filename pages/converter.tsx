@@ -376,8 +376,8 @@ const SearchWrapper = styled.div`
   top: 100%;
   right: 0;
   margin-top: 4px;
-  z-index: 100;
-  width: 240px;
+  z-index: 100000;
+  width: 360px;
 `;
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
