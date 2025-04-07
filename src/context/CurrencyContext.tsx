@@ -1,18 +1,20 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
-// Define supported currencies and their symbols
 export const CURRENCIES = {
-  USD: { code: 'USD', symbol: '$', name: 'US Dollar' },
-  EUR: { code: 'EUR', symbol: '€', name: 'Euro' },
-  GBP: { code: 'GBP', symbol: '£', name: 'British Pound' },
-  JPY: { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
-  AUD: { code: 'AUD', symbol: 'A$', name: 'Australian Dollar' },
-  CAD: { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar' },
-  CHF: { code: 'CHF', symbol: 'Fr', name: 'Swiss Franc' },
-  CNY: { code: 'CNY', symbol: '¥', name: 'Chinese Yuan' },
-  INR: { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
-  AED: { code: 'AED', symbol: 'د.إ', name: 'UAE Dirham' },
+  USD: { code: 'USD', symbol: '$', name: 'US Dollar' , flag: '🇺🇸' },
+  EUR: { code: 'EUR', symbol: '€', name: 'Euro' , flag: '🇪🇺' },
+  GBP: { code: 'GBP', symbol: '£', name: 'British Pound' , flag: '🇬🇧' },
+  JPY: { code: 'JPY', symbol: '¥', name: 'Japanese Yen' , flag: '🇯🇵' },
+  AUD: { code: 'AUD', symbol: 'A$', name: 'Australian Dollar' , flag: '🇦🇺' },
+  CAD: { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar' , flag: '🇨🇦' },
+  CHF: { code: 'CHF', symbol: 'Fr', name: 'Swiss Franc' , flag: '🇨🇭' },
+  CNY: { code: 'CNY', symbol: '¥', name: 'Chinese Yuan' , flag: '🇨🇳' },
+  INR: { code: 'INR', symbol: '₹', name: 'Indian Rupee' , flag: '🇮🇳' },
+  AED: { code: 'AED', symbol: 'د.إ', name: 'UAE Dirham' , flag: '🇦🇪' },
 };
+
+
+
 
 export type CurrencyCode = keyof typeof CURRENCIES;
 
@@ -31,6 +33,8 @@ interface CurrencyContextType {
 }
 
 const CurrencyContext = createContext<CurrencyContextType>({
+
+
   currency: 'USD',
   setCurrency: () => {},
   rates: Object.keys(CURRENCIES).reduce((acc, curr) => {
@@ -156,10 +160,8 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
 	const [currencyAmount, setCurrencyAmount] = useState('');
 
   useEffect(() => {
-    // Fetch the latest exchange rates
     const fetchRates = async () => {
       try {
-        // Using the free ExchangeRate API
         const response = await fetch('https://open.er-api.com/v6/latest/USD');
         const data = await response.json();
         
@@ -185,7 +187,6 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
     };
 
     fetchRates();
-    // Refresh rates every hour
     const intervalId = setInterval(fetchRates, 3600000); // every hour
     return () => clearInterval(intervalId);
   }, []);
@@ -197,13 +198,10 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
   const formatPrice = (price: number): string => {
     const convertedPrice = convertPrice(price);
     
-    // Format based on currency
     if (currency === 'JPY' || currency === 'INR') {
-        // No decimal places for JPY and INR
       return `${CURRENCIES[currency].symbol}${Math.round(convertedPrice).toLocaleString()}`;
     }
     
-    // For most currencies, show 2 decimal places
     return `${CURRENCIES[currency].symbol}${convertedPrice.toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,

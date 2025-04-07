@@ -102,7 +102,7 @@ const SearchCoin: React.FC<SearchCoinProps> = memo(({ coins, onSelectToken, isVi
     }, [debouncedSearch]);
 
     const handleCoinClick = useCallback((coin: any) => {
-        console.log("coin", coin);
+
         onSelectToken(coin);
         setSearchTerm('');
         onClose();

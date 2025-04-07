@@ -443,12 +443,8 @@ const getToSymbol = (coin: any): string => {
 
 const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, notFound, requestedFrom, requestedTo, error }) => {
   const router = useRouter();
-  const [fromToken, setFromToken] = useState<TokenData | null>(
-    tokens.find(t => t.ticker === initialFrom) || tokens.find(t => t.ticker === 'BTC') || tokens[0]
-  );
-  const [toToken, setToToken] = useState<TokenData | null>(
-    tokens.find(t => t.ticker === initialTo) || tokens.find(t => t.ticker === 'USDT') || tokens[1]
-  );
+  const [fromToken, setFromToken] = useState<TokenData | null>(null);
+  const [toToken, setToToken] = useState<TokenData | null>(null);
   const [fromAmount, setFromAmount] = useState<string>('1');
   const [toAmount, setToAmount] = useState<string>('');
   const [showFromSearch, setShowFromSearch] = useState<boolean>(false);
@@ -460,11 +456,76 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
   const fromButtonRef = useRef<HTMLButtonElement>(null);
   const toButtonRef = useRef<HTMLButtonElement>(null);
 
+  useEffect(() => {
+    if (tokens && tokens.length > 0) {
+      const fromTokenFound = tokens.find(t => t.ticker === initialFrom);
+      const toTokenFound = tokens.find(t => t.ticker === initialTo);
+      
+      if (fromTokenFound) {
+        setFromToken(fromTokenFound);
+      } else if (initialFrom) {
+        const fiatTickers = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR', 'AED'];
+        const fiatCurrency = Object.values(CURRENCIES).find(
+          (currency: any) => currency.code.toUpperCase() === initialFrom
+        );
+        
+        setFromToken({
+          id: `placeholder-${initialFrom}`,
+          ticker: initialFrom,
+          name: fiatCurrency ? fiatCurrency.name : initialFrom,
+          price: 0,
+          cmcId: '',
+          rank: 0,
+          iconUrl: '',
+          status: 'stable',
+          priceChange: { '1h': 0, '24h': 0, '7d': 0 },
+          marketCap: '0',
+          volume24h: '0',
+          circulatingSupply: null,
+          lastUpdated: new Date().toISOString(),
+          isCrypto: !fiatTickers.includes(initialFrom),
+        });
+      } else {
+        const btcToken = tokens.find(t => t.ticker === 'BTC') || tokens[0];
+        setFromToken(btcToken);
+      }
+      
+      if (toTokenFound) {
+        setToToken(toTokenFound);
+      } else if (initialTo) {
+        const fiatTickers = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR', 'AED'];
+        const fiatCurrency = Object.values(CURRENCIES).find(
+          (currency: any) => currency.code.toUpperCase() === initialTo
+        );
+        
+        setToToken({
+          id: `placeholder-${initialTo}`,
+          ticker: initialTo,
+          name: fiatCurrency ? fiatCurrency.name : initialTo,
+          price: 0,
+          cmcId: '',
+          rank: 0,
+          iconUrl: '',
+          status: 'stable',
+          priceChange: { '1h': 0, '24h': 0, '7d': 0 },
+          marketCap: '0',
+          volume24h: '0',
+          circulatingSupply: null,
+          lastUpdated: new Date().toISOString(),
+          isCrypto: !fiatTickers.includes(initialTo),
+        });
+      } else {
+        const usdtToken = tokens.find(t => t.ticker === 'USDT') || tokens[1] || tokens[0];
+        setToToken(usdtToken);
+      }
+    }
+  }, [tokens, initialFrom, initialTo, CURRENCIES]);
+
   const calculateConversionRate = useCallback((
     fromToken: TokenData,
     toToken: TokenData
   ) => {
-    // Validate that both tokens have valid prices
+      // Validate that both tokens have valid prices
     console.log(fromToken, toToken);
     if (
       !fromToken?.price ||
@@ -795,32 +856,134 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
 
   // Handle not found routes separately
   useEffect(() => {
-    if (notFound && router && typeof window !== 'undefined') {
-      router.replace('/bitcoin-btc/tether-usdt-usdt', undefined, { shallow: true });
+    if (notFound && router && typeof window !== 'undefined' && requestedFrom && requestedTo) {
+      // Instead of redirecting, try to fetch the tokens from the API
+      const fetchTokens = async () => {
+        try {
+          const response = await axios.get(getApiUrl(`/coins`), {
+            params: {
+              page: 1,
+              pageSize: 200,
+            },
+          });
+          
+          const fetchedTokens = response.data.tokens.map((token: any) => ({
+            id: token.id || '',
+            ticker: token.ticker || '',
+            name: token.name || '',
+            price: token.price || 0,
+            cmcId: token.cmcId || '',
+            rank: token.rank || 0,
+            iconUrl: token.cmcId ? `https://s2.coinmarketcap.com/static/img/coins/64x64/${token.cmcId}.png` : '',
+            status: token.status || 'stable',
+            priceChange: token.priceChange || { '1h': 0, '24h': 0, '7d': 0 },
+            marketCap: token.marketCap || '0',
+            volume24h: token.volume24h || '0',
+            circulatingSupply: token.circulatingSupply || null,
+            lastUpdated: token.lastUpdated || new Date().toISOString(),
+            isCrypto: !['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR', 'AED'].includes(token.ticker),
+          }));
+          
+          const fromToken = fetchedTokens.find((t: any) => t.ticker.toUpperCase() === requestedFrom);
+          const toToken = fetchedTokens.find((t: any) => t.ticker.toUpperCase() === requestedTo);
+          
+          if (fromToken && toToken) {
+            setFromToken(fromToken);
+            setToToken(toToken);
+          } else {
+            // Create placeholder tokens if not found in API
+            const fiatTickers = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR', 'AED'];
+            
+            if (!fromToken) {
+              // Check if it's a valid fiat currency
+              const fiatCurrency = Object.values(CURRENCIES).find(
+                (currency: any) => currency.code.toUpperCase() === requestedFrom
+              );
+              
+              const placeholderFromToken = {
+                id: `placeholder-${requestedFrom}`,
+                ticker: requestedFrom,
+                name: fiatCurrency ? fiatCurrency.name : requestedFrom,
+                price: 0,
+                cmcId: '',
+                rank: 0,
+                iconUrl: '',
+                status: 'stable',
+                priceChange: { '1h': 0, '24h': 0, '7d': 0 },
+                marketCap: '0',
+                volume24h: '0',
+                circulatingSupply: null,
+                lastUpdated: new Date().toISOString(),
+                isCrypto: !fiatTickers.includes(requestedFrom),
+              };
+              setFromToken(placeholderFromToken);
+            }
+            
+            if (!toToken) {
+              // Check if it's a valid fiat currency
+              const fiatCurrency = Object.values(CURRENCIES).find(
+                (currency: any) => currency.code.toUpperCase() === requestedTo
+              );
+              
+              const placeholderToToken = {
+                id: `placeholder-${requestedTo}`,
+                ticker: requestedTo,
+                name: fiatCurrency ? fiatCurrency.name : requestedTo,
+                price: 0,
+                cmcId: '',
+                rank: 0,
+                iconUrl: '',
+                status: 'stable',
+                priceChange: { '1h': 0, '24h': 0, '7d': 0 },
+                marketCap: '0',
+                volume24h: '0',
+                circulatingSupply: null,
+                lastUpdated: new Date().toISOString(),
+                isCrypto: !fiatTickers.includes(requestedTo),
+              };
+              setToToken(placeholderToToken);
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching tokens:', error);
+        }
+      };
+      
+      fetchTokens();
     }
-  }, [notFound, router]);
+  }, [notFound, router, requestedFrom, requestedTo]);
 
-  // Debounce URL updates to prevent rapid re-renders
+  // Update URL when tokens are loaded
   useEffect(() => {
-    if (!fromToken || !toToken) return;
-    
-    const fromSlug = `${fromToken.name.toLowerCase().replace(/\s+/g, '-')}-${fromToken.ticker.toLowerCase()}`;
-    const toSlug = `${toToken.name.toLowerCase().replace(/\s+/g, '-')}-${toToken.ticker.toLowerCase()}`;
-    const newPath = `/${fromSlug}/${toSlug}`;
-    
-    // Only update URL if it's different from current path
-    if (router.asPath !== newPath) {
-      const timer = setTimeout(() => {
+    if (fromToken && toToken && router && typeof window !== 'undefined') {
+      const fiatTickers = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR', 'AED'];
+      
+      let fromSlug = '';
+      let toSlug = '';
+      
+      if (fiatTickers.includes(fromToken.ticker)) {
+        fromSlug = `${fromToken.name.toLowerCase().replace(/\s+/g, '-')}-${fromToken.ticker.toLowerCase()}`;
+      } else {
+        fromSlug = `${fromToken.name.toLowerCase().replace(/\s+/g, '-')}-${fromToken.ticker.toLowerCase()}`;
+      }
+      
+      if (fiatTickers.includes(toToken.ticker)) {
+        toSlug = `${toToken.name.toLowerCase().replace(/\s+/g, '-')}-${toToken.ticker.toLowerCase()}`;
+      } else {
+        toSlug = `${toToken.name.toLowerCase().replace(/\s+/g, '-')}-${toToken.ticker.toLowerCase()}`;
+      }
+      
+      const newPath = `/${fromSlug}/${toSlug}`;
+      
+      if (router.asPath !== newPath && !router.asPath.includes('/bitcoin-btc/tether-usdt-usdt')) {
         router.push(
           newPath,
           undefined,
           { shallow: true }
         );
-      }, 700); 
-      
-      return () => clearTimeout(timer);
+      }
     }
-  }, [fromToken?.ticker, toToken?.ticker, router]);
+  }, [fromToken, toToken, router]);
 
   const handleShare = useCallback(async () => {
     try {
@@ -836,9 +999,29 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
   
   const fiatTickers = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR', 'AED'];
   const handleCoinClick = useCallback((coin: any, side: 'from' | 'to') => {
+    console.log("handleCoinClick called with:", { coin, side });
+    
+    // Define fiat currency names mapping
+    const fiatNames: Record<string, string> = {
+      'USD': 'US Dollar',
+      'EUR': 'Euro',
+      'GBP': 'British Pound',
+      'JPY': 'Japanese Yen',
+      'AUD': 'Australian Dollar',
+      'CAD': 'Canadian Dollar',
+      'CHF': 'Swiss Franc',
+      'CNY': 'Chinese Yuan',
+      'INR': 'Indian Rupee',
+      'AED': 'UAE Dirham'
+    };
+    
+    // Ensure the coin has all required properties
     const token = {
-      ...coin,
-      isCrypto: !fiatTickers.map(ticker => ticker.toLowerCase()).includes(coin.ticker.toLowerCase()),
+      id: coin.id || `token-${coin.ticker || coin.symbol || 'unknown'}`,
+      ticker: coin.ticker || coin.symbol || '',
+      // For fiat currencies, ensure we have the full name
+      name: coin.name || (fiatNames[coin.ticker] || coin.ticker),
+      isCrypto: !fiatTickers.map(ticker => ticker.toLowerCase()).includes((coin.ticker || coin.symbol || '').toLowerCase()),
       cmcId: coin?.cmcId ?? 0,
       iconUrl: coin?.iconUrl ?? `https://s2.coinmarketcap.com/static/img/coins/64x64/${coin?.cmcId}.png`,
       price: coin?.currentPrice?.usd ?? coin?.price ?? 0,
@@ -852,12 +1035,140 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
       circulatingSupply: coin?.marketData?.circulatingSupply ?? coin?.circulatingSupply ?? 0,
       lastUpdated: coin?.cmcData?.lastUpdated ?? coin?.lastUpdated ?? new Date(),
     }
+    
+    console.log("Processed token:", token);
+    
+    // Helper function to get the proper slug for a token
+    const getTokenSlug = (token: any) => {
+      const fiatTickers = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR', 'AED'];
+      
+      console.log("getTokenSlug called with token:", token);
+      
+      if (fiatTickers.includes(token.ticker)) {
+        // For fiat currencies, use the format "currency-name-currency-code"
+        const fiatName = token.name || fiatNames[token.ticker] || token.ticker;
+        console.log("Fiat currency detected:", token.ticker, "Using name:", fiatName);
+        return `${fiatName.toLowerCase().replace(/\s+/g, '-')}-${token.ticker.toLowerCase()}`;
+      } else {
+        return `${token.name.toLowerCase().replace(/\s+/g, '-')}-${token.ticker.toLowerCase()}`;
+      }
+    };
+    
     if (side === 'from') {
+      console.log("Setting fromToken to:", token);
       setFromToken(token as TokenData);
+      
+      // Update URL immediately when a token is selected
+      if (toToken && router && typeof window !== 'undefined') {
+        const fromSlug = getTokenSlug(token);
+        const toSlug = getTokenSlug(toToken);
+        
+        const newPath = `/${fromSlug}/${toSlug}`;
+        console.log("Generated new path for from token:", newPath);
+        console.log("Current router path:", router.asPath);
+        
+        // Use Next.js router for client-side navigation (much faster)
+        router.push(newPath, undefined, { shallow: true });
+      } else {
+        console.log("Could not update URL - missing toToken, router, or window");
+      }
     } else {
+      console.log("Setting toToken to:", token);
       setToToken(token as TokenData);
+      
+      // Update URL immediately when a token is selected
+      if (fromToken && router && typeof window !== 'undefined') {
+        const fromSlug = getTokenSlug(fromToken);
+        const toSlug = getTokenSlug(token);
+        
+        const newPath = `/${fromSlug}/${toSlug}`;
+        console.log("Generated new path for to token:", newPath);
+        console.log("Current router path:", router.asPath);
+        
+        // Use Next.js router for client-side navigation (much faster)
+        router.push(newPath, undefined, { shallow: true });
+      } else {
+        console.log("Could not update URL - missing fromToken, router, or window");
+      }
     }
-  }, []);
+  }, [fromToken, toToken, router]);
+
+  // Fetch prices for placeholder tokens
+  useEffect(() => {
+    const fetchPlaceholderPrices = async () => {
+      if (!fromToken || !toToken) return;
+      
+      // Check if either token is a placeholder
+      const isFromPlaceholder = fromToken.id && fromToken.id.startsWith('placeholder-');
+      const isToPlaceholder = toToken.id && toToken.id.startsWith('placeholder-');
+      
+      if (!isFromPlaceholder && !isToPlaceholder) return;
+      
+      try {
+        // For fiat currencies, we can use a fixed price
+        const fiatTickers = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR', 'AED'];
+        
+        if (isFromPlaceholder && fiatTickers.includes(fromToken.ticker)) {
+          // For fiat currencies, set a fixed price
+          setFromToken(prev => ({
+            ...prev!,
+            price: 1,
+            lastUpdated: new Date().toISOString(),
+          }));
+        }
+        
+        if (isToPlaceholder && fiatTickers.includes(toToken.ticker)) {
+          // For fiat currencies, set a fixed price
+          setToToken(prev => ({
+            ...prev!,
+            price: 1,
+            lastUpdated: new Date().toISOString(),
+          }));
+        }
+        
+        // For crypto tokens, try to fetch from an external API
+        if (isFromPlaceholder && !fiatTickers.includes(fromToken.ticker)) {
+          try {
+            // Try to fetch from CoinGecko API
+            const response = await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${fromToken.ticker.toLowerCase()}&vs_currencies=usd`);
+            const price = response.data[fromToken.ticker.toLowerCase()]?.usd;
+            
+            if (price) {
+              setFromToken(prev => ({
+                ...prev!,
+                price,
+                lastUpdated: new Date().toISOString(),
+              }));
+            }
+          } catch (error) {
+            console.error(`Error fetching price for ${fromToken.ticker}:`, error);
+          }
+        }
+        
+        if (isToPlaceholder && !fiatTickers.includes(toToken.ticker)) {
+          try {
+            // Try to fetch from CoinGecko API
+            const response = await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${toToken.ticker.toLowerCase()}&vs_currencies=usd`);
+            const price = response.data[toToken.ticker.toLowerCase()]?.usd;
+            
+            if (price) {
+              setToToken(prev => ({
+                ...prev!,
+                price,
+                lastUpdated: new Date().toISOString(),
+              }));
+            }
+          } catch (error) {
+            console.error(`Error fetching price for ${toToken.ticker}:`, error);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching placeholder prices:', error);
+      }
+    };
+    
+    fetchPlaceholderPrices();
+  }, [fromToken, toToken]);
 
   console.log("FROM TOKEN", fromToken);
   console.log("TO TOKEN", toToken);
