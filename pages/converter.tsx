@@ -1185,8 +1185,16 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
         <ConversionHeader>
           <TitleWrapper>
             <IconsWrapper>
-              <CryptoIcon src={`https://s2.coinmarketcap.com/static/img/coins/64x64/${fromToken?.cmcId}.png`} alt="BTC" />
-              <CryptoIcon src={`https://s2.coinmarketcap.com/static/img/coins/64x64/${toToken?.cmcId}.png`} alt="USDT" />
+              {fromToken?.isCrypto ? (
+                <CryptoIcon src={`https://s2.coinmarketcap.com/static/img/coins/64x64/${fromToken?.cmcId}.png`} alt={fromToken?.ticker} />
+              ) : (
+                <CryptoIcon src={`https://flagcdn.com/w80/${fromToken?.ticker.toLowerCase().slice(0, 2)}.png`} alt={fromToken?.ticker} />
+              )}
+              {toToken?.isCrypto ? (
+                <CryptoIcon src={`https://s2.coinmarketcap.com/static/img/coins/64x64/${toToken?.cmcId}.png`} alt={toToken?.ticker} />
+              ) : (
+                <CryptoIcon src={`https://flagcdn.com/w80/${toToken?.ticker.toLowerCase().slice(0, 2)}.png`} alt={toToken?.ticker} />
+              )}
             </IconsWrapper>
             <Title>
               Convert and swap{" "}
