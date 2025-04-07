@@ -406,7 +406,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       volume24h: token.volume24h || '0',
       circulatingSupply: token.circulatingSupply || '0',
       lastUpdated: token.lastUpdated || new Date().toISOString(),
-      isCrypto: !fiatTickers.includes(token.ticker),
+      isCrypto: !fiatTickers.map(ticker => ticker.toLowerCase()).includes(token.ticker.toLowerCase()),
     }));
 
     return {
@@ -816,7 +816,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
           undefined,
           { shallow: true }
         );
-      }, 300); // 300ms debounce
+      }, 700); 
       
       return () => clearTimeout(timer);
     }
@@ -833,11 +833,12 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
       console.error('Failed to copy URL:', err);
     }
   }, []);
-
+  
+  const fiatTickers = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR', 'AED'];
   const handleCoinClick = useCallback((coin: any, side: 'from' | 'to') => {
     const token = {
       ...coin,
-      isCrypto: true,
+      isCrypto: !fiatTickers.map(ticker => ticker.toLowerCase()).includes(coin.ticker.toLowerCase()),
       cmcId: coin?.cmcId ?? 0,
       iconUrl: coin?.iconUrl ?? `https://s2.coinmarketcap.com/static/img/coins/64x64/${coin?.cmcId}.png`,
       price: coin?.currentPrice?.usd ?? coin?.price ?? 0,
@@ -857,6 +858,9 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
       setToToken(token as TokenData);
     }
   }, []);
+
+  console.log("FROM TOKEN", fromToken);
+  console.log("TO TOKEN", toToken);
 
   return (
     <ConverterContainer>
