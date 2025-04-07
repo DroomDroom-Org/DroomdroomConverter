@@ -451,7 +451,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
   const [showToSearch, setShowToSearch] = useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [copied, setCopied] = useState(false);
-  const { fiatCurrencies } = useCurrency();
+  const { fiatCurrencies , rates , currency , setCurrency } = useCurrency();
 
   const fromButtonRef = useRef<HTMLButtonElement>(null);
   const toButtonRef = useRef<HTMLButtonElement>(null);
@@ -525,8 +525,16 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
     fromToken: TokenData,
     toToken: TokenData
   ) => {
-      // Validate that both tokens have valid prices
-    console.log(fromToken, toToken);
+    console.log("Calculating conversion rate between:", {
+      fromToken: fromToken?.ticker,
+      fromPrice: fromToken?.price,
+      fromIsCrypto: fromToken?.isCrypto,
+      toToken: toToken?.ticker,
+      toPrice: toToken?.price,
+      toIsCrypto: toToken?.isCrypto,
+      rates: rates
+    });
+    
     if (
       !fromToken?.price ||
       !toToken?.price ||
@@ -544,15 +552,47 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
       return 0;
     }
 
-    if (!fromToken.isCrypto && toToken.isCrypto) {
-      return 1 / (fromToken.price * toToken.price);
+    // For fiat currencies, we need to handle the conversion differently
+    if (!fromToken.isCrypto && !toToken.isCrypto) {
+      // Both are fiat currencies - we need to get the exchange rate between them
+      console.log("Both tokens are fiat currencies");
+      
+      // Get the rate for each currency relative to USD
+      const fromRate = rates[fromToken.ticker as keyof typeof rates] || 1;
+      const toRate = rates[toToken.ticker as keyof typeof rates] || 1;
+      
+      console.log(`Using rates from context: ${fromToken.ticker}=${fromRate}, ${toToken.ticker}=${toRate}`);
+      
+      // Calculate the cross rate
+      return toRate / fromRate;
+    } else if (!fromToken.isCrypto && toToken.isCrypto) {
+      // From fiat to crypto
+      console.log("Converting from fiat to crypto");
+      
+      // Get the rate for the fiat currency relative to USD
+      const fiatRate = rates[fromToken.ticker as keyof typeof rates] || 1;
+      
+      // For fiat to crypto, we need to:
+      // 1. Convert the fiat amount to USD (divide by fiat rate)
+      // 2. Then convert USD to crypto (divide by crypto price)
+      return toToken.price / fiatRate;
     } else if (fromToken.isCrypto && !toToken.isCrypto) {
-      return fromToken.price * toToken.price;
+      // From crypto to fiat
+      console.log("Converting from crypto to fiat");
+      
+      // Get the rate for the fiat currency relative to USD
+      const fiatRate = rates[toToken.ticker as keyof typeof rates] || 1;
+      
+      // For crypto to fiat, we need to:
+      // 1. Convert the crypto amount to USD (multiply by crypto price)
+      // 2. Then convert USD to fiat (multiply by fiat rate)
+      return fromToken.price * fiatRate;
     } else {
-      // Both crypto or both fiat
+      // Both crypto
+      console.log("Both tokens are cryptocurrencies");
       return fromToken.price / toToken.price;
     }
-  }, []);
+  }, [rates]);
 
   const getDecimalPlaces = useCallback((token: TokenData) => {
     if (!token.isCrypto) return 2;
@@ -560,11 +600,14 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
     return 8;
   }, []);
 
+ 
   useEffect(() => {
     if (fromToken && toToken && fromAmount) {
       const amount = parseFloat(fromAmount);
       if (!isNaN(amount)) {
         const rate = calculateConversionRate(fromToken, toToken);
+        console.log(`Conversion calculation: ${amount} ${fromToken.ticker} * ${rate} = ${amount * rate} ${toToken.ticker}`);
+        
         if (rate === 0) {
           if (toAmount !== "Price unavailable") {
             setToAmount("Price unavailable");
@@ -572,6 +615,8 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
         } else {
           const convertedAmount = amount * rate;
           const formattedAmount = convertedAmount.toFixed(getDecimalPlaces(toToken));
+          console.log(`Formatted amount: ${formattedAmount} ${toToken.ticker}`);
+          
           if (toAmount !== formattedAmount) {
             setToAmount(formattedAmount);
           }
