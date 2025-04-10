@@ -31,8 +31,10 @@ import axios from 'axios';
 import { getApiUrl, getCmcImageUrl } from "utils/config";
 import { useTheme } from 'styled-components';
 import Image from 'next/image';
+import { useRouter } from 'next/router';
+import { useCurrency, CURRENCIES } from 'src/context/CurrencyContext';
 
-const SimilarCrypto = ({ coin }: { coin: any }) => {
+const SimilarCrypto = ({ coin  , tokens}: { coin: any , tokens: any }) => {
     const [similarCoins, setSimilarCoins] = useState<any[]>([]);
     const [topCoins, setTopCoins] = useState<any[]>([]);
     const [buyGuides, setBuyGuides] = useState<any[]>([]);
@@ -41,6 +43,8 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
     const [loadingTop, setLoadingTop] = useState(false);
     const theme = useTheme();
     const assetName = coin?.name || 'Bitcoin';
+    const { fiatCurrencies } = useCurrency();
+    const router = useRouter();
 
     const fetchTopCoins = useCallback(async () => {
         try {
@@ -149,6 +153,7 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
 
                             return {
                                 id: item.token.id,
+                                ticker: item.token.ticker,
                                 cmcId: item.token.cmcId,
                                 name: item.token.name,
                                 symbol: item.token.ticker,
@@ -200,14 +205,6 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
         })}`;
     };
 
-
-    const getLabelBackground = () => {
-        if (theme.name === 'dark') {
-            return 'rgba(50, 53, 70, 0.7)';
-        }
-        return 'rgba(239, 242, 245, 0.9)';
-    };
-
     const splitIntoRows = (coinsArray: any[], rowSize: number = 6) => {
         const rows = [];
         const totalRows = Math.ceil(coinsArray.length / rowSize) || 1;
@@ -245,6 +242,26 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
 
     const similarCoinsRows = splitIntoRows(similarCoins);
     const topCoinsRows = splitIntoRows(topCoins);
+    
+    const getTokenSlug = (ticker: string) => {
+        if (fiatCurrencies?.find((currency: any) => currency.ticker === ticker)) {
+          const fiatName = fiatCurrencies?.find((currency: any) => currency.ticker === ticker)?.name || ticker;
+          return `${fiatName.toLowerCase().replace(/\s+/g, '-')}-${ticker.toLowerCase()}`;
+        } else {
+            const token  = tokens?.find((token: any) => token.ticker === ticker);
+            return `${token?.name.toLowerCase().replace(/\s+/g, '-')}-${ticker.toLowerCase()}`;
+        }
+      };
+    
+      const handleCardClick = useCallback((fromTokenTicker: string, toTokenTicker: string) => {
+
+        console.log(fromTokenTicker, toTokenTicker);
+        
+        const fromSlug = getTokenSlug(fromTokenTicker);
+        const toSlug = getTokenSlug(toTokenTicker);        
+        router.push(`/${fromSlug}/${toSlug}`);    
+    
+      }, [router]);
 
     return (
         <Container>
@@ -275,6 +292,9 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
                                         <CoinCard
                                             key={`similar-${coinData.id || index}-${rowIndex}-${index}`}
                                             className="simplified-card"
+                                            onClick={() => {
+                                                handleCardClick(coinData.ticker, "USDT");
+                                              }}
                                         >
                                             <CoinInfo>
                                                 <CoinLogo>
@@ -285,9 +305,10 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
                                                         height={32}
                                                     />
                                                 </CoinLogo>
-                                                <CoinName>{coinData.name}</CoinName>
+                                              
                                             </CoinInfo>
                                             <PriceContainer>
+                                            <CoinName>{coinData.name}</CoinName>
                                                 <Price>{formatPrice(coinData.price)}</Price>
                                                 <PriceChange isPositive={coinData.priceChange >= 0}>
                                                     {coinData.priceChange >= 0 ? '+' : '-'}
@@ -328,6 +349,9 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
                                         <CoinCard
                                             key={`top-${coinData.cmcId || index}-${rowIndex}-${index}`}
                                             className="simplified-card"
+                                            onClick={() => {
+                                                handleCardClick(coinData.ticker, "USDT");
+                                              }}
                                         >
                                             <CoinInfo>
                                                 <CoinLogo>
@@ -373,12 +397,17 @@ const SimilarCrypto = ({ coin }: { coin: any }) => {
                 ) : buyGuides.length > 0 ? (
                     <MarqueeContainer>
                         {splitIntoRows(buyGuides, 6).map((row, rowIndex) => (
-                            <MarqueeRow key={`guide-row-${rowIndex}`}>
+                            <MarqueeRow key={`guide-row-${rowIndex}`} 
+                              
+                            >
                                 <MarqueeContent isReverse={rowIndex % 2 === 1}>
                                     {duplicateForScroll(row).map((coin, index) => (
                                         <CoinCard
                                             key={`guide-${coin.ticker || index}-${rowIndex}-${index}`}
                                             className="simplified-card"
+                                            onClick={() => {
+                                                window.open(`https://droomdroom.com/best-ways-to-buy-cryptocurrencies/`, '_blank');
+                                              }}
                                         >
                                             <CoinInfo>
                                                 <CoinLogo>

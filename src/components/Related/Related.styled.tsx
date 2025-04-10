@@ -171,11 +171,19 @@ export const PriceChange = styled.span<PriceChangeProps>`
 export const IconsWrapper = styled.div`
   display: flex;
   align-items: center;
-  margin-right: 12px;
-  margin-top: 5px;
+  margin-right: 16px;
+  position: relative;
+  height: 32px;
 
+  @media (max-width: 768px) {
+    height: 28px;
+  }
 
+  @media (max-width: 480px) {
+    height: 24px;
+  }
 `;
+
 export const CryptoIcon2 = styled.img`
   width: 22px;
   height: 22px;
@@ -242,7 +250,7 @@ const marqueeLeft = keyframes`
     transform: translateX(0);
   }
   100% {
-    transform: translateX(-33.33%);
+    transform: translateX(-1000px);
   }
 `;
 

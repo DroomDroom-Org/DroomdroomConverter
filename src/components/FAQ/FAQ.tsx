@@ -92,7 +92,7 @@ const FAQ: React.FC<FAQProps> = ({ fromToken, toToken, id }) => {
           <S.FAQQuestion>How can I buy 1 {fromToken.name} on Exchanges?</S.FAQQuestion>
           <S.FAQAnswer>
             {fromToken.name} is currently available to buy on multiple centralized exchange.
-            Check out our guide to get more detailed instructions on <S.FAQLink href="#" target="_blank">how to buy {fromToken.name}</S.FAQLink>.
+            Check out our guide to get more detailed instructions on <S.FAQLink href="https://droomdroom.com/best-ways-to-buy-cryptocurrencies/" target="_blank">how to buy {fromToken.name}</S.FAQLink>.
           </S.FAQAnswer>
         </S.FAQItem>
 

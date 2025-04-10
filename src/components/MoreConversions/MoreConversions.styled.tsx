@@ -186,10 +186,31 @@ export const CryptoIcon = styled.img`
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  margin-right: 8px;
+  margin-right: -12px;
   background: ${({ theme }) => theme.colors.colorNeutral2};
   object-fit: cover;
-  box-shadow: inset 0px 0px 0px 1px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 0 0 2px #fff;
+  z-index: 1;
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    width: 28px;
+    height: 28px;
+  }
+
+  @media (max-width: 480px) {
+    width: 24px;
+    height: 24px;
+  }
+`;
+
+export const FlagIcon = styled.img`
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: ${({ theme }) => theme.colors.colorNeutral2};
+  object-fit: cover;
+  box-shadow: 0 0 0 2px #fff;
   flex-shrink: 0;
 
   @media (max-width: 768px) {

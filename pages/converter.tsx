@@ -18,6 +18,7 @@ import { ChevronDown, ChevronUp, ArrowLeftRight, Loader, Share2 } from 'lucide-r
 import { config } from 'src/utils/config';
 import { useRouter } from 'next/router';
 import { formatDate } from 'date-fns';
+import MarqueeScroll from 'components/MarqueeScroll/MarqueeScroll';
 
 export interface TokenData {
   id: string;
@@ -38,7 +39,7 @@ export interface TokenData {
   volume24h: string;
   circulatingSupply: string | null;
   lastUpdated?: string;
-
+  symbol?: string;
 }
 
 
@@ -442,6 +443,8 @@ const getToSymbol = (coin: any): string => {
 };
 
 const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, notFound, requestedFrom, requestedTo, error }) => {
+
+  
   const router = useRouter();
   const [fromToken, setFromToken] = useState<TokenData | null>(null);
   const [toToken, setToToken] = useState<TokenData | null>(null);
@@ -464,27 +467,10 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
       if (fromTokenFound) {
         setFromToken(fromTokenFound);
       } else if (initialFrom) {
-        const fiatTickers = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR', 'AED'];
-        const fiatCurrency = Object.values(CURRENCIES).find(
-          (currency: any) => currency.code.toUpperCase() === initialFrom
+        const fiatCurrency = fiatCurrencies.find(
+          (currency: any) => currency.ticker === initialFrom
         );
-        
-        setFromToken({
-          id: `placeholder-${initialFrom}`,
-          ticker: initialFrom,
-          name: fiatCurrency ? fiatCurrency.name : initialFrom,
-          price: 0,
-          cmcId: '',
-          rank: 0,
-          iconUrl: '',
-          status: 'stable',
-          priceChange: { '1h': 0, '24h': 0, '7d': 0 },
-          marketCap: '0',
-          volume24h: '0',
-          circulatingSupply: null,
-          lastUpdated: new Date().toISOString(),
-          isCrypto: !fiatTickers.includes(initialFrom),
-        });
+        setFromToken(fiatCurrency);
       } else {
         const btcToken = tokens.find(t => t.ticker === 'BTC') || tokens[0];
         setFromToken(btcToken);
@@ -493,33 +479,17 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
       if (toTokenFound) {
         setToToken(toTokenFound);
       } else if (initialTo) {
-        const fiatTickers = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR', 'AED'];
-        const fiatCurrency = Object.values(CURRENCIES).find(
-          (currency: any) => currency.code.toUpperCase() === initialTo
+        const fiatCurrency = fiatCurrencies.find(
+          (currency: any) => currency.ticker === initialTo
         );
-        
-        setToToken({
-          id: `placeholder-${initialTo}`,
-          ticker: initialTo,
-          name: fiatCurrency ? fiatCurrency.name : initialTo,
-          price: 0,
-          cmcId: '',
-          rank: 0,
-          iconUrl: '',
-          status: 'stable',
-          priceChange: { '1h': 0, '24h': 0, '7d': 0 },
-          marketCap: '0',
-          volume24h: '0',
-          circulatingSupply: null,
-          lastUpdated: new Date().toISOString(),
-          isCrypto: !fiatTickers.includes(initialTo),
-        });
+        setToToken(fiatCurrency);
       } else {
         const usdtToken = tokens.find(t => t.ticker === 'USDT') || tokens[1] || tokens[0];
         setToToken(usdtToken);
       }
     }
-  }, [tokens, initialFrom, initialTo, CURRENCIES]);
+  }, [tokens, initialFrom, initialTo, fiatCurrencies]);
+
 
   const calculateConversionRate = useCallback((
     fromToken: TokenData,
@@ -552,43 +522,28 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
       return 0;
     }
 
-    // For fiat currencies, we need to handle the conversion differently
     if (!fromToken.isCrypto && !toToken.isCrypto) {
-      // Both are fiat currencies - we need to get the exchange rate between them
       console.log("Both tokens are fiat currencies");
       
-      // Get the rate for each currency relative to USD
       const fromRate = rates[fromToken.ticker as keyof typeof rates] || 1;
       const toRate = rates[toToken.ticker as keyof typeof rates] || 1;
       
       console.log(`Using rates from context: ${fromToken.ticker}=${fromRate}, ${toToken.ticker}=${toRate}`);
       
-      // Calculate the cross rate
       return toRate / fromRate;
     } else if (!fromToken.isCrypto && toToken.isCrypto) {
-      // From fiat to crypto
       console.log("Converting from fiat to crypto");
       
-      // Get the rate for the fiat currency relative to USD
       const fiatRate = rates[fromToken.ticker as keyof typeof rates] || 1;
-      
-      // For fiat to crypto, we need to:
-      // 1. Convert the fiat amount to USD (divide by fiat rate)
-      // 2. Then convert USD to crypto (divide by crypto price)
+
       return toToken.price / fiatRate;
     } else if (fromToken.isCrypto && !toToken.isCrypto) {
-      // From crypto to fiat
       console.log("Converting from crypto to fiat");
       
-      // Get the rate for the fiat currency relative to USD
       const fiatRate = rates[toToken.ticker as keyof typeof rates] || 1;
       
-      // For crypto to fiat, we need to:
-      // 1. Convert the crypto amount to USD (multiply by crypto price)
-      // 2. Then convert USD to fiat (multiply by fiat rate)
       return fromToken.price * fiatRate;
     } else {
-      // Both crypto
       console.log("Both tokens are cryptocurrencies");
       return fromToken.price / toToken.price;
     }
@@ -663,7 +618,6 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
 
       const data = await response.json();
 
-      // Validate the price data
       if (
         !data ||
         typeof data.price !== "number" ||
@@ -689,7 +643,6 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
       }
     };
 
-    // Only add the event listener if search modals are open
     if (showFromSearch || showToSearch) {
       document.addEventListener('click', handleDocumentClick);
       return () => {
@@ -714,7 +667,6 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
     if (showToSearch) {
       setShowToSearch(false);
     }
-    // Only toggle if the state would actually change
     if (showFromSearch) {
       setShowFromSearch(false);
     } else {
@@ -730,7 +682,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
     if (showFromSearch) {
       setShowFromSearch(false);
     }
-    // Only toggle if the state would actually change
+      // Only toggle if the state would actually change
     if (showToSearch) {
       setShowToSearch(false);
     } else {
@@ -926,7 +878,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
             volume24h: token.volume24h || '0',
             circulatingSupply: token.circulatingSupply || null,
             lastUpdated: token.lastUpdated || new Date().toISOString(),
-            isCrypto: !['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR', 'AED'].includes(token.ticker),
+            isCrypto: !fiatCurrencies.includes(token.ticker),
           }));
           
           const fromToken = fetchedTokens.find((t: any) => t.ticker.toUpperCase() === requestedFrom);
@@ -936,57 +888,19 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
             setFromToken(fromToken);
             setToToken(toToken);
           } else {
-            // Create placeholder tokens if not found in API
-            const fiatTickers = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR', 'AED'];
             
             if (!fromToken) {
-              // Check if it's a valid fiat currency
-              const fiatCurrency = Object.values(CURRENCIES).find(
-                (currency: any) => currency.code.toUpperCase() === requestedFrom
+              const fiatCurrency = fiatCurrencies.find(
+                (currency: any) => currency.ticker === requestedFrom
               );
-              
-              const placeholderFromToken = {
-                id: `placeholder-${requestedFrom}`,
-                ticker: requestedFrom,
-                name: fiatCurrency ? fiatCurrency.name : requestedFrom,
-                price: 0,
-                cmcId: '',
-                rank: 0,
-                iconUrl: '',
-                status: 'stable',
-                priceChange: { '1h': 0, '24h': 0, '7d': 0 },
-                marketCap: '0',
-                volume24h: '0',
-                circulatingSupply: null,
-                lastUpdated: new Date().toISOString(),
-                isCrypto: !fiatTickers.includes(requestedFrom),
-              };
-              setFromToken(placeholderFromToken);
+              setFromToken(fiatCurrency);
             }
             
             if (!toToken) {
-              // Check if it's a valid fiat currency
-              const fiatCurrency = Object.values(CURRENCIES).find(
-                (currency: any) => currency.code.toUpperCase() === requestedTo
+              const fiatCurrency = fiatCurrencies.find(
+                (currency: any) => currency.ticker === requestedTo
               );
-              
-              const placeholderToToken = {
-                id: `placeholder-${requestedTo}`,
-                ticker: requestedTo,
-                name: fiatCurrency ? fiatCurrency.name : requestedTo,
-                price: 0,
-                cmcId: '',
-                rank: 0,
-                iconUrl: '',
-                status: 'stable',
-                priceChange: { '1h': 0, '24h': 0, '7d': 0 },
-                marketCap: '0',
-                volume24h: '0',
-                circulatingSupply: null,
-                lastUpdated: new Date().toISOString(),
-                isCrypto: !fiatTickers.includes(requestedTo),
-              };
-              setToToken(placeholderToToken);
+              setToToken(fiatCurrency);
             }
           }
         } catch (error) {
@@ -1001,7 +915,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
   // Update URL when tokens are loaded
   useEffect(() => {
     if (fromToken && toToken && router && typeof window !== 'undefined') {
-      const fiatTickers = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR', 'AED'];
+      const fiatTickers = fiatCurrencies.map((currency: any) => currency.ticker);
       
       let fromSlug = '';
       let toSlug = '';
@@ -1042,56 +956,12 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
     }
   }, []);
   
-  const fiatTickers = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR', 'AED'];
   const handleCoinClick = useCallback((coin: any, side: 'from' | 'to') => {
-    console.log("handleCoinClick called with:", { coin, side });
-    
-    // Define fiat currency names mapping
-    const fiatNames: Record<string, string> = {
-      'USD': 'US Dollar',
-      'EUR': 'Euro',
-      'GBP': 'British Pound',
-      'JPY': 'Japanese Yen',
-      'AUD': 'Australian Dollar',
-      'CAD': 'Canadian Dollar',
-      'CHF': 'Swiss Franc',
-      'CNY': 'Chinese Yuan',
-      'INR': 'Indian Rupee',
-      'AED': 'UAE Dirham'
-    };
-    
-    // Ensure the coin has all required properties
-    const token = {
-      id: coin.id || `token-${coin.ticker || coin.symbol || 'unknown'}`,
-      ticker: coin.ticker || coin.symbol || '',
-      // For fiat currencies, ensure we have the full name
-      name: coin.name || (fiatNames[coin.ticker] || coin.ticker),
-      isCrypto: !fiatTickers.map(ticker => ticker.toLowerCase()).includes((coin.ticker || coin.symbol || '').toLowerCase()),
-      cmcId: coin?.cmcId ?? 0,
-      iconUrl: coin?.iconUrl ?? `https://s2.coinmarketcap.com/static/img/coins/64x64/${coin?.cmcId}.png`,
-      price: coin?.currentPrice?.usd ?? coin?.price ?? 0,
-      priceChange: {
-        "1h": coin?.priceChange?.day1 ?? coin?.priceChange?.["1h"] ?? 0,
-        "24h": coin?.priceChange?.day1 ?? coin?.priceChange?.["24h"] ?? 0,
-        "7d": coin?.priceChange?.day1 ?? coin?.priceChange?.["7d"] ?? 0,
-      },
-      marketCap: coin?.marketData?.marketCap ?? coin?.marketCap ?? 0,
-      volume24h: coin?.marketData?.volume24h ?? coin?.volume24h ?? 0,
-      circulatingSupply: coin?.marketData?.circulatingSupply ?? coin?.circulatingSupply ?? 0,
-      lastUpdated: coin?.cmcData?.lastUpdated ?? coin?.lastUpdated ?? new Date(),
-    }
-    
-    console.log("Processed token:", token);
-    
-    // Helper function to get the proper slug for a token
     const getTokenSlug = (token: any) => {
-      const fiatTickers = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR', 'AED'];
-      
-      console.log("getTokenSlug called with token:", token);
+      const fiatTickers = fiatCurrencies.map((currency: any) => currency.ticker);
       
       if (fiatTickers.includes(token.ticker)) {
-        // For fiat currencies, use the format "currency-name-currency-code"
-        const fiatName = token.name || fiatNames[token.ticker] || token.ticker;
+        const fiatName = token.name || fiatCurrencies.find((currency: any) => currency.ticker === token.ticker)?.name || token.ticker;
         console.log("Fiat currency detected:", token.ticker, "Using name:", fiatName);
         return `${fiatName.toLowerCase().replace(/\s+/g, '-')}-${token.ticker.toLowerCase()}`;
       } else {
@@ -1100,37 +970,29 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
     };
     
     if (side === 'from') {
-      console.log("Setting fromToken to:", token);
-      setFromToken(token as TokenData);
+      setFromToken(coin as TokenData);
       
       // Update URL immediately when a token is selected
       if (toToken && router && typeof window !== 'undefined') {
-        const fromSlug = getTokenSlug(token);
+        const fromSlug = getTokenSlug(coin);
         const toSlug = getTokenSlug(toToken);
         
         const newPath = `/${fromSlug}/${toSlug}`;
-        console.log("Generated new path for from token:", newPath);
-        console.log("Current router path:", router.asPath);
         
-        // Use Next.js router for client-side navigation (much faster)
         router.push(newPath, undefined, { shallow: true });
       } else {
         console.log("Could not update URL - missing toToken, router, or window");
       }
     } else {
-      console.log("Setting toToken to:", token);
-      setToToken(token as TokenData);
+      setToToken(coin as TokenData);
       
       // Update URL immediately when a token is selected
       if (fromToken && router && typeof window !== 'undefined') {
         const fromSlug = getTokenSlug(fromToken);
-        const toSlug = getTokenSlug(token);
+        const toSlug = getTokenSlug(coin);
         
         const newPath = `/${fromSlug}/${toSlug}`;
-        console.log("Generated new path for to token:", newPath);
-        console.log("Current router path:", router.asPath);
-        
-        // Use Next.js router for client-side navigation (much faster)
+
         router.push(newPath, undefined, { shallow: true });
       } else {
         console.log("Could not update URL - missing fromToken, router, or window");
@@ -1143,18 +1005,15 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
     const fetchPlaceholderPrices = async () => {
       if (!fromToken || !toToken) return;
       
-      // Check if either token is a placeholder
       const isFromPlaceholder = fromToken.id && fromToken.id.startsWith('placeholder-');
       const isToPlaceholder = toToken.id && toToken.id.startsWith('placeholder-');
       
       if (!isFromPlaceholder && !isToPlaceholder) return;
       
       try {
-        // For fiat currencies, we can use a fixed price
-        const fiatTickers = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR', 'AED'];
+        const fiatTickers = fiatCurrencies.map((currency: any) => currency.ticker);
         
         if (isFromPlaceholder && fiatTickers.includes(fromToken.ticker)) {
-          // For fiat currencies, set a fixed price
           setFromToken(prev => ({
             ...prev!,
             price: 1,
@@ -1163,7 +1022,6 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
         }
         
         if (isToPlaceholder && fiatTickers.includes(toToken.ticker)) {
-          // For fiat currencies, set a fixed price
           setToToken(prev => ({
             ...prev!,
             price: 1,
@@ -1171,10 +1029,8 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
           }));
         }
         
-        // For crypto tokens, try to fetch from an external API
         if (isFromPlaceholder && !fiatTickers.includes(fromToken.ticker)) {
           try {
-            // Try to fetch from CoinGecko API
             const response = await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${fromToken.ticker.toLowerCase()}&vs_currencies=usd`);
             const price = response.data[fromToken.ticker.toLowerCase()]?.usd;
             
@@ -1215,9 +1071,6 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
     fetchPlaceholderPrices();
   }, [fromToken, toToken]);
 
-  console.log("FROM TOKEN", fromToken);
-  console.log("TO TOKEN", toToken);
-
   return (
     <ConverterContainer>
       <SEO
@@ -1226,6 +1079,8 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
         keywords="cryptocurrency converter, crypto swap, bitcoin converter, BTC to USDT, crypto exchange rates"
         ogType="website"
       />
+      <MarqueeScroll />
+
       <ConverterCard>
         <ConversionHeader>
           <TitleWrapper>
@@ -1238,7 +1093,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
               {toToken?.isCrypto ? (
                 <CryptoIcon src={`https://s2.coinmarketcap.com/static/img/coins/64x64/${toToken?.cmcId}.png`} alt={toToken?.ticker} />
               ) : (
-                <CryptoIcon src={`https://flagcdn.com/w80/${toToken?.ticker.toLowerCase().slice(0, 2)}.png`} alt={toToken?.ticker} />
+                <CryptoIcon src={`https://flagcdn.com/w80/${toToken?.ticker ? toToken.ticker.toLowerCase().slice(0, 2) : 'us'}.png`} alt={toToken?.ticker || 'USD'} />
               )}
             </IconsWrapper>
             <Title>
@@ -1376,6 +1231,7 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
             tokens={tokens}
             setFromToken={setFromToken}
             setToToken={setToToken}
+            fiatCurrencies={fiatCurrencies}
           />
           <div id="conversion-tables">
             <ConversionTables
@@ -1389,16 +1245,16 @@ const Converter: React.FC<ConverterProps> = ({ tokens, initialFrom, initialTo, n
         </>
       )}
 
-      {fromToken && <SimilarCrypto coin={fromToken} />}
+      {fromToken && <SimilarCrypto coin={fromToken} tokens={tokens} />}
 
-      <MoreConversions
+      {/* <MoreConversions
         id="more"
         advancedOptions={advancedOptions}
         currencyOptions={currencyOptions}
         allTokens={[...tokens, ...fiatCurrencies]}
         setFromToken={setFromToken}
         setToToken={setToToken}
-      />
+      /> */}
     </ConverterContainer>
   );
 };

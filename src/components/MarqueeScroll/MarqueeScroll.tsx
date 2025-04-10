@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useCurrency } from '../../context/CurrencyContext';
 import styled from 'styled-components';
 import axios from 'axios';
@@ -8,6 +8,9 @@ import { getApiUrl, getPageUrl } from 'utils/config';
 import { useRouter } from 'next/router';
 import { generateTokenUrl } from 'utils/url';
 import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import { TokenData } from 'components/FiatCoinTable/FiatTable';
+
+
 
 interface MarqueeToken {
   id: string;
@@ -99,11 +102,8 @@ const MarqueeScroll: React.FC = () => {
   const [tokens, setTokens] = useState<MarqueeToken[]>([]);
   const router = useRouter();
   const { formatPrice: formatCurrencyPrice } = useCurrency();
-
-  const handleTokenClick = (name:string,ticker: string) => {
-    router.push(generateTokenUrl(name, ticker));
-  };
-
+  const { fiatCurrencies } = useCurrency();
+    
   useEffect(() => {
     const fetchTokens = async () => {
       try {
@@ -122,6 +122,23 @@ const MarqueeScroll: React.FC = () => {
 
   // Duplicate tokens to create seamless scroll effect
   const scrollTokens = [...tokens, ...tokens];
+   
+  const getTokenSlug = (ticker: string) => {
+    if (fiatCurrencies?.find((currency: any) => currency.ticker === ticker)) {
+      const fiatName = fiatCurrencies?.find((currency: any) => currency.ticker === ticker)?.name || ticker;
+      return `${fiatName.toLowerCase().replace(/\s+/g, '-')}-${ticker.toLowerCase()}`;
+    } else {
+        const token  = tokens?.find((token: any) => token.ticker === ticker);
+        return `${token?.name.toLowerCase().replace(/\s+/g, '-')}-${ticker.toLowerCase()}`;
+    }
+  };
+
+  const handleCardClick = useCallback((fromTokenTicker: string, toTokenTicker: string) => {    
+    const fromSlug = getTokenSlug(fromTokenTicker);
+    const toSlug = getTokenSlug(toTokenTicker);        
+    router.push(`/${fromSlug}/${toSlug}`);    
+
+  }, [router]);
 
   return (
     <MarqueeContainer>
@@ -129,7 +146,7 @@ const MarqueeScroll: React.FC = () => {
         {scrollTokens.map((token, index) => (
           <TokenItem 
             key={`${token.id}-${index}`}
-            onClick={() => handleTokenClick(token.name,token.ticker)}
+            onClick={() => handleCardClick(token.ticker , "USDT")}
           >
             <img 
               src={token.imageUrl}

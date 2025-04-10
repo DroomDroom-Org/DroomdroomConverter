@@ -33,6 +33,7 @@ interface FiatTableProps {
   tokens: TokenData[];
   fiatCurrencies: TokenData[];
   heading?: string;
+  handleCellClick?: (fromTokenTicker: string, toTokenTicker: string) => void;
 }
 
 const CurrencyIcon = styled.div<{ bgColor: string }>`
@@ -237,12 +238,11 @@ const CryptoHeaderCell = styled.div`
   }
 `;
 
-const FiatTable: React.FC<FiatTableProps> = ({ tokens, fiatCurrencies, heading }) => {
+const FiatTable: React.FC<FiatTableProps> = ({ tokens, fiatCurrencies, heading, handleCellClick }) => {
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const { formatPrice } = useCurrency();
   const theme = useTheme();
 
-  // Get currency colors
   const getCurrencyColor = (ticker: string) => {
     switch(ticker) {
       case 'USD': return '#22a06b';
@@ -266,16 +266,9 @@ const FiatTable: React.FC<FiatTableProps> = ({ tokens, fiatCurrencies, heading }
 
   // Get currency symbol
   const getCurrencySymbol = (ticker: string) => {
-    switch(ticker) {
-      case 'USD': return '$';
-      case 'EUR': return '€';
-      case 'CAD': return 'C$';
-      case 'GBP': return '£';
-      case 'AUD': return 'A$';
-      case 'CHF': return 'Fr';
-      case 'JPY': return '¥';
-      default: return ticker;
-    }
+    const  symbol = fiatCurrencies.find(fiat => fiat.ticker === ticker)?.symbol;
+    return symbol || ticker;
+    
   };
 
   // Filter tokens to include only cryptocurrencies and limit to top ones
@@ -289,25 +282,18 @@ const FiatTable: React.FC<FiatTableProps> = ({ tokens, fiatCurrencies, heading }
   const calculateConversion = (crypto: TokenData, fiat: TokenData) => {
     if (!crypto.price || !fiat.price) return 0;
     
-    // For crypto to fiat conversions
     if (crypto.isCrypto && !fiat.isCrypto) {
-      // If fiat is not USD, we need to convert through USD
       if (fiat.ticker !== 'USD') {
-        // crypto price is in USD, so multiply by fiat rate
         return crypto.price * fiat.price;
       } else {
-        // Direct USD price
         return crypto.price;
       }
     } else {
-      // For crypto to crypto, convert based on USD values
       return crypto.price / fiat.price;
     }
   };
 
-  // Define table columns - one for crypto names + one for each fiat currency
   const columns = useMemo(() => {
-    // First column for crypto name
     const cryptoColumn = {
       id: 'crypto',
       header: () => (
@@ -328,9 +314,8 @@ const FiatTable: React.FC<FiatTableProps> = ({ tokens, fiatCurrencies, heading }
       minSize: 90,
     };
 
-    // Create columns for each fiat currency
     const fiatColumns = fiatCurrencies
-      .filter(fiat => !fiat.isCrypto) // Only include fiat currencies
+      .filter(fiat => !fiat.isCrypto)
       .map(fiat => ({
         id: fiat.ticker,
         header: () => (
@@ -345,7 +330,6 @@ const FiatTable: React.FC<FiatTableProps> = ({ tokens, fiatCurrencies, heading }
           const cryptoToken = row.original;
           const value = calculateConversion(cryptoToken, fiat);
           
-          // Format based on value
           let formattedValue;
           if (value >= 1000) {
             formattedValue = value.toLocaleString(undefined, { 
@@ -383,14 +367,12 @@ const FiatTable: React.FC<FiatTableProps> = ({ tokens, fiatCurrencies, heading }
     return [cryptoColumn, ...fiatColumns];
   }, [fiatCurrencies]);
 
-  // Create the table instance
   const table = useReactTable({
     data: cryptoTokens,
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
 
-  // Set up virtualization for the rows
   const { rows } = table.getRowModel();
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
@@ -411,6 +393,7 @@ const FiatTable: React.FC<FiatTableProps> = ({ tokens, fiatCurrencies, heading }
                   <th
                     key={header.id}
                     style={{
+                      cursor: 'pointer',
                       width: header.getSize() + 'px',
                       textAlign: header.id === 'crypto' ? 'left' : 'center',
                       position: header.id === 'crypto' ? 'sticky' : 'static',
@@ -438,8 +421,12 @@ const FiatTable: React.FC<FiatTableProps> = ({ tokens, fiatCurrencies, heading }
                 <tr key={row.id}>
                   {row.getVisibleCells().map((cell) => (
                     <td
+                      onClick={() => {
+                        handleCellClick?.(cryptoTokens[virtualRow.index].ticker, cell.column.id);
+                      }}
                       key={cell.id}
                       style={{
+                        cursor: 'pointer',
                         width: cell.column.getSize() + 'px',
                         textAlign: cell.column.id === 'crypto' ? 'left' : 'center',
                         position: cell.column.id === 'crypto' ? 'sticky' : 'static',

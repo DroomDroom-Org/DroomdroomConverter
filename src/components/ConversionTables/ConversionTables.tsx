@@ -143,8 +143,8 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
       <SectionDescription>
         The current value of 1 {fromToken.ticker} is {formatDecimal(fromTokenPrice, toToken)} {toToken.ticker}. 
         In other words, to buy 5 {fromToken.name}, it would cost you {formatDecimal(fromTokenPrice*5, toToken)} {toToken.ticker}. 
-        Inversely, 1 {toToken.ticker} would allow you to trade for {formatCryptoValue(1/toTokenPrice, fromToken)} {fromToken.ticker} 
-        while 50 {toToken.ticker} would convert to {formatCryptoValue(50/toTokenPrice, fromToken)} {fromToken.ticker}, not 
+        Inversely, 1 {toToken.ticker} would allow you to trade for {formatCryptoValue(toTokenPrice, fromToken)} {fromToken.ticker} 
+        while 50 {toToken.ticker} would convert to {formatCryptoValue(50*toTokenPrice, fromToken)} {fromToken.ticker}, not 
         including platform or gas fees.
       </SectionDescription>
       

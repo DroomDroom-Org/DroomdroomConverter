@@ -124,7 +124,7 @@ const Navbar: React.FC<NavbarProps> = ({ fromToken, toToken }) => {
         };
         
         // Update URL first
-        router.push(`/${fromSlug}/${toSlug}#${tabId}`, undefined, { shallow: true });
+        router.push(`/${fromSlug}/${toSlug}#${tabId}`);
         
         // Then trigger scrolling after a small delay to ensure DOM is updated
        

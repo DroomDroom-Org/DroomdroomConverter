@@ -1,6 +1,7 @@
 import React from 'react';
 import * as S from './Market.styled';
 import FiatTable from 'components/FiatCoinTable/FiatTable';
+import router from 'next/router';
 
 
 interface TokenData {
@@ -22,6 +23,7 @@ interface TokenData {
   circulatingSupply: string | null;
   lastUpdated?: string;
   isCrypto: boolean;
+  symbol?: string;
 }
 
 
@@ -58,7 +60,6 @@ const Market: React.FC<CryptoMarketProps> = ({
     } else if (fromToken.isCrypto && !toToken.isCrypto) {
       return fromToken.price * toToken.price;
     } else {
-      // Both crypto or both fiat
       return fromToken.price / toToken.price;
     }
   };
@@ -120,9 +121,25 @@ const Market: React.FC<CryptoMarketProps> = ({
     return token?.priceChange && token?.priceChange['7d'] > 0 ? 'climbing' : 'falling';
   };
 
+  const getTokenSlug = (ticker: string) => {
+    if (fiatCurrencies?.find((currency: any) => currency.ticker === ticker)) {
+      const fiatName = fiatCurrencies?.find((currency: any) => currency.ticker === ticker)?.name || ticker;
+      return `${fiatName.toLowerCase().replace(/\s+/g, '-')}-${ticker.toLowerCase()}`;
+    } else {
+        const token  = tokens?.find((token: any) => token.ticker === ticker);
+        return `${token?.name.toLowerCase().replace(/\s+/g, '-')}-${ticker.toLowerCase()}`;
+    }
+  };
+
+  const handleCellClick = (fromTokenTicker: string, toTokenTicker: string) => {
+    const fromTokenSlug = getTokenSlug(fromTokenTicker);
+    const toTokenSlug = getTokenSlug(toTokenTicker);
+    router.push(`/${fromTokenSlug}/${toTokenSlug}`);    
+  };
+
   return (
     <S.MarketContainer id={id}>
-    {(fromToken?.isCrypto || toToken?.isCrypto) && <S.MarketHeading>Market latest</S.MarketHeading>}
+      {(fromToken?.isCrypto || toToken?.isCrypto) && <S.MarketHeading>Market latest</S.MarketHeading>}
 
       {fromToken.isCrypto && <div key={fromToken.id || 0}>
         <S.MarketStatusSection>
@@ -161,7 +178,11 @@ const Market: React.FC<CryptoMarketProps> = ({
           </S.MarketItemContainer>
         </S.MarketStatsGrid>
 
-        <S.SeeMoreButton>
+        <S.SeeMoreButton
+          onClick={() => {
+            window.open('https://droomdroom.com/price', '_blank');
+          }}
+        >
           See more stats
           <span style={{ marginLeft: '8px', fontSize: '1.1rem' }}>→</span>
         </S.SeeMoreButton>
@@ -176,7 +197,7 @@ const Market: React.FC<CryptoMarketProps> = ({
 
           <S.MarketStatusText>
             The current {toToken.ticker} to {fromToken.ticker} conversion rate is <strong>{formatPrice(toFromRate, fromToken)}</strong>.
-            The current {toToken.ticker} to {fromToken.ticker} conversion rate is <strong>{formatPrice(toFromRate, getDecimalPlaces(fromToken.ticker ))}</strong>.
+            The current {toToken.ticker} to {fromToken.ticker} conversion rate is <strong>{formatPrice(toFromRate, getDecimalPlaces(fromToken.ticker))}</strong>.
             Inversely, this means that if you convert 1 {toToken.ticker} you will get {formatPrice(toFromRate, getDecimalPlaces(fromToken.ticker))} {fromToken.ticker}.
             <br />
             The conversion rate of {toToken.ticker}/{fromToken.ticker} has
@@ -206,16 +227,20 @@ const Market: React.FC<CryptoMarketProps> = ({
           </S.MarketItemContainer>
         </S.MarketStatsGrid>
 
-        <S.SeeMoreButton>
+        <S.SeeMoreButton
+          onClick={() => {
+            window.open('https://droomdroom.com/price', '_blank');
+          }}
+        >
           See more stats
           <span style={{ marginLeft: '8px', fontSize: '1.1rem' }}>→</span>
         </S.SeeMoreButton>
       </div>}
 
-       
-       <S.FiatTableContainer>
-        <FiatTable heading={"Popular crypto to fiat markets"} tokens={tokens} fiatCurrencies={fiatCurrencies} />
-       </S.FiatTableContainer>
+
+      <S.FiatTableContainer>
+        <FiatTable heading={"Popular crypto to fiat markets"} tokens={tokens} fiatCurrencies={fiatCurrencies} handleCellClick={handleCellClick} />
+      </S.FiatTableContainer>
 
 
 
