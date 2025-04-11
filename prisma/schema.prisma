@@ -162,7 +162,7 @@ model WishlistToken {
 // DMC Models
 model Token {
   id               String           @id @default(auto()) @map("_id") @db.ObjectId
-  ticker           String           @unique
+  ticker           String           
   name             String
   rank             Int?
   currentPrice     CurrentPrice
@@ -173,13 +173,15 @@ model Token {
   description      String?
   tradingMarkets   TradingMarket[]
   graphUrls        GraphUrls
-  cmcId            String?
+  cmcId            String? @unique
   cmcSlug          String?
   priceChanges     PriceChanges
   etfRecords       ETFRecord[]
   history          TokenHistory[]
+  pricePoints      TokenPricePoint[]  // Relation to individual price points
   portfolioHoldings PortfolioHolding[]
   wishlistTokens    WishlistToken[]
+  inSitemap        Boolean          @default(false) // Flag to track if token has been included in sitemap
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
@@ -231,6 +233,7 @@ type PriceChanges {
   day1        Float?
   month1      Float?
   year1       Float?
+  week1       Float?
   lastUpdated DateTime
 }
 
@@ -251,6 +254,26 @@ model TokenHistory {
 
   @@index([tokenId, timestamp(sort: Desc)])
   @@index([timestamp(sort: Desc)])
+}
+
+// Model for storing individual price points for tokens
+model TokenPricePoint {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  token           Token    @relation(fields: [tokenId], references: [id])
+  tokenId         String   @db.ObjectId
+  cmcId           String?  // Store CMC ID for reference
+  timestamp       DateTime // Timestamp of the price point
+  price           Float    // Price in USD
+  volume          Float?   // 24h volume (optional)
+  marketCap       Float?   // Market cap (optional)
+  percentChange24h Float?  // 24h percent change (optional)
+  createdAt       DateTime @default(now())
+  
+  @@unique([tokenId, timestamp]) // Ensure we don't have duplicate price points
+  @@index([cmcId])
+  @@index([tokenId])
+  @@index([timestamp])
+  @@index([tokenId, timestamp(sort: Desc)]) // Optimized for querying token's price history
 }
 
 // ETF Tracker Models remain the same...

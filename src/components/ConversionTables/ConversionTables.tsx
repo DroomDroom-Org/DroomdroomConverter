@@ -86,6 +86,12 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
     }
   }, [fromToken, toToken, calculateConversionRate]);
 
+  // Define all hooks before conditional return
+  const amounts = useMemo(() => [0.5, 1, 5, 10, 50, 100, 500, 1000], []);
+  
+  // Hooks already defined at the top of the component
+
+  // Early return after all hooks are defined
   if (!fromToken || !toToken) {
     return null;
   }
@@ -94,13 +100,11 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
   const dailyChange = fromToken.priceChange?.['24h'] || 3.06;
   const weeklyChange = fromToken.priceChange?.['7d'] || 3.18;
 
-  const amounts = useMemo(() => [0.5, 1, 5, 10, 50, 100, 500, 1000], []);
-
-  const price24HAgo = useMemo(() => Number(toAmount) / (1 + (dailyChange / 100)), [toAmount, dailyChange]);
-  const price1WAgo = useMemo(() => Number(toAmount) / (1 + (weeklyChange / 100)), [toAmount, weeklyChange]);
-  const price1MAgo = useMemo(() => Number(toAmount) / (1 + (weeklyChange * 4 / 100)), [toAmount, weeklyChange]);
+  const price24HAgo = Number(toAmount) / (1 + (dailyChange / 100));
+  const price1WAgo = Number(toAmount) / (1 + (weeklyChange / 100));
+  const price1MAgo = Number(toAmount) / (1 + (weeklyChange * 4 / 100));
   
-  const generateComparisonData = useCallback((historicalPrice: number, changePercent: number) => {
+  const generateComparisonData = (historicalPrice: number, changePercent: number) => {
     return amounts.map(amount => {
       const currentValue = amount * Number(toAmount);
       const prevValue = amount * historicalPrice;
@@ -113,10 +117,10 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
         change
       };
     });
-  }, [amounts, toAmount, toToken, getDecimalPlaces]);
+  };
 
-  const comparisonData24h = useMemo(() => generateComparisonData(price24HAgo, dailyChange), [generateComparisonData, price24HAgo, dailyChange]);
-  const comparisonData1m = useMemo(() => generateComparisonData(price1MAgo, weeklyChange * 4), [generateComparisonData, price1MAgo, weeklyChange]); 
+  const comparisonData24h = generateComparisonData(price24HAgo, dailyChange);
+  const comparisonData1m = generateComparisonData(price1MAgo, weeklyChange * 4);
 
   const formatDecimal = useCallback((value: number, token: TokenData) => {
     return value?.toLocaleString(undefined, { maximumFractionDigits: getDecimalPlaces(token) });
