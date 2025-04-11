@@ -118,7 +118,7 @@ const CryptoSelector: React.FC<CryptoSelectorProps> = ({ selectedCrypto, onSelec
         window.removeEventListener('resize', updatePosition);
       };
     }
-  }, [isOpen]);
+  }, [isOpen, updatePosition]);
   
 
   useEffect(() => {

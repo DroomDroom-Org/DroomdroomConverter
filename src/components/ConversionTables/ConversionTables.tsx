@@ -89,7 +89,19 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
   // Define all hooks before conditional return
   const amounts = useMemo(() => [0.5, 1, 5, 10, 50, 100, 500, 1000], []);
   
-  // Hooks already defined at the top of the component
+  const formatDecimal = useCallback((value: number, token: TokenData) => {
+    return value?.toLocaleString(undefined, { maximumFractionDigits: getDecimalPlaces(token) });
+  }, [getDecimalPlaces]);
+
+  const formatCryptoValue = useCallback((value: number, token: TokenData): string => {
+    if (value === 0) return '0';
+    return value.toFixed(getDecimalPlaces(token));
+  }, [getDecimalPlaces]);
+
+  const formatAmount = useCallback((amount: number, token: TokenData): string => {
+    const formattedAmount = formatCryptoValue(amount, token);
+    return formattedAmount;
+  }, [formatCryptoValue]);
 
   // Early return after all hooks are defined
   if (!fromToken || !toToken) {

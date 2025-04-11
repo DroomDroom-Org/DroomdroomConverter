@@ -365,7 +365,7 @@ const FiatTable: React.FC<FiatTableProps> = ({ tokens, fiatCurrencies, heading, 
       }));
 
     return [cryptoColumn, ...fiatColumns];
-  }, [fiatCurrencies]);
+  }, [fiatCurrencies, getCurrencySymbol]);
 
   const table = useReactTable({
     data: cryptoTokens,
