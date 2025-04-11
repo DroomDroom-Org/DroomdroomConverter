@@ -134,19 +134,7 @@ const ConversionTables: React.FC<ConversionTablesProps> = ({ id, fromToken, toTo
   const comparisonData24h = generateComparisonData(price24HAgo, dailyChange);
   const comparisonData1m = generateComparisonData(price1MAgo, weeklyChange * 4);
 
-  const formatDecimal = useCallback((value: number, token: TokenData) => {
-    return value?.toLocaleString(undefined, { maximumFractionDigits: getDecimalPlaces(token) });
-  }, [getDecimalPlaces]);
-
-  const formatCryptoValue = useCallback((value: number, token: TokenData): string => {
-    if (value === 0) return '0';
-    return value.toFixed(getDecimalPlaces(token));
-  }, [getDecimalPlaces]);
-
-  const formatAmount = useCallback((amount: number, token: TokenData): string => {
-    const formattedAmount = formatCryptoValue(amount, token);
-    return `${formattedAmount} ${token.ticker}`;
-  }, [formatCryptoValue]);
+  // Using the hooks defined at the top of the component
 
   return (
     <TablesContainer>

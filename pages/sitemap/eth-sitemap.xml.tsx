@@ -34,21 +34,21 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
     // Try to get the sitemap from Redis cache first
     const cachedSitemap = await redisHandler.get<string>(SITEMAP_CACHE_KEY);
     
-    if (cachedSitemap) {
-      console.log('Serving ETH tokens sitemap index from Redis cache');
+    // if (cachedSitemap) {
+    //   console.log('Serving ETH tokens sitemap index from Redis cache');
       
-      // Set headers
-      res.setHeader('Content-Type', 'application/xml');
-      res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=43200');
+    //   // Set headers
+    //   res.setHeader('Content-Type', 'application/xml');
+    //   res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=43200');
       
-      // Send cached response
-      res.write(cachedSitemap);
-      res.end();
+    //   // Send cached response
+    //   res.write(cachedSitemap);
+    //   res.end();
       
-      return {
-        props: {},
-      };
-    }
+    //   return {
+    //     props: {},
+    //   };
+    // }
     
     console.log('Generating fresh ETH tokens sitemap index and caching in Redis');
 
@@ -75,7 +75,7 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
     for (let i = 1; i <= sitemapCount; i++) {
       sitemapEntries.push(`
         <sitemap>
-          <loc>${escapeXml(`${domain}/sitemap/eth/tokens/${i}.xml`)}</loc>
+          <loc>${escapeXml(`${domain}/converter/sitemap/eth/tokens/${i}.xml`)}</loc>
           <lastmod>${currentDate}</lastmod>
         </sitemap>
       `);

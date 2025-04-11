@@ -58,45 +58,45 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
     const sitemapEntries = [
       // Static pages sitemap
       `<sitemap>
-        <loc>${escapeXml(`${domain}/sitemap/static.xml`)}</loc>
+        <loc>${escapeXml(`${domain}/converter/sitemap/static.xml`)}</loc>
         <lastmod>${currentDate}</lastmod>
       </sitemap>`,
       
       // BTC to fiat currencies sitemap
       `<sitemap>
-        <loc>${escapeXml(`${domain}/sitemap/btc-fiat.xml`)}</loc>
+        <loc>${escapeXml(`${domain}/converter/sitemap/btc-fiat.xml`)}</loc>
         <lastmod>${currentDate}</lastmod>
       </sitemap>`,
       
       // ETH to fiat currencies sitemap
       `<sitemap>
-        <loc>${escapeXml(`${domain}/sitemap/eth-fiat.xml`)}</loc>
+        <loc>${escapeXml(`${domain}/converter/sitemap/eth-fiat.xml`)}</loc>
         <lastmod>${currentDate}</lastmod>
       </sitemap>`,
       
       // USDT to tokens sitemap index
       `<sitemap>
-        <loc>${escapeXml(`${domain}/sitemap/usdt-sitemap.xml`)}</loc>
+        <loc>${escapeXml(`${domain}/converter/sitemap/usdt-sitemap.xml`)}</loc>
         <lastmod>${currentDate}</lastmod>
       </sitemap>`,
       
       // BTC to tokens sitemap index
       `<sitemap>
-        <loc>${escapeXml(`${domain}/sitemap/btc-sitemap.xml`)}</loc>
+        <loc>${escapeXml(`${domain}/converter/sitemap/btc-sitemap.xml`)}</loc>
         <lastmod>${currentDate}</lastmod>
       </sitemap>`,
       
       // ETH to tokens sitemap index
       `<sitemap>
-        <loc>${escapeXml(`${domain}/sitemap/eth-sitemap.xml`)}</loc>
+        <loc>${escapeXml(`${domain}/converter/sitemap/eth-sitemap.xml`)}</loc>
         <lastmod>${currentDate}</lastmod>
       </sitemap>`,
       
       // Tokens to fiat sitemap index
-      `<sitemap>
-        <loc>${escapeXml(`${domain}/sitemap/tokens-fiat-sitemap.xml`)}</loc>
-        <lastmod>${currentDate}</lastmod>
-      </sitemap>`
+      // `<sitemap>
+      //   <loc>${escapeXml(`${domain}/converter/sitemap/tokens-fiat-sitemap.xml`)}</loc>
+      //   <lastmod>${currentDate}</lastmod>
+      // </sitemap>`
     ];
 
     // Create XML sitemap index

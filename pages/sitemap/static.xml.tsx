@@ -20,28 +20,28 @@ export const config = {
   unstable_runtimeJS: false,
 };
 
-// Redis cache key for this sitemap
-const SITEMAP_CACHE_KEY = 'sitemap_static_xml_cache';
+// Redis cache key for the sitemap index
+const SITEMAP_INDEX_CACHE_KEY = 'sitemap_static_index_xml_cache';
 // Cache expiration time in seconds (24 hours)
 const CACHE_EXPIRATION = 86400;
 
 export const getServerSideProps: GetServerSideProps = async ({ res }) => {
   try {
-    const SITE_URL = process.env.NEXT_PUBLIC_DOMAIN || 'https://www.droomdroom.com';
+    const SITE_URL = process.env.NEXT_PUBLIC_DOMAIN || 'https://www.droomdroom.com'; // Use environment variable or fallback
     const domain = `https://${new URL(SITE_URL).hostname}`;
     
-    // Try to get the sitemap from Redis cache first
-    const cachedSitemap = await redisHandler.get<string>(SITEMAP_CACHE_KEY);
+    // Try to get the sitemap index from Redis cache first
+    const cachedSitemapIndex = await redisHandler.get<string>(SITEMAP_INDEX_CACHE_KEY);
     
-    if (cachedSitemap) {
-      console.log('Serving static sitemap from Redis cache');
+    if (cachedSitemapIndex) {
+      console.log('Serving sitemap index from Redis cache');
       
       // Set headers
       res.setHeader('Content-Type', 'application/xml');
       res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=43200');
       
       // Send cached response
-      res.write(cachedSitemap);
+      res.write(cachedSitemapIndex);
       res.end();
       
       return {
@@ -49,40 +49,42 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
       };
     }
     
-    console.log('Generating fresh static sitemap and caching in Redis');
+    console.log('Generating fresh sitemap index and caching in Redis');
 
-    // Create URL entries for static pages
-    const urlEntries = [
-      `<url>
-        <loc>${escapeXml(`${domain}/converter`)}</loc>
-        <changefreq>daily</changefreq>
-        <priority>0.9</priority>
-      </url>`
-      // Add other static pages as needed
+    // Current date for lastmod
+    const currentDate = new Date().toISOString();
+
+    // Create sitemap entries for the index
+    const sitemapEntries = [
+      // Static pages sitemap
+      `<sitemap>
+        <loc>${escapeXml(`${domain}/converter/`)}</loc>
+        <lastmod>${currentDate}</lastmod>
+      </sitemap>`,
     ];
 
-    // Create XML sitemap
-    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-      ${urlEntries.join('')}
-    </urlset>`;
+    // Create XML sitemap index
+    const sitemapIndex = `<?xml version="1.0" encoding="UTF-8"?>
+    <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+      ${sitemapEntries.join('')}
+    </sitemapindex>`;
 
-    // Cache the sitemap in Redis
-    await redisHandler.set(SITEMAP_CACHE_KEY, sitemap, { expirationTime: CACHE_EXPIRATION });
+    // Cache the sitemap index in Redis
+    await redisHandler.set(SITEMAP_INDEX_CACHE_KEY, sitemapIndex, { expirationTime: CACHE_EXPIRATION });
 
     // Set headers
     res.setHeader('Content-Type', 'application/xml');
     res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=43200');
     
     // Send response
-    res.write(sitemap);
+    res.write(sitemapIndex);
     res.end();
 
     return {
       props: {},
     };
   } catch (error) {
-    console.error('Error generating static sitemap:', error);
+    console.error('Error generating sitemap:', error);
     return {
       props: {},
     };
@@ -90,5 +92,5 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
 };
 
 // Return empty component as we're handling everything in getServerSideProps
-const StaticSitemap = () => null;
-export default StaticSitemap;
+const Sitemap = () => null;
+export default Sitemap;

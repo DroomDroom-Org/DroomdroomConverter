@@ -1,7 +1,7 @@
 import { GetServerSideProps } from 'next';
 import prisma from '../../src/lib/prisma';
 import { generateTokenUrl } from '../../src/utils/url';
-import { CURRENCIES } from '../../src/context/CurrencyContext';
+import { CURRENCIES, CurrencyCode } from '../../src/context/CurrencyContext';
 import { redisHandler } from '../../src/utils/redis';
 
 // Function to escape XML special characters
@@ -36,21 +36,21 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
     // Try to get the sitemap from Redis cache first
     const cachedSitemap = await redisHandler.get<string>(SITEMAP_CACHE_KEY);
     
-    if (cachedSitemap) {
-      console.log('Serving ETH-fiat sitemap from Redis cache');
+    // if (cachedSitemap) {
+    //   console.log('Serving BTC-fiat sitemap from Redis cache');
       
-      // Set headers
-      res.setHeader('Content-Type', 'application/xml');
-      res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=43200');
+    //   // Set headers
+    //   res.setHeader('Content-Type', 'application/xml');
+    //   res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=43200');
       
-      // Send cached response
-      res.write(cachedSitemap);
-      res.end();
+    //   // Send cached response
+    //   res.write(cachedSitemap);
+    //   res.end();
       
-      return {
-        props: {},
-      };
-    }
+    //   return {
+    //     props: {},
+    //   };
+    // }
     
     console.log('Generating fresh ETH-fiat sitemap and caching in Redis');
 
@@ -72,7 +72,6 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
 
     // Get fiat currencies from our context
     const fiatCurrencies = Object.keys(CURRENCIES);
-    
     // Create URL entries
     let urlEntries: string[] = [];
     
@@ -81,7 +80,7 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
     for (const fiatCode of fiatCurrencies) {
       urlEntries.push(`
         <url>
-          <loc>${escapeXml(`${domain}/converter/${ethSlug}/${fiatCode.toLowerCase()}`)}</loc>
+          <loc>${escapeXml(`${domain}/converter/${ethSlug}/${generateTokenUrl(CURRENCIES[fiatCode as CurrencyCode].name, CURRENCIES[fiatCode as CurrencyCode].code)}`)}</loc>
           <changefreq>daily</changefreq>
           <priority>0.9</priority>
         </url>

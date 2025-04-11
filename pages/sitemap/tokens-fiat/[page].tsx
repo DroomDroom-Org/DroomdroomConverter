@@ -1,7 +1,8 @@
 import { GetServerSideProps } from 'next';
-import prisma from '../../../../src/lib/prisma';
-import { generateTokenUrl } from '../../../../src/utils/url';
-import { redisHandler } from '../../../../src/utils/redis';
+import prisma from '../../../src/lib/prisma';
+import { generateTokenUrl } from '../../../src/utils/url';
+import { CURRENCIES, CurrencyCode } from '../../../src/context/CurrencyContext';
+import { redisHandler } from '../../../src/utils/redis';
 
 // Function to escape XML special characters
 const escapeXml = (unsafe: string) => {
@@ -39,13 +40,13 @@ export const getServerSideProps: GetServerSideProps = async ({ params, res }) =>
     const domain = `https://${new URL(SITE_URL).hostname}`;
     
     // Redis cache key for this specific page of the sitemap
-    const SITEMAP_CACHE_KEY = `sitemap_usdt_tokens_${page}_xml_cache`;
+    const SITEMAP_CACHE_KEY = `sitemap_tokens_fiat_${page}_xml_cache`;
     
     // Try to get the sitemap from Redis cache first
     const cachedSitemap = await redisHandler.get<string>(SITEMAP_CACHE_KEY);
     
     if (cachedSitemap) {
-      console.log(`Serving USDT tokens sitemap page ${page} from Redis cache`);
+      console.log(`Serving tokens-fiat sitemap page ${page} from Redis cache`);
       
       // Set headers
       res.setHeader('Content-Type', 'application/xml');
@@ -60,34 +61,19 @@ export const getServerSideProps: GetServerSideProps = async ({ params, res }) =>
       };
     }
     
-    console.log(`Generating fresh USDT tokens sitemap page ${page} and caching in Redis`);
+    console.log(`Generating fresh tokens-fiat sitemap page ${page} and caching in Redis`);
 
-    // Get USDT token
-    const usdt = await prisma.token.findFirst({
-      where: {
-        ticker: 'USDT'
-      },
-      select: {
-        id: true,
-        name: true,
-        ticker: true
-      }
-    });
-
-    if (!usdt) {
-      throw new Error('Could not find USDT token');
-    }
-
-    // Calculate pagination
-    const skip = (page - 1) * URLS_PER_SITEMAP;
+    // Get fiat currencies
+    const fiatCurrencies = Object.keys(CURRENCIES);
+    
+    // Calculate pagination - this is more complex as we need to paginate across tokens and fiats
+    const tokensPerPage = Math.ceil(URLS_PER_SITEMAP / fiatCurrencies.length);
+    const skip = (page - 1) * tokensPerPage;
     
     // Get tokens for this page
     const tokens = await prisma.token.findMany({
       where: {
-        inSitemap: true,
-        ticker: {
-          not: 'USDT' // Exclude USDT itself
-        }
+        inSitemap: true
       },
       select: {
         id: true,
@@ -99,7 +85,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, res }) =>
         rank: 'asc'
       },
       skip,
-      take: URLS_PER_SITEMAP
+      take: tokensPerPage
     });
 
     // If no tokens found for this page, return 404
@@ -112,18 +98,20 @@ export const getServerSideProps: GetServerSideProps = async ({ params, res }) =>
     // Create URL entries
     const urlEntries: string[] = [];
     
-    // USDT to tokens
-    const usdtSlug = generateTokenUrl(usdt.name, usdt.ticker);
+    // Each token to each fiat currency
     for (const token of tokens) {
       const tokenSlug = generateTokenUrl(token.name, token.ticker);
-      urlEntries.push(`
-        <url>
-          <loc>${escapeXml(`${domain}/converter/${usdtSlug}/${tokenSlug}`)}</loc>
-          <lastmod>${token.updatedAt.toISOString()}</lastmod>
-          <changefreq>daily</changefreq>
-          <priority>0.8</priority>
-        </url>
-      `);
+      
+      for (const fiatCode of fiatCurrencies) {
+        urlEntries.push(`
+          <url>
+            <loc>${escapeXml(`${domain}/converter/${tokenSlug}/${generateTokenUrl(CURRENCIES[fiatCode as CurrencyCode].name, CURRENCIES[fiatCode as CurrencyCode].code)}`)}</loc>
+            <lastmod>${token.updatedAt.toISOString()}</lastmod>
+            <changefreq>daily</changefreq>
+            <priority>0.7</priority>
+          </url>
+        `);
+      }
     }
 
     // Create XML sitemap
@@ -147,7 +135,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, res }) =>
       props: {},
     };
   } catch (error) {
-    console.error(`Error generating USDT tokens sitemap page:`, error);
+    console.error(`Error generating tokens-fiat sitemap page:`, error);
     return {
       props: {},
     };
@@ -155,5 +143,5 @@ export const getServerSideProps: GetServerSideProps = async ({ params, res }) =>
 };
 
 // Return empty component as we're handling everything in getServerSideProps
-const UsdtTokensSitemap = () => null;
-export default UsdtTokensSitemap;
+const TokensFiatSitemap = () => null;
+export default TokensFiatSitemap;

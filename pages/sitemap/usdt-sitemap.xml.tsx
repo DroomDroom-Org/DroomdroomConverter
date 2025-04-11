@@ -75,7 +75,7 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
     for (let i = 1; i <= sitemapCount; i++) {
       sitemapEntries.push(`
         <sitemap>
-          <loc>${escapeXml(`${domain}/sitemap/usdt/tokens/${i}.xml`)}</loc>
+          <loc>${escapeXml(`${domain}/converter/sitemap/usdt/tokens/${i}.xml`)}</loc>
           <lastmod>${currentDate}</lastmod>
         </sitemap>
       `);
